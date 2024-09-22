@@ -7,7 +7,6 @@ const productSchema = new mongoose.Schema({
   stock: { type: Number, required: true },
   description: { type: String, required: true },
   category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
-  isDelete: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema);

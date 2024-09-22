@@ -1,5 +1,7 @@
 const Product = require('../models/productModal');
 const Category = require('../models/category');
+const sharp = require('sharp');
+
 
 exports.renderProductPage = async (req, res) => {
    
@@ -20,9 +22,7 @@ exports.renderProductPage = async (req, res) => {
         const categories = await Category.find();
 
         const totalPages = Math.ceil(totalProducts / limit);
-        console.log('products',products);
-        
-
+       
         res.render('adminPanel', {
             body: 'admin/products',
             products,
@@ -39,11 +39,14 @@ exports.renderProductPage = async (req, res) => {
 
 // Add Product
 exports.addProduct = async (req, res) => {
-
     try {
         const { name, description, price, category, stockQuantity, stockStatus } = req.body;
-        console.log('request:',req.body);
-        
+
+        // Validate inputs
+        if (!name || !description || !price || !category || !stockQuantity || !stockStatus) {
+            return res.status(400).send('All fields are required.');
+        }
+
         const images = req.files ? req.files.map(file => file.path) : [];
 
         const newProduct = new Product({
@@ -51,7 +54,7 @@ exports.addProduct = async (req, res) => {
             description,
             price,
             category,
-            stock:stockQuantity,
+            stock: stockQuantity,
             stockStatus,
             images
         });
@@ -63,10 +66,6 @@ exports.addProduct = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
-
-
-
-
 
 // Render Edit Product Page
 exports.renderEditProductPage = async (req, res) => {
@@ -81,28 +80,41 @@ exports.renderEditProductPage = async (req, res) => {
 
 // Handle Product Edit
 exports.editProduct = async (req, res) => {
-
     try {
-
         const productId = req.params.id;
         const { name, description, price, category, stockQuantity, stockStatus } = req.body;
-        const images = req.files ? req.files.map(file => file.path) : [];
-    
+
+        // Fetch the existing product from the database
+        const product = await Product.findById(productId);
+
+        // If new files are uploaded, use them; otherwise, keep existing images
+        let images = req.files && req.files.length > 0 
+            ? req.files.map(file => file.path) 
+            : product.images;
+
+        // Ensure that the product has at least 3 images
+        if (images.length < 3) {
+            return res.status(400).send('Product must have at least 3 images.');
+        }
+
+        // Update the product
         const updatedProduct = await Product.findByIdAndUpdate(productId, {
             name,
             description,
             price,
             category,
-            stockQuantity,
+            stock: stockQuantity,
             stockStatus,
             images
         }, { new: true });
+
         res.redirect('/adminPanel/products');
     } catch (err) {
         console.error(err);
         res.status(500).send('Server error');
     }
 };
+
 
 // View Product Details
 exports.viewProduct = async (req, res) => {
@@ -117,16 +129,14 @@ exports.viewProduct = async (req, res) => {
 
 // Toggle Product Status
 exports.toggleProductStatus = async (req, res) => {
+    console.log("Toggle request received for product ID:", req.params.id);
     try {
         const productId = req.params.id;
         const product = await Product.findById(productId);
-        product.isDelete = !product.isDelete; // Toggle the status
-        product.isDelete = !product.isDelete;
-      if (product.isDelete) {
-          product.dateDeleted = Date.now();
-      } else {
-          product.dateDeleted = null;
-      }
+        
+        // Toggle the isDelete status
+        product.isDelete = !product.isDelete; 
+        console.log("Product status updated to:", product.isDelete);
         await product.save();
         res.redirect('/adminPanel/products');
     } catch (err) {

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Management</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container mt-5">
@@ -106,8 +107,28 @@
                                                     </div>
                                                     <div class="form-group">
                                                         <label for="images">Product Images:</label>
+                                                        <% if (product.images && product.images.length > 0) { %>
+                                                            <div class="image-preview">
+                                                                <% product.images.forEach(function(image) { %>
+                                                                    <% let imagePath = image.split('\\').pop().split('/').pop(); %>
+                                                                    <img src="/<%= imagePath %>" alt="Product Image" class="img-thumbnail" style="width: 100px; height: 100px;">
+                                                                <% }) %>
+                                                            </div>
+                                                        <% } else { %>
+                                                            <p>No images uploaded yet.</p>
+                                                        <% } %>
                                                         <input type="file" name="images" id="images" accept="image/*" multiple>
                                                     </div>
+                                                    <div id="crop-container" style="display: none;">
+                                                        <img id="imagePreview" style="max-width: 100%;" />
+                                                        <button type="button" id="cropImageButton" class="btn btn-primary">Crop Image</button>
+                                                    </div>
+                                                    
+                                                    <!-- Canvas to hold the cropped image -->
+                                                    <canvas id="canvas" style="display: none;"></canvas>
+                                                
+                                                    <!-- Thumbnails for the cropped images -->
+                                                    <div id="croppedImagesContainer"></div>
                                                     <small class="text-muted">Note: You must upload at least 3 images.</small>
                                                 </div>
                                                 <div class="modal-footer">
@@ -120,11 +141,12 @@
                                 </div>
 
                                 <!-- Toggle Product Status -->
-                                <form action="/adminPanel/products/toggle/<%= product._id %>" method="POST" style="display:inline;">
-                                    <button class="btn btn-sm <%= product.isDelete ? 'btn-success' : 'btn-danger' %>">
+                                <form action="/adminPanel/products/toggle-status/<%= product._id %>" method="POST" style="display:inline;">
+                                    <button type="button" class="btn btn-sm <%= product.isDelete ? 'btn-success' : 'btn-danger' %>" onclick="this.form.submit();">
                                         <%= product.isDelete ? "Restore" : "Delete" %>
                                     </button>
                                 </form>
+                                
                             </td>
                         </tr>
                     <% }); %>
@@ -255,7 +277,107 @@
                 }
             });
         }
-        </script>
+
+
+        const imageInput = document.getElementById('images');
+const imagePreview = document.getElementById('imagePreview');
+const cropContainer = document.getElementById('crop-container');
+const croppedImagesContainer = document.getElementById('croppedImagesContainer');
+const canvas = document.getElementById('canvas');
+let cropper;
+let imageFiles = [];
+let croppedImages = [];
+
+imageInput.addEventListener('change', function(event) {
+    imageFiles = Array.from(event.target.files);
+
+    if (imageFiles.length >= 3) {
+        loadAndCropImage(0);
+    } else {
+        alert("Please select at least 3 images.");
+    }
+});
+
+function loadAndCropImage(index) {
+    const file = imageFiles[index];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        imagePreview.src = e.target.result;
+        cropContainer.style.display = 'block';
+
+        if (cropper) {
+            cropper.destroy();
+        }
+
+        cropper = new Cropper(imagePreview, {
+            aspectRatio: 1,
+            viewMode: 1,
+            autoCropArea: 1,
+            crop: function(event) {
+                // Optionally add crop event logic here
+            }
+        });
+    };
+
+    reader.readAsDataURL(file);
+}
+
+document.getElementById('cropImageButton').addEventListener('click', function() {
+    const croppedCanvas = cropper.getCroppedCanvas({
+        width: 500,
+        height: 500
+    });
+
+    croppedCanvas.toBlob((blob) => {
+        croppedImages.push(blob);
+
+        const imgElement = document.createElement('img');
+        imgElement.src = croppedCanvas.toDataURL();
+        imgElement.style.width = '100px';
+        imgElement.style.height = '100px';
+        imgElement.classList.add('img-thumbnail');
+        croppedImagesContainer.appendChild(imgElement);
+
+        // Move on to the next image
+        if (croppedImages.length < imageFiles.length) {
+            loadAndCropImage(croppedImages.length);
+        } else {
+            cropContainer.style.display = 'none'; // Hide crop container after all images
+        }
+    });
+});
+
+// Modify the form submission to include cropped images
+document.querySelector('form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(this);
+
+    croppedImages.forEach((croppedImage, index) => {
+        formData.append('images', croppedImage, `croppedImage${index}.png`);
+    });
+
+    // Submit the form data
+    fetch('/adminPanel/products/add', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        // Handle success (e.g., close modal and refresh table)
+        $('#addProductModal').modal('hide');
+        refreshProductTable();
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+
+
+
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
