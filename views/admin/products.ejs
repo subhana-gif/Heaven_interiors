@@ -43,12 +43,11 @@
                             <td>
                                 <% if (product.images && product.images.length > 0) { %>
                                     <% let imagePath = product.images[0].split('\\').pop().split('/').pop(); %> <!-- Handles both slashes -->
-                                    <img src="/<%= product.images %>" alt="Product Image" class="img-thumbnail" style="width: 100px; height: 100px;">
+                                    <img src="/<%= imagePath %>" alt="Product Image" class="img-thumbnail" style="width: 100px; height: 100px;">
                                 <% } else { %>
                                     <img src="/<%= product.images %>" alt="Product Image" class="img-thumbnail" style="width: 100px; height: 100px;">
                                 <% } %>
-                            </td>
-                                                                             
+                            </td>                                       
                             
                             <td><%= product.name %></td>
                             <td><%= product.description %></td>
