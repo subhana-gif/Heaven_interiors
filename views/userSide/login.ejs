@@ -17,7 +17,7 @@
     <h3>Login</h3>
     <form action="/user_login" method="POST" style="width: 100%; max-width: 400px;">
       <div class="mb-3">
-        <label for="email" class="form-label">Enter Email/Mobile number</label>
+        <label for="email" class="form-label">Enter Email</label>
         <input type="text" name="email" class="form-control" id="email" required>
       </div>
     
@@ -27,8 +27,8 @@
       </div>
       
       <a href="/auth/google" class="google-signin">
-        <img src="/path/to/google-icon.png" alt="Google Sign-In"> Sign in with Google
-    </a>
+        <img src="https://th.bing.com/th?id=OIP.AfKMLf4rKX7EqOSAVpujIQHaEK&w=333&h=187&c=8&rs=1&qlt=90&o=6&dpr=1.5&pid=3.1&rm=2" 
+        alt="Google Sign-In"> Sign in with Google</a>
       <button type="submit" class="btn btn-custom">Login</button>
     
       <% if (errorMessage) { %>
@@ -45,7 +45,7 @@
     </form>
     
     <div class="links-container">
-      <a href="/user_signup">Don't have an account? Sign up</a>
+      <a href="/user/user_signup">Don't have an account? Sign up</a>
     </div>
   </div>
 

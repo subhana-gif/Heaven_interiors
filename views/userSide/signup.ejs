@@ -15,9 +15,9 @@
 
   <div class="login-container">
     <h3>Register</h3>
-    <form id="signupForm" action="/user_login" method="POST">
+    <form id="signupForm" action="/user/user_signup" method="POST">
       <div class="mb-3">
-        <label for="email" class="form-label">Enter Email/Mobile number</label>
+        <label for="email" class="form-label">Enter Email</label>
         <input type="text" name="email" class="form-control" id="email" value="<%= email || '' %>" required style="max-width: 30em;">
       </div>
       <div class="mb-3">
@@ -46,7 +46,7 @@
     </form>
     
     <div class="links-container">
-      <a href="/user_login">Already have an account? Login</a>
+      <a href="/user/user_login">Already have an account? Login</a>
     </div>
   </div>
 

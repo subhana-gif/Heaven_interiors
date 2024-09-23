@@ -11,7 +11,7 @@
   <div class="container d-flex justify-content-center align-items-center vh-100">
     <div class="otp-container p-4 border rounded shadow-sm">
       <h3 class="text-center mb-4">Enter OTP</h3>
-      <form id="otpForm" action="/verify_otp" method="POST" style="width: 100%; max-width: 400px;">
+      <form id="otpForm" action="/user/Verify_otp" method="POST" style="width: 100%; max-width: 400px;">
         <div class="mb-3">
           <label for="otp" class="form-label">Enter the OTP sent to your email</label>
           <input type="text" name="otp" class="form-control" id="otp" required>
@@ -21,13 +21,13 @@
       <div id="otp-timer" class="text-center mt-3 mb-2"></div>
       <button id="resendOtpBtn" class="btn btn-secondary w-100" disabled>Resend OTP</button>
       <div class="links-container text-center mt-3">
-        <a href="/user_signup">Back to Sign Up</a>
+        <a href="/user/user_signup">Back to Sign Up</a>
       </div>
     </div>
   </div>
 
   <script>
-    let timer = 30;
+    let timer = 5;
     const timerElement = document.getElementById('otp-timer');
     const resendBtn = document.getElementById('resendOtpBtn');
     
@@ -49,18 +49,29 @@
 
     countdown(); // Start countdown initially
 
-    resendBtn.addEventListener('click', function() {
-      fetch('/resend_otp', { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            alert('OTP resent successfully');
-            timer = 30;  // Restart timer
-            resendBtn.disabled = true;
-            countdown(); // Restart countdown
-          }
-        });
+    document.getElementById('resendOtpBtn').addEventListener('click', async () => {
+  try {
+    const response = await fetch('/user/resend_otp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
     });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert('OTP resent successfully');
+    } else {
+      alert(result.message || 'Error resending OTP');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error resending OTP.');
+  }
+});
+
+
   </script>
 </body>
 </html>

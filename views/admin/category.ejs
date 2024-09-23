@@ -115,10 +115,10 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Soft Delete Category -->
-                            <form action="/adminPanel/category/delete/<%= category._id %>" method="POST" style="display: inline-block;">
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            <form action="/adminPanel/category/toggle-status/<%= category._id %>" method="POST" style="display: inline-block;">
+                                <button type="button" class="btn btn-sm <%= category.isDeleted ? 'btn-success' : 'btn-danger' %>">
+                                    <%= category.isDelete ? "Restore" : "Delete" %>
+                                </button>
                             </form>
                         </td>
                     </tr>

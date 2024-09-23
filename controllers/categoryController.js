@@ -64,31 +64,22 @@ exports.editCategory = async (req, res) => {
     }
 };
 
-// Delete Category
-exports.deleteCategory = async (req, res) => {
+// Toggle Category Status
+exports.toggleCategoryStatus = async (req, res) => {
     try {
-        await Category.findByIdAndUpdate(req.params.id, { isDeleted: true });
-        res.redirect('/adminPanel/category');
+        const categoryId = req.params.id;
+        const category = await Category.findById(categoryId);
+
+        // Toggle the isDeleted status
+        category.isDelete = !category.isDelete; // Switch between true and false
+        await category.save();
+        res.redirect('/adminPanel/category'); // Redirect back to the category page
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+        console.error('Error toggling category status:', err);
+        res.status(500).send('Failed to toggle category status');
     }
 };
 
-// Bulk Update Categories
-exports.bulkUpdateCategories = async (req, res) => {
-    try {
-        const { action, selectedCategories } = req.body;
 
-        if (action === 'delete') {
-            await Category.updateMany({ _id: { $in: selectedCategories } }, { isDeleted: true });
-        } else if (action === 'status') {
-            await Category.updateMany({ _id: { $in: selectedCategories } }, { status: req.body.status });
-        }
 
-        res.redirect('/adminPanel/category');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
-    }
-};
+

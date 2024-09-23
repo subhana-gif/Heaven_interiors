@@ -129,14 +129,14 @@ exports.viewProduct = async (req, res) => {
 
 // Toggle Product Status
 exports.toggleProductStatus = async (req, res) => {
-    console.log("Toggle request received for product ID:", req.params.id);
     try {
+        console.log('hi');
+        
         const productId = req.params.id;
         const product = await Product.findById(productId);
         
         // Toggle the isDelete status
         product.isDelete = !product.isDelete; 
-        console.log("Product status updated to:", product.isDelete);
         await product.save();
         res.redirect('/adminPanel/products');
     } catch (err) {

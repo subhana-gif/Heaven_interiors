@@ -142,7 +142,7 @@
 
                                 <!-- Toggle Product Status -->
                                 <form action="/adminPanel/products/toggle-status/<%= product._id %>" method="POST" style="display:inline;">
-                                    <button type="button" class="btn btn-sm <%= product.isDelete ? 'btn-success' : 'btn-danger' %>" onclick="this.form.submit();">
+                                    <button type="submit" class="btn btn-sm <%= product.isDelete ? 'btn-success' : 'btn-danger' %>">
                                         <%= product.isDelete ? "Restore" : "Delete" %>
                                     </button>
                                 </form>
@@ -279,7 +279,7 @@
         }
 
 
-        const imageInput = document.getElementById('images');
+const imageInput = document.getElementById('images');
 const imagePreview = document.getElementById('imagePreview');
 const cropContainer = document.getElementById('crop-container');
 const croppedImagesContainer = document.getElementById('croppedImagesContainer');

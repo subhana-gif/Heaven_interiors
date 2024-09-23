@@ -117,12 +117,13 @@ a:hover {
 .google-signin {
   display: flex;
   align-items: center;
-  background-color: #4285F4; /* Google blue */
+  background-color: #167f3b; /* Google blue */
   color: white;
   text-decoration: none;
   border-radius: 5px;
   padding: 10px;
   font-size: 16px;
+  margin-bottom: 1%;
   font-weight: bold;
 }
 

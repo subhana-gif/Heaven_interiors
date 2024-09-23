@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-const passport = require('passport');
-const path = require('path');
+const passport = require('passport'); // Require passport here
+require('./config/passport_setup');
 
 // Import routes
 const adminRoutes = require('./routes/adminRoutes');
@@ -13,7 +13,11 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const orderRoutes = require('./routes/orderRoutes'); 
 const offerRoutes = require('./routes/offerRoutes'); 
-const settingRoutes = require('./routes/settingRoutes'); 
+const settingRoutes = require('./routes/settingRoutes');
+const userRoutes = require('./routes/userRoutes') 
+const authRoutes = require('./routes/auth'); 
+const otpRoutes = require('./routes/otpRoutes');
+const homeRoutes = require('./routes/homeRoutes');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -29,6 +33,7 @@ app.use(session({
   cookie: { secure: false } // Set to true if using HTTPS
 }));
 
+dotenv.config();
 
 app.use(express.static("uploads"));
 app.use(express.json());
@@ -50,7 +55,7 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(() => console.log('MongoDB connected...'))
 .catch(err => console.error('MongoDB connection error:', err));
 
-// Routes
+// adminRoutes
 app.use('/adminPanel', adminRoutes);
 app.use('/adminPanel', categoryRoutes);
 app.use('/adminPanel', customerRoutes);
@@ -58,6 +63,13 @@ app.use('/adminPanel', productRoutes);
 app.use('/adminPanel', orderRoutes)
 app.use('/adminPanel', offerRoutes);
 app.use('/adminPanel', settingRoutes);
+
+// userRoues
+app.use('/auth', authRoutes);
+app.use('/user',userRoutes);
+app.use('/user', otpRoutes);
+app.use('/user', homeRoutes);
+
 
 // Start the server
 const PORT = process.env.PORT || 3000;
