@@ -115,6 +115,16 @@ exports.editProduct = async (req, res) => {
     }
 };
 
+// controllers/uploadController.js
+
+exports.uploadImage = (req, res) => {
+    if (!req.file) {
+        return res.status(400).send('No file uploaded.');
+    }
+    res.send('File uploaded successfully!');
+};
+
+
 
 // View Product Details
 exports.viewProduct = async (req, res) => {
@@ -130,8 +140,6 @@ exports.viewProduct = async (req, res) => {
 // Toggle Product Status
 exports.toggleProductStatus = async (req, res) => {
     try {
-        console.log('hi');
-        
         const productId = req.params.id;
         const product = await Product.findById(productId);
         

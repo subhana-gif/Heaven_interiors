@@ -6,7 +6,7 @@ router.get('/user_login', userController.renderUserLogin);
 router.get('/user_signup', userController.renderUserSignup);
 router.post('/user_login', userController.handleUserLogin);
 router.post('/user_signup', userController.handleUserSignup);
-
-
-
+router.get('/logout', userController.handleUserLogout);
+router.get('/profile', userController.getUserProfile);
+router.post('/profile', userController.updateUserProfile);
 module.exports = router;

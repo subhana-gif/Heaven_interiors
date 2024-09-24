@@ -6,6 +6,7 @@
     <title>Product Management</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+
 </head>
 <body>
     <div class="container mt-5">
@@ -53,11 +54,17 @@
                             <td><%= product.name %></td>
                             <td><%= product.description %></td>
                             <td><%= product.price %></td>
-                            <td><%= product.category.name %></td>
+                            <td>
+                                <% if (product.category) { %>
+                                    <%= product.category.name %>
+                                <% } else { %>
+                                    <span class="text-danger">No Category</span>
+                                <% } %>
+                            </td>
                             <td><%= product.stock %></td>
                             <td>
                                 <!-- Edit Product Button -->
-                                <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editProductModal<%= product._id %>">
+                                <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editProductModal<%= product._id %>" >
                                     Edit
                                 </button>
 
@@ -90,7 +97,9 @@
                                                         <label for="productCategory">Category</label>
                                                         <select name="category" class="form-control" required>
                                                             <% categories.forEach(function(category) { %>
-                                                                <option value="<%= category._id %>" <%= product.category._id.equals(category._id) ? 'selected' : '' %>><%= category.name %></option>
+                                                                <option value="<%= category._id %>" 
+                                                                    <%= product.category && product.category._id.equals(category._id) ? 'selected' : '' %>
+                                                                ><%= category.name %></option>
                                                             <% }); %>
                                                         </select>
                                                     </div>
@@ -146,7 +155,7 @@
                                         <%= product.isDelete ? "Restore" : "Delete" %>
                                     </button>
                                 </form>
-                                
+
                             </td>
                         </tr>
                     <% }); %>

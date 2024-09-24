@@ -11,11 +11,14 @@
   <div class="container d-flex justify-content-center align-items-center vh-100">
     <div class="otp-container p-4 border rounded shadow-sm">
       <h3 class="text-center mb-4">Enter OTP</h3>
-      <form id="otpForm" action="/user/Verify_otp" method="POST" style="width: 100%; max-width: 400px;">
+      <form id="otpForm" action="/user/verify_otp" method="POST" style="width: 100%; max-width: 400px;">
         <div class="mb-3">
           <label for="otp" class="form-label">Enter the OTP sent to your email</label>
           <input type="text" name="otp" class="form-control" id="otp" required>
         </div>
+        <% if (errorMessage) { %>
+          <div class="alert alert-danger"><%= errorMessage %></div>  <!-- Display error message -->
+      <% } %>
         <button type="submit" class="btn btn-custom w-100">Verify OTP</button>
       </form>
       <div id="otp-timer" class="text-center mt-3 mb-2"></div>
@@ -27,7 +30,7 @@
   </div>
 
   <script>
-    let timer = 5;
+    let timer = 30;
     const timerElement = document.getElementById('otp-timer');
     const resendBtn = document.getElementById('resendOtpBtn');
     

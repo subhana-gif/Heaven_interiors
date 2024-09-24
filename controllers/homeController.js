@@ -9,12 +9,17 @@ const renderHomePage = async (req, res) => {
         const products = await Product.find();
         
         // Render the home page with the fetched data
-        res.render('userSide/homePage', { categories, products });
+        res.render('userSide/homePage', {  // Ensure this matches the filename
+            user: req.session.user || null,  // Pass user data to the view
+            categories,  // Pass categories to the view
+            products     // Pass products to the view
+        });
     } catch (error) {
         console.error('Error fetching data:', error);
         res.status(500).send('Server Error');
     }
 };
+
 
 // Controller for fetching categories (for API or AJAX)
 const fetchCategories = async (req, res) => {

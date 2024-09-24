@@ -1,0 +1,236 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+    }
+
+    /* Breadcrumb styling for inline view */
+    .breadcrumb {
+        display: flex;
+        padding: 10px 0;
+        list-style: none;
+        background: none;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .breadcrumb-item {
+        display: inline;
+        margin-right: 10px;
+    }
+
+    .breadcrumb-item a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+    .breadcrumb-item + .breadcrumb-item::before {
+        content: '/';
+        margin: 0 5px;
+        color: #6c757d;
+    }
+
+    .breadcrumb-item.active {
+        color: #6c757d;
+    }
+
+    /* Layout container for image and details */
+    .product-container {
+        display: flex;
+        flex-direction: row;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 20px;
+        background-color: white;
+    }
+
+    .image-section {
+        display: flex;
+        flex-direction: row;
+        flex-grow: 1;
+    }
+
+    /* Column for vertical images */
+    .thumbnail-container {
+        display: flex;
+        flex-direction: column;
+        margin-right: 10px;
+    }
+
+    .thumbnail {
+        cursor: pointer;
+        width: 100px; /* Thumbnail width */
+        height: 100px; /* Thumbnail height */
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        object-fit: cover;
+    }
+
+    /* Main image */
+    .main-image {
+    border: 1px solid #ddd;
+    width: 25em; /* Increased width */
+    height: 25em; /* Increased height */
+    object-fit: cover;
+    margin-right: 20px;
+}
+
+    /* Product details section */
+    .product-details {
+        flex-grow: 1;
+    }
+
+    .product-price {
+        font-size: 24px;
+        color: #28a745;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .product-discount {
+        color: #dc3545;
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    .offers {
+        background-color: #f8f9fa;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+    }
+
+    .offer-item {
+        margin-bottom: 10px;
+    }
+
+    .offer-item i {
+        color: #28a745;
+        margin-right: 5px;
+    }
+
+    .btn-inline {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+    .btn-success, .btn-primary {
+        width: 150px;
+        margin-right: 10px;
+    }
+
+    /* Spec and review sections */
+    .specs-reviews {
+        margin-top: 20px;
+    }
+
+    .specs-reviews h4 {
+        margin-top: 20px;
+    }
+
+</style>
+
+<%- include('../partials/user_navbar.ejs') %>
+
+<div class="container">
+    <h1><%= product.name %></h1>
+
+    <!-- Breadcrumbs -->
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item"><a href="/user/shop">Shop</a></li>
+        <li class="breadcrumb-item active"><%= product.name %></li>
+    </ol>
+
+    <!-- Product layout -->
+    <div class="product-container">
+        <!-- Image Section -->
+        <div class="image-section">
+            <div class="thumbnail-container">
+                <% product.images.forEach((image, index) => { %>
+                    <% if (image) { %> <!-- Check if the image exists -->
+                        <img src="/<%= image.split('\\').pop().split('/').pop() %>" alt="<%= product.name %>" class="thumbnail" id="thumb-<%= index %>" onclick="changeMainImage('/<%= image.split('\\').pop().split('/').pop() %>')">
+                    <% } %>
+                <% }); %>
+            </div>
+        
+            <!-- Main image -->
+            <img id="mainImage" src="/<%= product.images[0] ? product.images[0].split('\\').pop().split('/').pop() : 'placeholder.jpg' %>" alt="<%= product.name %>" class="main-image">
+        </div>
+        
+        <!-- Product Details Section -->
+        <div class="product-details">
+            <h3 class="product-price">₹<%= product.price %></h3>
+            <p class="product-discount">67% off</p>
+            <p class="product-rating">Rating: <%= product.rating %> / 5</p>
+            <p>Stock: <%= product.stock > 0 ? 'In Stock' : 'Sold Out' %></p>
+
+            <!-- Offers Section -->
+            <div class="offers">
+                <h5>Available Offers</h5>
+                <div class="offer-item">
+                    <i class="fas fa-tag"></i> 10% off on HDFC Bank Credit Card Transactions
+                </div>
+                <div class="offer-item">
+                    <i class="fas fa-tag"></i> 10% off on HDFC Bank Credit Card EMI Transactions
+                </div>
+                <div class="offer-item">
+                    <i class="fas fa-tag"></i> Flat ₹750 off on HDFC Debit Card Transactions
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="btn-inline">
+                <button class="btn btn-success" <%= product.stock === 0 ? 'disabled' : '' %>>Add to Cart</button>
+                <button class="btn btn-primary">Buy Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Highlights / Specs -->
+    <div class="specs-reviews">
+        <h4>Highlights / Specs</h4>
+        <ul>
+            <% product.highlights.forEach(highlight => { %>
+                <li><%= highlight %></li>
+            <% }); %>
+        </ul>
+
+        <!-- Reviews -->
+        <h4>Reviews</h4>
+        <div>
+            <% product.reviews.forEach(review => { %>
+                <div class="review">
+                    <strong><%= review.userName %></strong>: <%= review.comment %>
+                    <p>Rating: <%= review.rating %> / 5</p>
+                </div>
+            <% }); %>
+        </div>
+
+        <!-- Related Products -->
+        <h4>Related Products</h4>
+        <div class="row related-products">
+            <% relatedProducts.forEach(relatedProduct => { %>
+                <div class="col-md-3">
+                    <h5><a href="/user/shop/<%= relatedProduct._id %>"><%= relatedProduct.name %></a></h5>
+                    <p>Price: ₹<%= relatedProduct.price %></p>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer.ejs') %>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+    function changeMainImage(image) {
+        document.getElementById('mainImage').src = image;
+    }
+</script>

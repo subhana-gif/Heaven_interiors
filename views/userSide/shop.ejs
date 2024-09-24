@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heaven Interior - Shop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        a {
+            text-decoration: none;
+            color: black;
+        }
+
+      
+.product-card {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: white;
+    transition: box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin: 1em; /* Margin around each card */
+}
+
+/* Additional margin for vertical spacing between rows */
+.row > div {
+    margin-bottom: 20px; /* Adjust as needed for spacing */
+}
+
+    /* Hover effect */
+    .product-card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Image Styling */
+    .product-image img {
+        width: 100%;
+        height: 250px; /* Adjust this height as needed */
+        object-fit: cover;
+    }
+
+    /* Product Information */
+    .product-info {
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        flex-grow: 1;
+    }
+
+    .product-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .product-description {
+        font-size: 0.95rem;
+        color: #666;
+        margin-bottom: 15px;
+        flex-grow: 1; /* Takes up available space */
+    }
+
+    /* Footer: Price and Wishlist */
+    .product-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .product-price {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .wishlist-button {
+        color: #ff0000; /* Red for the like button */
+        font-size: 1.3rem;
+        text-decoration: none;
+    }
+
+    .wishlist-button:hover {
+        color: #cc0000;
+    }
+
+    .row {
+    display: flex;
+    flex-wrap: wrap; /* Allows items to wrap to the next line if there's not enough space */
+    margin: 0 -15px; /* Adjusts for padding on columns */
+}
+
+.col-md-4 {
+    padding: 0 15px; /* Add horizontal padding */
+    flex: 0 0 33.33%; /* Sets each column to take up one-third of the row */
+    max-width: 33.33%; /* Limits the maximum width to one-third */
+    box-sizing: border-box; /* Includes padding in the width calculation */
+}
+
+
+    /* Optional: Making the Price and Button Align at the Bottom */
+    .product-footer {
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+    }
+        /* Responsive for small screens */
+        @media (max-width: 600px) {
+            .search-bar input {
+                width: 100px;
+            }
+        }
+
+        @media (max-width: 768px) {
+    .col-md-4 {
+        flex: 0 0 100%; /* Full width on small screens */
+        max-width: 100%;
+    }
+}
+
+    </style>
+</head>
+<body>
+
+    <%- include('../partials/user_navbar.ejs') %>
+
+
+    <div class="container">
+        <div class="row">
+            <% if (products.length > 0) { %>
+                <% products.forEach(function(product) { %>
+                    <div class="col-md-4 mb-4"> 
+                        <a href="/user/product/<%= product._id %>">                        
+                            <div class="product-card">
+                            <div class="product-image">
+                                <img src="/<%= product.images[0] || 'placeholder.jpg' %>" alt="<%= product.name %>">
+                            </div>
+                            <div class="product-info">
+                                <h5 class="product-title"><%= product.name %></h5>
+                                <p class="product-description"><%= product.description %></p>
+                                <div class="product-footer">
+                                    <span class="product-price">₹<%= product.price.toFixed(2) %></span>
+                                    <a href="/wishlist/add/<%= product._id %>" class="wishlist-button">
+                                        <i class="far fa-heart"></i> <!-- Font Awesome like icon -->
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="col-12">No products found</div>
+            <% } %>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+        // Toggle profile dropdown menu
+        function toggleProfileMenu() {
+            const dropdown = document.querySelector('.profile-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Toggle cart dropdown (future implementation)
+        function toggleCartMenu() {
+            alert("Cart functionality to be implemented!");
+        }
+    </script>
+
+</body>
+</html>

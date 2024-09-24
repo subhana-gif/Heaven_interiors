@@ -4,96 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Heaven Interior</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-        }
-        .header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1.25em;
-            background-color: white;
-            box-shadow: 0 0.25em 0.125em -0.125em gray;
-        }
-
-        .header-top {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            max-width: 75em;
-            position: relative;
-        }
-
-        .logo {
-            position: absolute;
-            top: 50%;
-            left: 1.25em;
-            transform: translateY(-50%);
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #2d4739;
-            text-align: center;
-            text-decoration: none;
-        }
-
-        .logo .interior {
-            font-size: 0.61em;
-            font-weight: 300;
-            display: block;
-            color: #2d4739;
-            letter-spacing: 0.05em;
-            margin-top: 0.2em;
-        }
-
-        .search-bar {
-            flex: 1;
-            max-width: 37.5em;
-            margin: 0 3.125em;
-        }
-
-        .search-bar input {
-            width: 100%;
-            padding: 0.625em;
-            border-radius: 0.3125em;
-            border: 0.0625em solid #ccc;
-        }
-
-        .login-link {
-    color: #000; /* Black color */
-    text-decoration: none; /* Remove underline */
-}
-
-.login-link:hover {
-    color: #3c523e; /* Optional: Blue on hover */
-}
-
-        .nav-icons {
-            display: flex;
-            align-items: center;
-            position: absolute;
-            right: 1.25em;
-        }
-
-        .nav-icons i {
-            margin: 0 0.625em;
-            font-size: 1.25em;
-        }
-
-        .nav-links {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            max-width: 75em;
-            margin-top: 0.625em;
-        }
-
-        .nav-links a {
-            margin: 0 1em;
-            text-decoration: none;
-            color: black;
         }
 
         .banner {
@@ -124,47 +40,22 @@
         .additional-image {
             display: flex;
             justify-content: center;
-            margin-top: 2em; /* Space above the image */
+            margin-top: 2em;
             width: 100%;
-            height: 100em; /* Adjust this height as needed */
-            overflow: hidden; /* Ensures that any overflow is hidden */
+            height: 100em;
+            overflow: hidden;
         }
 
         .additional-image img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Ensures the image covers the container while maintaining aspect ratio */
+            object-fit: cover;
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
 
-    <!-- Header -->
-    <div class="header">
-        <div class="header-top">
-            <a href="/" class="logo">
-                HEAVEN
-                <span class="interior">INTERIOR</span>
-            </a>
-            <div class="search-bar">
-                <input type="text" placeholder="What are you looking for?">
-            </div>
-            <div class="nav-icons">
-                <a href="/user/user_login" class="login-link">
-                    <i class="fa fa-user"></i> <span>Log in</span>
-                </a>
-                <i class="fa fa-shopping-cart"></i>
-            </div>
-        </div>
-        <div class="nav-links">
-            <a href="#">HOME</a>
-            <a href="#">SHOP</a>
-            <a href="#">CONTACT</a>
-            <a href="#">WISHLIST</a>
-            <a href="#">ORDERS</a>
-        </div>
-    </div>
+    <%- include('../partials/user_navbar.ejs') %>
 
     <!-- Banner -->
     <div class="banner">
@@ -185,6 +76,18 @@
     <div class="additional-image">
         <img src="/user_image/2.png" alt="Decorative Image">
     </div>
+
     <%- include('../partials/footer') %>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script>
+        function toggleProfileMenu() {
+            const dropdown = document.querySelector('.profile-dropdown');
+            dropdown.classList.toggle('visible');
+            dropdown.classList.toggle('hidden');
+        }
+    </script>
 </body>
 </html>

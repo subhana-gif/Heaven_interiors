@@ -36,10 +36,10 @@ const sendOtpEmail = async (to, otp) => {
     }
 };
 
-// Controller methods
 const renderOtpForm = (req, res) => {
-    res.render('userSide/otpForm');
+    res.render('userSide/otpForm', { errorMessage: null });
 };
+
 
 const verifyOtp = (req, res) => {
     const { otp } = req.body;
@@ -76,4 +76,6 @@ module.exports = {
     renderOtpForm,
     verifyOtp,
     resendOtp,
+    generateOtp,
+    sendOtpEmail
 };

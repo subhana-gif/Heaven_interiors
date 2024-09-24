@@ -116,7 +116,7 @@
                                 </div>
                             </div>
                             <form action="/adminPanel/category/toggle-status/<%= category._id %>" method="POST" style="display: inline-block;">
-                                <button type="button" class="btn btn-sm <%= category.isDeleted ? 'btn-success' : 'btn-danger' %>">
+                                <button type="submit" class="btn btn-sm <%= category.isDelete ? 'btn-success' : 'btn-danger' %>">
                                     <%= category.isDelete ? "Restore" : "Delete" %>
                                 </button>
                             </form>
@@ -135,18 +135,18 @@
         <nav aria-label="Page navigation example">
             <div class="d-flex justify-content-center">
                 <ul class="pagination">
-                    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                        <a class="page-link" href="/adminPanel/category?page=<%= currentPage - 1 %>&search=<%= search %>" aria-label="Previous">
+                    <li class="page-item <%= currentpage === 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="/adminPanel/category?page=<%= currentpage - 1 %>&search=<%= search %>" aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
                     <% for (let i = 1; i <= totalPages; i++) { %>
-                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                        <li class="page-item <%= currentpage === i ? 'active' : '' %>">
                             <a class="page-link" href="/adminPanel/category?page=<%= i %>&search=<%= search %>"><%= i %></a>
                         </li>
                     <% } %>
-                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                        <a class="page-link" href="/adminPanel/category?page=<%= currentPage + 1 %>&search=<%= search %>" aria-label="Next">
+                    <li class="page-item <%= currentpage === totalPages ? 'disabled' : '' %>">
+                        <a class="page-link" href="/adminPanel/category?page=<%= currentpage + 1 %>&search=<%= search %>" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>

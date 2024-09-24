@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const passport = require('passport'); // Require passport here
+const path=require('path')
 require('./config/passport_setup');
 
 // Import routes
@@ -18,7 +19,7 @@ const userRoutes = require('./routes/userRoutes')
 const authRoutes = require('./routes/auth'); 
 const otpRoutes = require('./routes/otpRoutes');
 const homeRoutes = require('./routes/homeRoutes');
-
+const userProductRoutes = require('./routes/userProductRoutes');
 // Load environment variables from .env file
 dotenv.config();
 
@@ -35,6 +36,8 @@ app.use(session({
 
 dotenv.config();
 
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static("uploads"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -69,7 +72,7 @@ app.use('/auth', authRoutes);
 app.use('/user',userRoutes);
 app.use('/user', otpRoutes);
 app.use('/user', homeRoutes);
-
+app.use('/user', userProductRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3000;

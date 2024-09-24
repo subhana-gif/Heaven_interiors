@@ -12,17 +12,28 @@ passport.use(new GoogleStrategy({
 },
 async function(accessToken, refreshToken, profile, done) {
     const email = profile.emails[0].value;
+    const googleId = profile.id;
+
     try {
         let user = await User.findOne({ email });
+
+        // If no user exists, create a new one with Google profile info
         if (!user) {
-            user = new User({ email });
+            user = new User({
+                email,
+                provider: 'google',
+                googleId,
+                username: profile.displayName // Optionally store display name from Google
+            });
             await user.save();
         }
+
         return done(null, user);
     } catch (error) {
         return done(error);
     }
 }));
+
 
 passport.serializeUser((user, done) => {
     done(null, user.id);

@@ -1,0 +1,148 @@
+<style>
+            .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.25em;
+            background-color: white;
+            box-shadow: 0 0.25em 0.125em -0.125em gray;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Space items evenly */
+            width: 100%;
+            max-width: 75em;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2d4739;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .logo .interior {
+            font-size: 0.61em;
+            font-weight: 300;
+            display: block;
+            color: #2d4739;
+            margin-top: 0.2em;
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 37.5em;
+            margin: 0 3.125em;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.625em;
+            border-radius: 0.3125em;
+            border: 0.0625em solid #ccc;
+        }
+
+        .cart-icon {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.6em; /* Increase size as needed */
+        }
+
+
+        .profile-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .profile-icon {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.5em; /* Adjust size as needed */
+        }
+
+
+        .profile-text {
+            font-size: 0.8em;
+            margin-left: 5px; /* Space between icon and text */
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            border: 1px solid #ccc;
+            list-style: none;
+            padding: 0;
+            display: none; /* Hidden by default */
+            z-index: 1000;
+        }
+
+        .profile-dropdown li {
+            padding: 10px;
+        }
+
+        .profile-dropdown a {
+            text-decoration: none;
+            color: blue;
+        }
+
+        .profile-dropdown.hidden {
+            display: none;
+        }
+
+        .profile-dropdown.visible {
+            display: block;
+        }
+        .nav-links a {
+        margin-right: 20px; /* Adds space between links */
+        text-decoration: none; /* Removes underline */
+        color: black; /* Sets link color */
+        }
+
+        .nav-links a:last-child {
+            margin-right: 0; /* Removes margin from the last link */
+        }
+
+
+</style>
+
+
+<!-- Header -->
+<div class="header">
+    <div class="header-top">
+        <a href="/" class="logo">
+            HEAVEN
+            <span class="interior">INTERIOR</span>
+        </a>
+        <div class="search-bar">
+            <input type="text" placeholder="What are you looking for?">
+        </div>
+        <div class="profile-menu">
+            <div class="profile-icon" onclick="toggleProfileMenu()">
+                <i class="fas fa-user-circle" style="font-size: 1.5em;"></i> <!-- Login man icon -->
+            </div>
+            <ul class="profile-dropdown hidden">
+                <li><a href="/user/profile" id="openProfileModal">Profile</a></li>
+                <li><a href="/user/logout">Logout</a></li>
+            </ul>
+        </div>
+        
+        <div class="cart-icon" onclick="toggleCartMenu()">
+            <i class="fas fa-shopping-cart"></i> <!-- Simple cart icon -->
+        </div>            
+    </div>
+    <div class="nav-links">
+        <a href="#">HOME</a>
+        <a href="/user/shop">SHOP</a>
+        <a href="#">CONTACT</a>
+        <a href="#">WISHLIST</a>
+        <a href="#">ORDERS</a>
+    </div>
+</div>

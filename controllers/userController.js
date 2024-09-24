@@ -1,13 +1,15 @@
 const User = require('../models/User');
 const Category = require('../models/category');
 const bcrypt = require('bcrypt');
+const { generateOtp } = require('./otpController');  // Adjust the path to otpController.js accordingly
+const { sendOtpEmail } = require('./otpController');  // Adjust the path to otpController.js accordingly
 
-
-
+// Render login page
 const renderUserLogin = (req, res) => {
     res.render('userSide/login', { errorMessage: null, successMessage: null });
 };
 
+// Render signup page
 const renderUserSignup = (req, res) => {
     const { errorMessage, email, username } = req.query;
     res.render('userSide/signup', {
@@ -18,7 +20,7 @@ const renderUserSignup = (req, res) => {
     });
 };
 
-
+// Handle user login
 const handleUserLogin = async (req, res) => {
     const { email, password } = req.body;
 
@@ -39,7 +41,10 @@ const handleUserLogin = async (req, res) => {
             });
         }
 
-        req.session.userId = user._id;
+        req.session.user = {
+            id: user._id, // Or the appropriate user data
+            profileImage: user.profileImage // Assuming user has a profile image
+        };
         return res.redirect('/user/home');
     } catch (error) {
         console.error('Error during login:', error);
@@ -50,6 +55,7 @@ const handleUserLogin = async (req, res) => {
     }
 };
 
+// Handle user signup
 const handleUserSignup = async (req, res) => {
     const { email, username, password, mobileNumber } = req.body;
 
@@ -58,7 +64,7 @@ const handleUserSignup = async (req, res) => {
         if (existingUser) {
             return res.render('userSide/signup', {
                 errorMessage: 'Email already registered',
-                successMessage: null,  // Make sure successMessage is null when there's an error
+                successMessage: null,
                 email,
                 username
             });
@@ -67,25 +73,66 @@ const handleUserSignup = async (req, res) => {
         const newUser = new User({ email, username, password, mobileNumber: mobileNumber || undefined });
         await newUser.save();
 
-        const otp = generateOtp();
+        const otp = generateOtp();  // Generates a 6-digit OTP from otpController
         req.session.otp = otp;
         req.session.email = email;
 
-        await sendOtpEmail(email, otp);
+        await sendOtpEmail(email, otp);  // Make sure sendOtpEmail is defined
 
-        // If signup was successful, you might want to redirect to the OTP form or show a success message.
         res.redirect('/user/otp_form');
     } catch (error) {
         console.error('Error during signup:', error);
         return res.render('userSide/signup', {
             errorMessage: 'Internal server error',
-            successMessage: null,  // Define successMessage as null
+            successMessage: null,
             email,
             username
         });
     }
 };
 
+// Handle user logout
+const handleUserLogout = (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Error during logout:', err);
+            return res.redirect('/user/home');
+        }
+        res.clearCookie('connect.sid');  // Clear the session cookie (optional, based on session config)
+        return res.redirect('/user/user_login');  // Redirect to login page or home
+    });
+};
+
+
+const getUserProfile = (req, res) => {
+    // Sample user data, replace with actual data from your database
+    const user = {
+        name: "User Name",
+        email: "user@example.com",
+        phone: "(123) 456-7890",
+        orders: [
+            { id: 12345, date: "2024-01-01", status: "Delivered" },
+            { id: 12346, date: "2024-02-01", status: "Shipped" }
+        ],
+        wishlist: ["Item 1", "Item 2"]
+    };
+
+    res.render('userSide/profile', { user });
+};
+
+
+
+const updateUserProfile = (req, res) => {
+    const { name, email, phone } = req.body;
+
+    // Update user data in the database
+    // Here, you would typically perform a database operation to update the user.
+
+    console.log('Updated user data:', { name, email, phone });
+
+    // Redirect back to the profile page or send a success message
+    res.redirect('/user/profile'); // Redirect to the profile page
+};
 
 // Exporting the controller methods
 module.exports = {
@@ -93,4 +140,7 @@ module.exports = {
     renderUserSignup,
     handleUserLogin,
     handleUserSignup,
+    handleUserLogout,
+    getUserProfile,
+    updateUserProfile
 };
