@@ -37,10 +37,22 @@ exports.renderProductPage = async (req, res) => {
     }
 };
 
+// Render Edit Product Page
+exports.renderEditProductPage = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        res.render('editProduct', { product });
+    } catch (err) {
+        console.error('Error fetching product:', err);
+        res.status(404).send('Product not found');
+    }
+};
+
+
 // Add Product
 exports.addProduct = async (req, res) => {
     try {
-        const { name, description, price, category, stockQuantity, stockStatus } = req.body;
+        const { name, description, price, category, stockQuantity, stockStatus} = req.body;
 
         // Validate inputs
         if (!name || !description || !price || !category || !stockQuantity || !stockStatus) {
@@ -56,27 +68,18 @@ exports.addProduct = async (req, res) => {
             category,
             stock: stockQuantity,
             stockStatus,
-            images
+            images,
         });
 
         await newProduct.save();
-        res.redirect('/adminPanel/products'); // Redirect after successful save
+        res.redirect('/adminPanel/products');
     } catch (err) {
         console.error('Error adding product:', err.message);
         res.status(500).send('Server Error');
     }
 };
 
-// Render Edit Product Page
-exports.renderEditProductPage = async (req, res) => {
-    try {
-        const product = await Product.findById(req.params.id);
-        res.render('editProduct', { product });
-    } catch (err) {
-        console.error('Error fetching product:', err);
-        res.status(404).send('Product not found');
-    }
-};
+
 
 // Handle Product Edit
 exports.editProduct = async (req, res) => {
@@ -105,7 +108,7 @@ exports.editProduct = async (req, res) => {
             category,
             stock: stockQuantity,
             stockStatus,
-            images
+            images,
         }, { new: true });
 
         res.redirect('/adminPanel/products');
@@ -114,6 +117,7 @@ exports.editProduct = async (req, res) => {
         res.status(500).send('Server error');
     }
 };
+
 
 // controllers/uploadController.js
 
@@ -129,7 +133,7 @@ exports.uploadImage = (req, res) => {
 // View Product Details
 exports.viewProduct = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id);
+        const product = await Product.findById(req.params.id).populate('reviews');
         res.render('viewProduct', { product });
     } catch (err) {
         console.error('Error fetching product:', err);

@@ -1,4 +1,5 @@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css"/>
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -132,6 +133,88 @@
         margin-top: 20px;
     }
 
+
+    .related-products-slider {
+    position: relative;
+    width: 100%;
+    padding: 20px 0;
+}
+
+.slider-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.related-product-card {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: white;
+    transition: box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+    height: 75%;
+    margin: 1em; /* Margin around each card */
+}
+
+.card-content {
+    display: flex;
+    flex-direction: row;
+}
+
+.product-image {
+    width: 70%; /* Adjust image width */
+}
+
+.product-image img {
+    max-width: 100%;
+    height: auto;
+}
+
+.product-details {
+    width: 60%; /* Adjust details width */
+    padding-left: 15px;
+}
+
+.slick-prev, .slick-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.slick-prev {
+    left: 0;
+}
+
+.slick-next {
+    right: 0;
+}
+
+@media screen and (max-width: 768px) {
+    .related-product-card {
+        width: 100%; /* Full width on smaller screens */
+    }
+
+    .card-content {
+        flex-direction: column;
+    }
+
+    .product-image, .product-details {
+        width: 100%;
+    }
+
+    .product-details {
+        padding-left: 0;
+        margin-top: 10px;
+    }
+}
+
+
 </style>
 
 <%- include('../partials/user_navbar.ejs') %>
@@ -167,20 +250,12 @@
             <h3 class="product-price">₹<%= product.price %></h3>
             <p class="product-discount">67% off</p>
             <p class="product-rating">Rating: <%= product.rating %> / 5</p>
-            <p>Stock: <%= product.stock > 0 ? 'In Stock' : 'Sold Out' %></p>
+            <p>Stock: <%= product.stockStatus %></p>
 
             <!-- Offers Section -->
             <div class="offers">
                 <h5>Available Offers</h5>
-                <div class="offer-item">
-                    <i class="fas fa-tag"></i> 10% off on HDFC Bank Credit Card Transactions
-                </div>
-                <div class="offer-item">
-                    <i class="fas fa-tag"></i> 10% off on HDFC Bank Credit Card EMI Transactions
-                </div>
-                <div class="offer-item">
-                    <i class="fas fa-tag"></i> Flat ₹750 off on HDFC Debit Card Transactions
-                </div>
+           
             </div>
 
             <!-- Action Buttons -->
@@ -193,33 +268,67 @@
 
     <!-- Highlights / Specs -->
     <div class="specs-reviews">
-        <h4>Highlights / Specs</h4>
+        <h4>Highlights</h4>
         <ul>
-            <% product.highlights.forEach(highlight => { %>
-                <li><%= highlight %></li>
-            <% }); %>
+            <% if (product.highlights && Array.isArray(product.highlights) && product.highlights.length > 0) { %>
+                <% product.highlights.forEach(function(highlight) { %>
+                    <li><%= highlight %></li>
+                <% }) %>
+            <% } else { %>
+                <li>No highlights available.</li>
+            <% } %>
         </ul>
+        
+        <h4>Specifications</h4>
+        <ul>
+            <% if (product.specifications && typeof product.specifications === 'object' && Object.keys(product.specifications).length > 0) { %>
+                <% Object.keys(product.specifications).forEach(function(key) { %>
+                    <li><strong><%= key %>:</strong> <%= product.specifications[key] %></li>
+                <% }) %>
+            <% } else { %>
+                <li>No specifications available.</li>
+            <% } %>
+        </ul>
+                    
 
         <!-- Reviews -->
         <h4>Reviews</h4>
         <div>
-            <% product.reviews.forEach(review => { %>
-                <div class="review">
-                    <strong><%= review.userName %></strong>: <%= review.comment %>
-                    <p>Rating: <%= review.rating %> / 5</p>
-                </div>
-            <% }); %>
+            <% if (product.reviews && Array.isArray(product.reviews) && product.reviews.length > 0) { %>
+                <% product.reviews.forEach(review => { %>
+                    <div class="review">
+                        <strong><%= review.userName %></strong>: <%= review.comment %>
+                        <p>Rating: <%= review.rating %> / 5</p>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p>No reviews available</p>
+            <% } %>
         </div>
-
         <!-- Related Products -->
         <h4>Related Products</h4>
-        <div class="row related-products">
-            <% relatedProducts.forEach(relatedProduct => { %>
-                <div class="col-md-3">
-                    <h5><a href="/user/shop/<%= relatedProduct._id %>"><%= relatedProduct.name %></a></h5>
-                    <p>Price: ₹<%= relatedProduct.price %></p>
-                </div>
-            <% }); %>
+        <div class="related-products-slider">
+            <div class="slider-container">
+                <% relatedProducts.forEach(relatedProduct => { %>
+                    <div class="related-product-card"> <!-- Each card should be a slide -->
+                        <div class="card-content">
+                            <!-- Left side: Product Image -->
+                            <div class="product-image">
+                                <img src="/<%= relatedProduct.images[0] ? relatedProduct.images[0].split('\\').pop().split('/').pop() : 'placeholder.jpg' %>" alt="<%= relatedProduct.name %>" class="main-image">
+                            </div>
+                            <!-- Right side: Product Details -->
+                            <div class="product-details">
+                                <h5><a href="/user/shop/<%= relatedProduct._id %>"><%= relatedProduct.name %></a></h5>
+                                <p><%= relatedProduct.description %></p>
+                                <p>Price: ₹<%= relatedProduct.price %></p>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+            <!-- Navigation arrows -->
+            <button class="slick-prev" aria-label="Previous">&lt;</button>
+            <button class="slick-next" aria-label="Next">&gt;</button>
         </div>
     </div>
 </div>
@@ -229,7 +338,27 @@
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
 <script>
+
+$(document).ready(function(){
+    $('.slider-container').slick({
+        slidesToShow: 3, // Show 3 products at once
+        slidesToScroll: 1, // Scroll one at a time
+        prevArrow: '.slick-prev', // Custom left arrow
+        nextArrow: '.slick-next', // Custom right arrow
+        infinite: false, // Stop scrolling at the last card
+        responsive: [
+            {
+                breakpoint: 768, // On smaller screens
+                settings: {
+                    slidesToShow: 1 // Show 1 product at a time
+                }
+            }
+        ]
+    });
+});
+
     function changeMainImage(image) {
         document.getElementById('mainImage').src = image;
     }

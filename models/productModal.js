@@ -4,18 +4,35 @@ const productSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
-    discount: { type: Number, default: 0 }, // Discount percentage
-    rating: { type: Number, default: 0 }, // Average rating
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
     stock: { type: Number, required: true },
-    highlights: [String], // Array of highlights
-    reviews: [{ // Nested reviews
-        userName: String,
-        comment: String,
-        rating: Number
-    }],
-    images: [String],
-    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
-    isDelete: { type: Boolean, default: false }
+    stockStatus: {type: String,enum: ['In Stock', 'Out of Stock'],required: true},
+    images: [{ type: String }],
+    specifications: { type: Object, default: {} }, // Ensure this is an object
+    highlights: { type: [String], default: [] },
+            isDelete: {
+        type: Boolean,
+        default: false,
+    }
+}, { timestamps: true }); // This will automatically add createdAt and updatedAt fields
+
+
+const reviewSchema = new mongoose.Schema({
+    userName: {
+        type: String,
+        required: true
+    },
+    comment: {
+        type: String,
+        required: true
+    },
+    rating: {
+        type: Number,
+        required: true,
+        min: 1,
+        max: 5
+    }
 });
 
-module.exports = mongoose.model('Product', productSchema);
+const Product = mongoose.model('Product', productSchema);
+module.exports = Product;

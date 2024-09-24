@@ -12,5 +12,4 @@ router.get('/products/view/:id', productController.viewProduct);
 router.post('/products/toggle-status/:id', productController.toggleProductStatus);
 router.post('/upload', upload.single('image'), productController.uploadImage);
 
-
 module.exports = router;

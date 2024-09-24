@@ -7,6 +7,6 @@ router.get('/shop', userProductController.renderUserProductPage);
 
 // Route to view a specific product
 router.get('/shop/:id', userProductController.viewProduct);
-router.get('/product/:id', userProductController.getProductDetails); 
+router.get('/product/:id', userProductController.viewProduct); 
 
 module.exports = router;

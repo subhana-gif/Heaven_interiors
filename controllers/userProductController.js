@@ -50,6 +50,8 @@ exports.viewProduct = async (req, res) => {
             return res.status(404).send('Product not found');
         }
 
+        console.log('Fetched Product:', product); // Log the fetched product
+
         // Fetch related products (e.g., same category)
         const relatedProducts = await Product.find({
             _id: { $ne: product._id }, // Exclude the current product
@@ -63,26 +65,3 @@ exports.viewProduct = async (req, res) => {
     }
 };
 
-exports.getProductDetails = (req, res) => {
-    const productId = req.params.id;
-
-    // Fetch the product from the database using productId
-    Product.findById(productId)
-        .then(product => {
-            if (!product) {
-                return res.status(404).send('Product not found'); // Handle not found
-            }
-            
-            // Assuming you have a method to find related products based on a category or some criteria
-            return Product.find({ category: product.category }) // or any other criteria
-                .limit(4) // Get a limited number of related products
-                .then(relatedProducts => {
-                    const body = 'product'; // You can set this according to your application's logic
-                    res.render('userSide/viewProduct', { product, relatedProducts, body }); // Pass relatedProducts along with product data
-                });
-        })
-        .catch(err => {
-            console.error('Error fetching product:', err);
-            res.status(500).send('Server error');
-        });
-};
