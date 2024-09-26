@@ -42,15 +42,11 @@ exports.renderCategoryPage = async (req, res) => {
 
 
 // Add Category
-// Add Category
-// Add Category
 exports.addCategory = async (req, res) => {
     const { name, description, status } = req.body;
 
     try {
-        // Check for existing category with the same name (case-sensitive)
-        const existingCategory = await Category.findOne({ name });
-
+        const existingCategory = await Category.findOne({ name: { $regex: `^${name}$`, $options: "i" } });
         if (existingCategory) {
             return res.render('adminPanel', {
                 body: 'admin/category',

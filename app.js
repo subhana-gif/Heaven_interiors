@@ -5,6 +5,7 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const passport = require('passport'); // Require passport here
 const path=require('path')
+const morgan=require('morgan')
 require('./config/passport_setup');
 
 // Import routes
@@ -20,6 +21,7 @@ const authRoutes = require('./routes/auth');
 const otpRoutes = require('./routes/otpRoutes');
 const homeRoutes = require('./routes/homeRoutes');
 const userProductRoutes = require('./routes/userProductRoutes');
+const nocache = require('nocache');
 // Load environment variables from .env file
 dotenv.config();
 
@@ -38,8 +40,9 @@ app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
 });
-
+app.use(morgan('tiny')); 
 dotenv.config();
+app.use(nocache())
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

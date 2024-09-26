@@ -1,6 +1,21 @@
 const Product = require('../models/productModal');
 const Category = require('../models/category');
+const multer = require('multer');
 const sharp = require('sharp');
+const fs = require('fs');
+const path = require('path');
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Make sure this directory exists
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Append timestamp to file name
+    },
+});
+
+const upload = multer({ storage: storage });
 
 
 exports.renderProductPage = async (req, res) => {
@@ -86,7 +101,7 @@ exports.addProduct = async (req, res) => {
 exports.editProduct = async (req, res) => {
     try {
         const productId = req.params.id;
-        const { name, description, price, category, stockQuantity, stockStatus, deleteImages } = req.body;
+        const { name, description, price, category, stockQuantity, stockStatus, deleteImages, replaceImages } = req.body;
 
         // Fetch the product from the database
         const product = await Product.findById(productId);
@@ -96,11 +111,38 @@ exports.editProduct = async (req, res) => {
 
         // Handle image deletions
         if (deleteImages) {
-            // Convert deleteImages to an array if it's a string (in case of single deletion)
             const imagesToDelete = Array.isArray(deleteImages) ? deleteImages : [deleteImages];
-
-            // Filter out deleted images from the product images array
             product.images = product.images.filter(image => !imagesToDelete.includes(image));
+
+            // Optional: Delete the image files from the filesystem if necessary
+            imagesToDelete.forEach(image => {
+                const imagePath = path.join(__dirname, '../uploads/', image); // Adjust path as needed
+                fs.unlink(imagePath, err => {
+                    if (err) {
+                        console.error(`Failed to delete image ${image}:`, err);
+                    }
+                });
+            });
+        }
+
+        // Handle image replacements
+        if (replaceImages) {
+            const imagesToReplace = Array.isArray(replaceImages) ? replaceImages : [replaceImages];
+
+            imagesToReplace.forEach((newImage, index) => {
+                if (product.images[index]) {
+                    // Delete the old image file if necessary
+                    const oldImagePath = path.join(__dirname, '../uploads/', product.images[index]); // Adjust path as needed
+                    fs.unlink(oldImagePath, err => {
+                        if (err) {
+                            console.error(`Failed to delete old image ${product.images[index]}:`, err);
+                        }
+                    });
+
+                    // Replace the old image with the new image path
+                    product.images[index] = newImage; 
+                }
+            });
         }
 
         // If new files are uploaded, use them; otherwise, keep existing images
@@ -128,9 +170,6 @@ exports.editProduct = async (req, res) => {
         res.status(500).send('Server error');
     }
 };
-
-
-
 
 // controllers/uploadController.js
 

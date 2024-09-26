@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const user=require('../models/User')
 
 // Create a transporter object for sending emails
 const transporter = nodemailer.createTransport({
@@ -12,13 +13,14 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Function to generate a 6-digit OTP
-const generateOtp = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-};
+// // Function to generate a 6-digit OTP
+// const generateOtp = () => {
+//     return 
+// };
 
 // Function to send OTP email
-const sendOtpEmail = async (to, otp) => {
+const sendOtpEmail = async (req,to) => {
+    const otp=Math.floor(100000 + Math.random() * 900000).toString();
     const mailOptions = {
         from: 'subhanathasni@gmail.com',
         to: to,
@@ -29,7 +31,8 @@ const sendOtpEmail = async (to, otp) => {
     try {
         const info = await transporter.sendMail(mailOptions);
         console.log('OTP sent successfully:', info.response);
-        return info.accepted.length > 0;
+        req.session.otp=otp
+        return;
     } catch (error) {
         console.error('Error sending OTP:', error);
         throw new Error('Error sending OTP');
@@ -41,10 +44,25 @@ const renderOtpForm = (req, res) => {
 };
 
 
-const verifyOtp = (req, res) => {
+const verifyOtp = async (req, res) => {
     const { otp } = req.body;
+    console.log('session:',req.session.otp);
+    console.log('otp',otp);    
+    if (otp == req.session.otp) {
+        const userData = {
+            email: req.session.email,
+            username: req.session.username, // Fixed typo here
+            password: req.session.password
+        };
 
-    if (otp === req.session.otp) {
+     
+        
+        
+
+        // Assuming you have a User model defined, save the user data correctly
+        const newUser = new user(userData);
+        await newUser.save(); // Save the new user data to the database
+
         req.session.otp = null; // Clear OTP from session
         return res.redirect('/user/user_login');
     } else {
@@ -53,6 +71,7 @@ const verifyOtp = (req, res) => {
         });
     }
 };
+
 
 const resendOtp = async (req, res) => {
     const newOtp = generateOtp();
@@ -76,6 +95,5 @@ module.exports = {
     renderOtpForm,
     verifyOtp,
     resendOtp,
-    generateOtp,
     sendOtpEmail
 };

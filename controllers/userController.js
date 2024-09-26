@@ -87,13 +87,15 @@ const handleUserSignup = async (req, res) => {
             });
         }
 
-        const newUser = new User({ email, username, password });
-        await newUser.save();
-
+        // const newUser = new User({ email, username, password });
+        // await newUser.save();
+        req.session.username=username;
+        req.session.password=password;
         req.session.email = email;  // Save email to session for OTP verification
         console.log('Session email:', req.session.email);
+        await sendOtpEmail(req,email)
         
-        res.redirect('/user/verify_otp');
+       return res.redirect('/user/otp_form');
     } catch (error) {
         console.error('Error during signup:', error);
         return res.render('userSide/signup', {

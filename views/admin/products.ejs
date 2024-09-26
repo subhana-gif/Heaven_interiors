@@ -231,9 +231,12 @@
                                 <label>Existing Images</label>
                                 <div class="image-preview">
                                     <% if (product.images && product.images.length > 0) { %>
-                                        <% product.images.forEach(function(image) { %>
+                                        <% product.images.forEach(function(image, index) { %>
                                             <% let imagePath = image.split('\\').pop().split('/').pop(); %>
-                                            <img src="/<%= imagePath %>" alt="Product Image" class="img-thumbnail" style="width: 100px; height: 100px;">
+                                            <div class="image-container">
+                                                <img src="/<%= imagePath %>" alt="Product Image" class="img-thumbnail" style="width: 100px; height: 100px;">
+                                                <button type="button" class="btn btn-danger btn-sm delete-image" data-index="<%= index %>">Delete</button>
+                                            </div>
                                         <% }); %>
                                     <% } else { %>
                                         <p>No images uploaded.</p>
@@ -301,6 +304,47 @@
                 }
             });
         });
+
+
+        document.getElementById('images').addEventListener('change', function (e) {
+    const files = e.target.files;
+    const fileCount = files.length;
+
+    if (fileCount < 3) {
+        alert('Please upload at least 3 images.');
+        this.value = ''; // Clear the input
+    } else {
+        const existingFiles = Array.from(this.files);
+        // Combine existing files with new selections
+        const allFiles = [...existingFiles, ...Array.from(files)];
+        
+        // Set the input value to null to allow re-selection
+        this.value = null;
+
+        // You can display the selected files or process them as needed
+        console.log(allFiles); // Handle this as per your requirement
+    }
+});
+
+
+const imageContainers = document.querySelectorAll('.image-container');
+
+imageContainers.forEach(container => {
+    const deleteButton = container.querySelector('.delete-image');
+    deleteButton.addEventListener('click', function() {
+        const index = this.getAttribute('data-index');
+        
+        // Remove the image container from the DOM
+        container.remove();
+        
+        // You can also maintain a list of images if needed
+        // For example, store the current image paths in an array and remove the deleted one
+        // Update the backend data structure accordingly
+        // Example: imagesArray.splice(index, 1); 
+    });
+});
+
+
     </script>
 </body>
 </html>

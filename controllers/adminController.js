@@ -1,5 +1,3 @@
-
-const JWT_SECRET = 'your_jwt_secret_key';
 const DEFAULT_EMAIL = 'admin@example.com';
 const DEFAULT_PASSWORD = 'admin123';
 
@@ -12,8 +10,10 @@ exports.renderLoginPage = (req, res) => {
 exports.handleLogin = (req, res) => {
     const { email, password } = req.body;
 
-    if (email === DEFAULT_EMAIL && password === DEFAULT_PASSWORD) {
+    if (email == DEFAULT_EMAIL && password == DEFAULT_PASSWORD) {
         req.session.isAdmin = true; 
+        console.log('isAdmin',req.session.isAdmin);
+        
         res.redirect('/adminPanel/dashboard');
     } else {
         res.render('login', { errorMessage: 'Invalid email or password', successMessage: null });
@@ -40,6 +40,7 @@ exports.renderDashboardPage = (req, res) => {
 // controllers/authController.js
 
 exports.logout = (req, res) => {
+    req.session.isAdmin=false
     req.session.destroy(err => {
         if (err) {
             return res.status(500).send('Logout failed.');
