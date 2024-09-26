@@ -4,25 +4,25 @@ const sharp = require('sharp');
 
 
 exports.renderProductPage = async (req, res) => {
-   
-
     try {
         const search = req.query.search || '';
         const currentPage = parseInt(req.query.page) || 1;
         const limit = 10;
         const skip = (currentPage - 1) * limit;
+
         const products = await Product.find({
             name: { $regex: search, $options: 'i' }
         }).skip(skip).limit(limit).populate('category');
+
+        console.log('Fetched Products:', products); // Log fetched products
 
         const totalProducts = await Product.countDocuments({
             name: { $regex: search, $options: 'i' }
         });
 
         const categories = await Category.find();
-
         const totalPages = Math.ceil(totalProducts / limit);
-       
+
         res.render('adminPanel', {
             body: 'admin/products',
             products,
@@ -36,6 +36,7 @@ exports.renderProductPage = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
 
 // Render Edit Product Page
 exports.renderEditProductPage = async (req, res) => {
@@ -52,7 +53,7 @@ exports.renderEditProductPage = async (req, res) => {
 // Add Product
 exports.addProduct = async (req, res) => {
     try {
-        const { name, description, price, category, stockQuantity, stockStatus} = req.body;
+        const { name, description, price, category, stockQuantity, stockStatus } = req.body;
 
         // Validate inputs
         if (!name || !description || !price || !category || !stockQuantity || !stockStatus) {
@@ -85,31 +86,41 @@ exports.addProduct = async (req, res) => {
 exports.editProduct = async (req, res) => {
     try {
         const productId = req.params.id;
-        const { name, description, price, category, stockQuantity, stockStatus } = req.body;
+        const { name, description, price, category, stockQuantity, stockStatus, deleteImages } = req.body;
 
-        // Fetch the existing product from the database
+        // Fetch the product from the database
         const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).send('Product not found');
+        }
+
+        // Handle image deletions
+        if (deleteImages) {
+            // Convert deleteImages to an array if it's a string (in case of single deletion)
+            const imagesToDelete = Array.isArray(deleteImages) ? deleteImages : [deleteImages];
+
+            // Filter out deleted images from the product images array
+            product.images = product.images.filter(image => !imagesToDelete.includes(image));
+        }
 
         // If new files are uploaded, use them; otherwise, keep existing images
-        let images = req.files && req.files.length > 0 
-            ? req.files.map(file => file.path) 
-            : product.images;
+        const newImages = req.files ? req.files.map(file => file.path) : [];
+        product.images.push(...newImages); // Add new images to the product
 
         // Ensure that the product has at least 3 images
-        if (images.length < 3) {
+        if (product.images.length < 3) {
             return res.status(400).send('Product must have at least 3 images.');
         }
 
-        // Update the product
-        const updatedProduct = await Product.findByIdAndUpdate(productId, {
-            name,
-            description,
-            price,
-            category,
-            stock: stockQuantity,
-            stockStatus,
-            images,
-        }, { new: true });
+        // Update the product details
+        product.name = name;
+        product.description = description;
+        product.price = price;
+        product.category = category;
+        product.stock = stockQuantity;
+        product.stockStatus = stockStatus;
+
+        await product.save();
 
         res.redirect('/adminPanel/products');
     } catch (err) {
@@ -117,6 +128,8 @@ exports.editProduct = async (req, res) => {
         res.status(500).send('Server error');
     }
 };
+
+
 
 
 // controllers/uploadController.js
@@ -165,5 +178,25 @@ exports.deleteProduct = async (req, res) => {
     } catch (err) {
         console.error('Error deleting product:', err);
         res.status(500).send('Failed to delete product');
+    }
+};
+
+exports.updateSpecifications = async (req, res) => {
+    const productId = req.params.id;
+    const { highlights, specifications } = req.body;
+
+    try {
+        // Find the product and update its highlights and specifications
+        await Product.findByIdAndUpdate(productId, {
+            highlights,
+            specifications,
+        });
+
+        // Redirect back to the products page or send a success response
+        res.redirect('/adminPanel/products'); // Adjust the redirect URL as needed
+    } catch (error) {
+        console.error(error);
+        // Handle the error (e.g., send an error message or render an error page)
+        res.status(500).send('Server Error');
     }
 };

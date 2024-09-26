@@ -32,7 +32,11 @@ const handleUserLogin = async (req, res) => {
                 successMessage: null
             });
         }
-
+        if (user.isBlocked) {
+            return res.render('userSide/login',{ errorMessage: 'Your account is blocked. Please contact support.',
+                successMessage:null
+             });
+          }
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.render('userSide/login', {
@@ -57,7 +61,20 @@ const handleUserLogin = async (req, res) => {
 
 // Handle user signup
 const handleUserSignup = async (req, res) => {
-    const { email, username, password, mobileNumber } = req.body;
+    console.log('Request Body:', req.body);  // Log the request body to debug
+
+    const { email, username, password, confirmPassword } = req.body;
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+        console.log('Passwords do not match'); // Debugging log
+        return res.render('userSide/signup', {
+            errorMessage: 'Passwords do not match',
+            successMessage: null,
+            email: email,
+            username: username
+        });
+    }
 
     try {
         const existingUser = await User.findOne({ email });
@@ -70,16 +87,13 @@ const handleUserSignup = async (req, res) => {
             });
         }
 
-        const newUser = new User({ email, username, password, mobileNumber: mobileNumber || undefined });
+        const newUser = new User({ email, username, password });
         await newUser.save();
 
-        const otp = generateOtp();  // Generates a 6-digit OTP from otpController
-        req.session.otp = otp;
-        req.session.email = email;
-
-        await sendOtpEmail(email, otp);  // Make sure sendOtpEmail is defined
-
-        res.redirect('/user/otp_form');
+        req.session.email = email;  // Save email to session for OTP verification
+        console.log('Session email:', req.session.email);
+        
+        res.redirect('/user/verify_otp');
     } catch (error) {
         console.error('Error during signup:', error);
         return res.render('userSide/signup', {
@@ -90,6 +104,7 @@ const handleUserSignup = async (req, res) => {
         });
     }
 };
+
 
 // Handle user logout
 const handleUserLogout = (req, res) => {

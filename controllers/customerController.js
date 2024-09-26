@@ -1,4 +1,4 @@
-const Customers = require('../models/customers');
+const User = require('../models/User'); // Ensure you import the User model
 
 // Render the Customer Page
 exports.renderCustomerPage = async (req, res) => {
@@ -7,10 +7,10 @@ exports.renderCustomerPage = async (req, res) => {
     const itemsPerPage = 10; // Define how many items you want per page
     
     try {
-        // Fetch customers based on the search query with pagination
-        const customersList = await Customers.find({
+        // Fetch users based on the search query with pagination
+        const customersList = await User.find({
             $or: [
-                { name: { $regex: search, $options: 'i' } }, // Case-insensitive search
+                { username: { $regex: search, $options: 'i' } }, // Adjusting to use username
                 { email: { $regex: search, $options: 'i' } }
             ]
         })
@@ -18,9 +18,9 @@ exports.renderCustomerPage = async (req, res) => {
         .limit(itemsPerPage);
 
         // Count total documents to calculate pagination
-        const totalCustomers = await Customers.countDocuments({
+        const totalCustomers = await User.countDocuments({
             $or: [
-                { name: { $regex: search, $options: 'i' } }, 
+                { username: { $regex: search, $options: 'i' }, },
                 { email: { $regex: search, $options: 'i' } }
             ]
         });
@@ -29,7 +29,7 @@ exports.renderCustomerPage = async (req, res) => {
 
         // Render the customers page and pass the search value, current page, and total pages
         res.render('adminPanel', {
-            body:'admin/customers',
+            body: 'admin/customers',
             customers: customersList, // Pass the fetched customers
             search,     // Pass the search term to the view
             currentPage, // Pass the current page to the view
@@ -41,47 +41,21 @@ exports.renderCustomerPage = async (req, res) => {
     }
 };
 
-// List Customers
-exports.listCustomers = async (req, res) => {
+
+// Example controller method to toggle user status
+exports.toggleUserStatus = async (req, res) => {
+    const userId = req.params.id; // Get user ID from URL parameters
     try {
-        const searchQuery = req.query.search || '';
-        const currentPage = parseInt(req.query.page) || 1;
-        const itemsPerPage = 10; // Define how many items you want per page
-        let customersList;
-
-        if (searchQuery) {
-            customersList = await Customers.find({
-                $or: [
-                    { name: new RegExp(searchQuery, 'i') },
-                    { email: new RegExp(searchQuery, 'i') }
-                ]
-            })
-            .skip((currentPage - 1) * itemsPerPage)
-            .limit(itemsPerPage);
+        const user = await User.findById(userId);
+        if (user) {
+            user.isBlocked = !user.isBlocked; // Toggle the status
+            await user.save();
+            return res.redirect('/adminPanel/customers'); // Redirect back to customers page
         } else {
-            customersList = await Customers.find()
-            .skip((currentPage - 1) * itemsPerPage)
-            .limit(itemsPerPage);
+            return res.status(404).send('User not found');
         }
-
-        const totalCustomers = await Customers.countDocuments({
-            $or: [
-                { name: new RegExp(searchQuery, 'i') },
-                { email: new RegExp(searchQuery, 'i') }
-            ]
-        });
-
-        const totalPages = Math.ceil(totalCustomers / itemsPerPage);
-
-        res.render('adminPanel', {
-            body: 'admin/customers',
-            customers: customersList,
-            search: searchQuery,
-            totalPages,
-            currentPage // Pass the current page number to the view
-        });
-    } catch (err) {
-        console.error('Error fetching customers:', err);
+    } catch (error) {
+        console.error('Error toggling user status:', error);
         res.status(500).send('Server Error');
     }
 };

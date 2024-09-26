@@ -4,21 +4,20 @@ const Product = require('../models/productModal');
 // Controller for rendering the home page
 const renderHomePage = async (req, res) => {
     try {
-        // Fetch categories and products to display on the home page
         const categories = await Category.find();
         const products = await Product.find();
-        
-        // Render the home page with the fetched data
-        res.render('userSide/homePage', {  // Ensure this matches the filename
+
+        res.render('userSide/homePage', {
             user: req.session.user || null,  // Pass user data to the view
-            categories,  // Pass categories to the view
-            products     // Pass products to the view
+            categories,
+            products
         });
     } catch (error) {
         console.error('Error fetching data:', error);
         res.status(500).send('Server Error');
     }
 };
+
 
 
 // Controller for fetching categories (for API or AJAX)

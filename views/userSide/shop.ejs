@@ -131,8 +131,8 @@
 </head>
 <body>
 
-    <%- include('../partials/user_navbar.ejs') %>
 
+    <%- include('../partials/user_navbar.ejs', { user: user }) %>
 
     <div class="container">
         <div class="row">
@@ -148,12 +148,13 @@
                                 <h5 class="product-title"><%= product.name %></h5>
                                 <p class="product-description"><%= product.description %></p>
                                 <div class="product-footer">
-                                    <span class="product-price">₹<%= product.price.toFixed(2) %></span>
+                                    <span class="product-price">₹<%= product.price %></span>
                                     <a href="/wishlist/add/<%= product._id %>" class="wishlist-button">
                                         <i class="far fa-heart"></i> <!-- Font Awesome like icon -->
                                     </a>
                                 </div>
                             </div>
+                            
                         </div>
                     </div>
                 <% }); %>

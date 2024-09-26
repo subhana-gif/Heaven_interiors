@@ -7,6 +7,12 @@
         padding: 0;
         background-color: #f9f9f9;
     }
+    .zoom {
+            width: 400px; /* Adjust width as needed */
+            height: 400px; /* Adjust height as needed */
+            border: 1px solid #ddd; /* Optional border */
+            margin: 20px 0; /* Optional margin */
+        }
 
     /* Breadcrumb styling for inline view */
     .breadcrumb {
@@ -58,7 +64,8 @@
     .thumbnail-container {
         display: flex;
         flex-direction: column;
-        margin-right: 10px;
+        margin-top:4%;
+        margin-right: 1%;
     }
 
     .thumbnail {
@@ -217,14 +224,14 @@
 
 </style>
 
-<%- include('../partials/user_navbar.ejs') %>
+<%- include('../partials/user_navbar', { user: user }) %>
 
 <div class="container">
     <h1><%= product.name %></h1>
 
     <!-- Breadcrumbs -->
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item"><a href="/user/home">Home</a></li>
         <li class="breadcrumb-item"><a href="/user/shop">Shop</a></li>
         <li class="breadcrumb-item active"><%= product.name %></li>
     </ol>
@@ -237,19 +244,20 @@
                 <% product.images.forEach((image, index) => { %>
                     <% if (image) { %> <!-- Check if the image exists -->
                         <img src="/<%= image.split('\\').pop().split('/').pop() %>" alt="<%= product.name %>" class="thumbnail" id="thumb-<%= index %>" onclick="changeMainImage('/<%= image.split('\\').pop().split('/').pop() %>')">
-                    <% } %>
+                        <% } %>
                 <% }); %>
             </div>
         
             <!-- Main image -->
-            <img id="mainImage" src="/<%= product.images[0] ? product.images[0].split('\\').pop().split('/').pop() : 'placeholder.jpg' %>" alt="<%= product.name %>" class="main-image">
+            <img id="mainImage" src="/<%= product.images[0] ? product.images[0].split('\\').pop().split('/').pop() : 'placeholder.jpg' %>" alt="<%= product.name %>" class="zoom">
         </div>
         
         <!-- Product Details Section -->
         <div class="product-details">
             <h3 class="product-price">₹<%= product.price %></h3>
-            <p class="product-discount">67% off</p>
             <p class="product-rating">Rating: <%= product.rating %> / 5</p>
+            <p class="product-description"><%= product.description %></p>
+            <p class="product-category">Category: <strong><%= product.category ? product.category.name : 'Uncategorized' %></strong></p>
             <p>Stock: <%= product.stockStatus %></p>
 
             <!-- Offers Section -->
@@ -269,27 +277,27 @@
     <!-- Highlights / Specs -->
     <div class="specs-reviews">
         <h4>Highlights</h4>
-        <ul>
-            <% if (product.highlights && Array.isArray(product.highlights) && product.highlights.length > 0) { %>
-                <% product.highlights.forEach(function(highlight) { %>
-                    <li><%= highlight %></li>
-                <% }) %>
-            <% } else { %>
-                <li>No highlights available.</li>
-            <% } %>
-        </ul>
+<div>
+    <% if (Array.isArray(product.highlights) && product.highlights.length > 0) { %>
+        <pre><%= product.highlights.join('\n') %></pre>
+    <% } else if (typeof product.highlights === 'string' && product.highlights.trim() !== '') { %>
+        <pre><%= product.highlights %></pre>
+    <% } else { %>
+        <p>No highlights available.</p>
+    <% } %>
+</div>
+
+<h4>Specifications</h4>
+<div>
+    <% if (typeof product.specifications === 'string' && product.specifications.trim() !== '') { %>
+        <pre><%= product.specifications %></pre>
+    <% } else { %>
+        <p>No specifications available.</p>
+    <% } %>
+</div>
+
         
-        <h4>Specifications</h4>
-        <ul>
-            <% if (product.specifications && typeof product.specifications === 'object' && Object.keys(product.specifications).length > 0) { %>
-                <% Object.keys(product.specifications).forEach(function(key) { %>
-                    <li><strong><%= key %>:</strong> <%= product.specifications[key] %></li>
-                <% }) %>
-            <% } else { %>
-                <li>No specifications available.</li>
-            <% } %>
-        </ul>
-                    
+        
 
         <!-- Reviews -->
         <h4>Reviews</h4>
@@ -339,27 +347,63 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/elevatezoom/3.0.8/jquery.elevateZoom.min.js"></script>
 <script>
-
-$(document).ready(function(){
-    $('.slider-container').slick({
-        slidesToShow: 3, // Show 3 products at once
-        slidesToScroll: 1, // Scroll one at a time
-        prevArrow: '.slick-prev', // Custom left arrow
-        nextArrow: '.slick-next', // Custom right arrow
-        infinite: false, // Stop scrolling at the last card
-        responsive: [
-            {
-                breakpoint: 768, // On smaller screens
-                settings: {
-                    slidesToShow: 1 // Show 1 product at a time
+    $(document).ready(function(){
+        // Initialize Slick slider for related products
+        $('.slider-container').slick({
+            slidesToShow: 3,
+            slidesToScroll: 1,
+            prevArrow: '.slick-prev',
+            nextArrow: '.slick-next',
+            infinite: false,
+            responsive: [
+                {
+                    breakpoint: 768,
+                    settings: {
+                        slidesToShow: 1
+                    }
                 }
-            }
-        ]
+            ]
+        });
+    
+        // Initialize ElevateZoom on the main image
+        $('#mainImage').on('load', function() {
+        $(this).elevateZoom({
+            zoomType: "inner",
+            cursor: "crosshair",
+            scrollZoom: true,
+            zoomWindowWidth: 400,
+            zoomWindowHeight: 400
+        });
+    }).each(function() {
+        if(this.complete) $(this).load(); // For cached images
     });
 });
 
-    function changeMainImage(image) {
-        document.getElementById('mainImage').src = image;
+// Function to change the main image and reinitialize ElevateZoom
+function changeMainImage(image) {
+    // Change the image source
+    $('#mainImage').attr('src', image);
+
+    // Destroy the existing ElevateZoom instance if it exists
+    if ($.fn.elevateZoom) {
+        $('#mainImage').data('elevateZoom').destroy();
     }
-</script>
+
+    // Reinitialize ElevateZoom on the new main image
+    $('#mainImage').on('load', function() {
+        $(this).elevateZoom({
+            zoomType: "inner",
+            cursor: "crosshair",
+            scrollZoom: true,
+            zoomWindowWidth: 400,
+            zoomWindowHeight: 400
+        });
+    }).each(function() {
+        if(this.complete) $(this).load(); // For cached images
+    });
+    }
+    </script>
+    
+    

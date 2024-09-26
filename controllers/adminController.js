@@ -1,4 +1,3 @@
-const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = 'your_jwt_secret_key';
 const DEFAULT_EMAIL = 'admin@example.com';
@@ -13,21 +12,14 @@ exports.renderLoginPage = (req, res) => {
 exports.handleLogin = (req, res) => {
     const { email, password } = req.body;
 
-    // Check if the credentials match the default admin credentials
     if (email === DEFAULT_EMAIL && password === DEFAULT_PASSWORD) {
-        // Generate a token if the credentials are correct
-        const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: '1h' });
-
-        // Set the token in the session or as a cookie
-        req.session.token = token;
-
-        // Redirect to the admin panel
-        res.redirect('/adminPanel');
+        req.session.isAdmin = true; 
+        res.redirect('/adminPanel/dashboard');
     } else {
-        // If the credentials don't match, render the login page with an error message
         res.render('login', { errorMessage: 'Invalid email or password', successMessage: null });
     }
 };
+
 
 // Render Admin Panel (after login)
 exports.renderAdminPanel = (req, res) => {
@@ -52,7 +44,8 @@ exports.logout = (req, res) => {
         if (err) {
             return res.status(500).send('Logout failed.');
         }
-        // Redirect to the login page after logout
+        res.clearCookie('connect.sid');
         res.redirect('/adminPanel/login');
     });
 };
+

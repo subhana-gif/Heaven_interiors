@@ -2,66 +2,60 @@
 const Product = require('../models/productModal');
 const Category = require('../models/category');
 
-// Render Product Page for Users
+
 exports.renderUserProductPage = async (req, res) => {
     try {
-        const search = req.query.search || '';
-        const currentPage = parseInt(req.query.page) || 1;
-        const limit = 10;
-        const skip = (currentPage - 1) * limit;
+        const products = await getProducts(); // Fetch all products
 
-        const products = await Product.find({
-            name: { $regex: search, $options: 'i' },
-            isDelete: false // Ensure not to show deleted products
-        })
-        .skip(skip)
-        .limit(limit)
-        .populate('category');
+        // Get the user from the request; it should be set by your auth middleware
+        const user = req.user || null;
 
-        const totalProducts = await Product.countDocuments({
-            name: { $regex: search, $options: 'i' },
-            isDelete: false // Ensure not to count deleted products
-        });
-
-        const categories = await Category.find();
-
-        const totalPages = Math.ceil(totalProducts / limit);
-
-        res.render('userSide/shop', {
-            products,
-            categories,
-            search,
-            currentPage,
-            totalPages,
-            body: 'user/shop' // Add this line
-        });
-        
+        // Render the shop page with products and user
+        res.render('userSide/shop', { products, user });
     } catch (error) {
-        console.error("Error in renderUserProductPage:", error);
-        res.status(500).send('Server Error');
+        console.error("Error fetching products:", error);
+        res.status(500).send("Internal Server Error");
     }
 };
+
+// Fetch all products and populate categories
+
+
 
 // View Product Details
 exports.viewProduct = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id).populate('category');
+        
+        // Check if the product exists and is not marked as deleted
         if (!product || product.isDelete) {
             return res.status(404).send('Product not found');
         }
 
-        console.log('Fetched Product:', product); // Log the fetched product
-
-        // Fetch related products (e.g., same category)
+        // Fetch related products from the same category, excluding the current product
         const relatedProducts = await Product.find({
             _id: { $ne: product._id }, // Exclude the current product
             category: product.category
-        }).limit(4); // Limit the number of related products
+        }).limit(4); // Limit to 4 related products
 
-        res.render('userSide/viewProduct', { product, relatedProducts });
+        // Pass the user data and render the product view
+        res.render('userSide/viewProduct', {
+            product,
+            relatedProducts,
+            user: req.session.user || null  // Pass user session for navbar handling
+        });
     } catch (err) {
         console.error('Error fetching product:', err);
         res.status(404).send('Product not found');
+    }
+};
+
+
+const getProducts = async () => {
+    try {
+        return await Product.find(); // Fetch all products
+    } catch (error) {
+        throw new Error('Error fetching products');
     }
 };
 

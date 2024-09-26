@@ -29,6 +29,10 @@
         <input type="password" name="password" class="form-control" id="password" required style="max-width: 30em;">
         <div id="passwordError" class="error-box"></div>
       </div>
+      <div class="mb-3">
+        <label for="confirmPassword" class="form-label">Confirm Password</label>
+        <input type="password" name="confirmPassword" class="form-control" id="confirmPassword" required style="max-width: 30em;">
+      </div>
       
       <button type="submit" class="btn btn-custom">Sign Up</button>
     
@@ -54,10 +58,19 @@
   <script>
     document.getElementById('signupForm').addEventListener('submit', function(event) {
       const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
       const passwordError = document.getElementById('passwordError');
       passwordError.textContent = '';
+
+      // Check password criteria
       if (!/^(?=.*\d).{8,}$/.test(password)) {
         passwordError.textContent = "Password must be at least 8 characters long and contain at least one number.";
+        event.preventDefault();
+      }
+
+      // Check if passwords match
+      if (password !== confirmPassword) {
+        passwordError.textContent = "Passwords do not match.";
         event.preventDefault();
       }
     });

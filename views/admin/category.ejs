@@ -11,6 +11,8 @@
     <div class="container mt-5">
         <h2>Category Management</h2>
 
+        
+
         <!-- Search Bar for Categories -->
         <form method="GET" action="/adminPanel/category" class="form-inline mb-3">
             <div class="form-group mr-2">
@@ -58,6 +60,16 @@
         </div>
         <hr>
 
+
+        <% if (errorMessage) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= errorMessage %>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        <% } %>
+
         <!-- Table to display categories -->
         <table class="table table-striped mt-4">
             <thead>
@@ -65,6 +77,8 @@
                     <th>Category Name</th>
                     <th>Description</th>
                     <th>Status</th>
+                    <th>Created</th>
+                    <th>Updated</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -74,9 +88,13 @@
                     <tr>
                         <td><%= category.name %></td>
                         <td><%= category.description %></td>
+
                         <td>
                             <%= category.status === 'active' ? 'Active' : 'Inactive' %>
                         </td>
+                        <td><%= new Date(category.createdAt).toLocaleDateString() %></td>
+                        <td><%= new Date(category.updatedAt).toLocaleDateString() %></td>
+
                         <td>
                             <!-- Edit Category Button -->
                             <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editCategoryModal<%= category._id %>">

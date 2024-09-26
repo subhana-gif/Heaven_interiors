@@ -85,8 +85,7 @@
                             <td>
                                 <!-- Action Buttons -->
                                 <div class="action-buttons">
-                                    <a href="/adminPanel/products/<%= product._id %>" class="btn btn-info btn-sm">View</a>
-                                    <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editProductModal<%= product._id %>">Edit</button>
+                                    <a href="#" class="btn btn-info btn-sm" data-toggle="modal" data-target="#viewProductModal<%= product._id %>">View</a>                                    <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editProductModal<%= product._id %>">Edit</button>
                                     <form action="/adminPanel/products/toggle-status/<%= product._id %>" method="POST" style="display:inline;">
                                         <button type="submit" class="btn btn-sm <%= product.isDelete ? 'btn-success' : 'btn-danger' %>">
                                             <%= product.isDelete ? "Restore" : "Delete" %>
@@ -226,6 +225,22 @@
                                     <option value="Out of Stock" <%= product.stockStatus === 'Out of Stock' ? 'selected' : '' %>>Out of Stock</option>
                                 </select>
                             </div>
+                            
+                            <!-- Display existing images -->
+                            <div class="form-group">
+                                <label>Existing Images</label>
+                                <div class="image-preview">
+                                    <% if (product.images && product.images.length > 0) { %>
+                                        <% product.images.forEach(function(image) { %>
+                                            <% let imagePath = image.split('\\').pop().split('/').pop(); %>
+                                            <img src="/<%= imagePath %>" alt="Product Image" class="img-thumbnail" style="width: 100px; height: 100px;">
+                                        <% }); %>
+                                    <% } else { %>
+                                        <p>No images uploaded.</p>
+                                    <% } %>
+                                </div>
+                            </div>
+    
                             <div class="form-group">
                                 <label for="images">Product Images</label>
                                 <input type="file" name="images" id="images<%= product._id %>" accept="image/*" multiple>
@@ -240,6 +255,33 @@
                 </div>
             </div>
         </div>
+       <!-- Popup Modal for Highlights and Specifications -->
+       <div class="modal fade" id="viewProductModal<%= product._id %>" tabindex="-1" aria-labelledby="viewProductModalLabel<%= product._id %>" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewProductModalLabel<%= product._id %>">Product Highlights and Specifications</h5>
+                    <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/adminPanel/products/specifications/<%= product._id %>" method="POST">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="highlights">Highlights</label>
+                            <textarea name="highlights" class="form-control" required><%= product.highlights || '' %></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="specifications">Specifications</label>
+                            <textarea name="specifications" class="form-control" required><%= product.specifications || '' %></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <% }); %>
 
     <!-- Scripts -->

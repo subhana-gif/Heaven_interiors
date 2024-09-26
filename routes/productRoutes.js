@@ -11,5 +11,6 @@ router.post('/products/edit/:id', upload.array('images', 3), productController.e
 router.get('/products/view/:id', productController.viewProduct);
 router.post('/products/toggle-status/:id', productController.toggleProductStatus);
 router.post('/upload', upload.single('image'), productController.uploadImage);
+router.post('/products/specifications/:id', productController.updateSpecifications);
 
 module.exports = router;

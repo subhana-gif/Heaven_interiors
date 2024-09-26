@@ -6,6 +6,7 @@ const UserSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     username: { type: String }, // Not required for Google users
     password: { type: String }, // Not required for Google users
+    isBlocked: { type: Boolean, default: false },
     provider: { type: String, default: 'local' }, // 'local' for traditional, 'google' for OAuth
     googleId: { type: String } // To store Google ID for OAuth users
 });

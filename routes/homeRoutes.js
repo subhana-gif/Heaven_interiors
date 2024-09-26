@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/homeController');
+const homeController = require('../controllers/homeController');
 
 // Home route and fetching categories/products
-router.get('/home', userController.renderHomePage);
-router.get('/categories', userController.fetchCategories);
-router.get('/products', userController.fetchProducts);
+router.get('/home', homeController.renderHomePage);
+router.get('/categories', homeController.fetchCategories);
+router.get('/products', homeController.fetchProducts);
 
 module.exports = router;
     
