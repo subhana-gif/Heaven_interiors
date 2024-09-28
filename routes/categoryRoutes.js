@@ -3,7 +3,6 @@ const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/categoryController');
 
-// Category Management Routes
 router.get('/category', categoryController.renderCategoryPage);
 router.post('/category/add', categoryController.addCategory);
 router.post('/category/edit/:id', categoryController.editCategory);

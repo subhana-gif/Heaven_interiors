@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Management</title>
     
-    <!-- Bootstrap CSS and Cropper.js -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
     
@@ -145,7 +144,7 @@
                         </div>
                         <div class="form-group">
                             <label for="productPrice">Price</label>
-                            <input type="number" name="price" class="form-control" required>
+                            <input type="number" name="price" class="form-control"  min="0" required>
                         </div>
                         <div class="form-group">
                             <label for="productCategory">Category</label>
@@ -157,7 +156,7 @@
                         </div>
                         <div class="form-group">
                             <label for="productStock">Stock Quantity</label>
-                            <input type="number" name="stockQuantity" class="form-control" required>
+                            <input type="number" name="stockQuantity" class="form-control" min="0" required>
                         </div>
                         <div class="form-group">
                             <label for="productStatus">Stock Status</label>
@@ -204,7 +203,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="productPrice">Price</label>
-                                <input type="number" name="price" class="form-control" value="<%= product.price %>" required>
+                                <input type="number" name="price" class="form-control" value="<%= product.price %>" min="0" required>
                             </div>
                             <div class="form-group">
                                 <label for="productCategory">Category</label>
@@ -216,7 +215,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="productStock">Stock Quantity</label>
-                                <input type="number" name="stockQuantity" class="form-control" value="<%= product.stock %>" required>
+                                <input type="number" name="stockQuantity" class="form-control" value="<%= product.stock %>" min="0" required>
                             </div>
                             <div class="form-group">
                                 <label for="productStatus">Stock Status</label>
@@ -235,7 +234,8 @@
                                             <% let imagePath = image.split('\\').pop().split('/').pop(); %>
                                             <div class="image-container">
                                                 <img src="/<%= imagePath %>" alt="Product Image" class="img-thumbnail" style="width: 100px; height: 100px;">
-                                                <button type="button" class="btn btn-danger btn-sm delete-image" data-index="<%= index %>">Delete</button>
+                                                <input type="checkbox" name="deleteImages" value="<%= image %>"> Delete
+                                                <input type="file" name="images[<%= product.images.indexOf(image) %>]" accept="image/*">
                                             </div>
                                         <% }); %>
                                     <% } else { %>
@@ -243,6 +243,7 @@
                                     <% } %>
                                 </div>
                             </div>
+                            
     
                             <div class="form-group">
                                 <label for="images">Product Images</label>
@@ -295,7 +296,6 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // File input validation logic (optional based on your preference)
             document.getElementById('images').addEventListener('change', function () {
                 let files = this.files;
                 if (files.length < 3) {
@@ -304,47 +304,6 @@
                 }
             });
         });
-
-
-        document.getElementById('images').addEventListener('change', function (e) {
-    const files = e.target.files;
-    const fileCount = files.length;
-
-    if (fileCount < 3) {
-        alert('Please upload at least 3 images.');
-        this.value = ''; // Clear the input
-    } else {
-        const existingFiles = Array.from(this.files);
-        // Combine existing files with new selections
-        const allFiles = [...existingFiles, ...Array.from(files)];
-        
-        // Set the input value to null to allow re-selection
-        this.value = null;
-
-        // You can display the selected files or process them as needed
-        console.log(allFiles); // Handle this as per your requirement
-    }
-});
-
-
-const imageContainers = document.querySelectorAll('.image-container');
-
-imageContainers.forEach(container => {
-    const deleteButton = container.querySelector('.delete-image');
-    deleteButton.addEventListener('click', function() {
-        const index = this.getAttribute('data-index');
-        
-        // Remove the image container from the DOM
-        container.remove();
-        
-        // You can also maintain a list of images if needed
-        // For example, store the current image paths in an array and remove the deleted one
-        // Update the backend data structure accordingly
-        // Example: imagesArray.splice(index, 1); 
-    });
-});
-
-
     </script>
 </body>
 </html>

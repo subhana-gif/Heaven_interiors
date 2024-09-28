@@ -1,4 +1,3 @@
-// authMiddleware.js
 const isAdminAuthenticated = (req, res, next) =>{
   console.log('admin:',req.session.isAdmin);
   

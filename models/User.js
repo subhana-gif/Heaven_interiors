@@ -1,17 +1,15 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-// Define User Schema
 const UserSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
-    username: { type: String }, // Not required for Google users
-    password: { type: String }, // Not required for Google users
+    username: { type: String },
+    password: { type: String }, 
     isBlocked: { type: Boolean, default: false },
-    provider: { type: String, default: 'local' }, // 'local' for traditional, 'google' for OAuth
-    googleId: { type: String } // To store Google ID for OAuth users
+    provider: { type: String, default: 'local' }, 
+    googleId: { type: String } 
 });
 
-// Hash password before saving (only if password exists)
 UserSchema.pre('save', async function (next) {
     if (!this.isModified('password') || !this.password) return next();
     try {
@@ -23,9 +21,8 @@ UserSchema.pre('save', async function (next) {
     }
 });
 
-// Compare entered password with hashed password
 UserSchema.methods.matchPassword = async function (enteredPassword) {
-    if (!this.password) return false; // No password set for OAuth users
+    if (!this.password) return false;
     return await bcrypt.compare(enteredPassword, this.password);
 };
 

@@ -1,14 +1,14 @@
 const Category = require('../models/category');
 const Product = require('../models/productModal');
 
-// Controller for rendering the home page
+// home page
 const renderHomePage = async (req, res) => {
     try {
         const categories = await Category.find();
         const products = await Product.find();
 
         res.render('userSide/homePage', {
-            user: req.session.user || null,  // Pass user data to the view
+            user: req.session.user || null,
             categories,
             products
         });
@@ -20,22 +20,22 @@ const renderHomePage = async (req, res) => {
 
 
 
-// Controller for fetching categories (for API or AJAX)
+//categories
 const fetchCategories = async (req, res) => {
     try {
         const categories = await Category.find();
-        res.json(categories);  // Send categories as JSON
+        res.json(categories);
     } catch (error) {
         console.error('Error fetching categories:', error);
         res.status(500).send('Error fetching categories');
     }
 };
 
-// Controller for fetching products (for API or AJAX)
+//fetching products
 const fetchProducts = async (req, res) => {
     try {
         const products = await Product.find();
-        res.json(products);  // Send products as JSON
+        res.json(products); 
     } catch (error) {
         console.error('Error fetching products:', error);
         res.status(500).send('Error fetching products');

@@ -82,12 +82,30 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script>
         function toggleProfileMenu() {
             const dropdown = document.querySelector('.profile-dropdown');
             dropdown.classList.toggle('visible');
             dropdown.classList.toggle('hidden');
         }
+
+
+
+        const socket = io(); // Connect to the Socket.IO server
+
+// Assuming userId is available (you may need to embed it or fetch it)
+const userId = 'user-id-from-session'; // Replace with actual user ID
+
+// Join the room for this user
+socket.emit('joinRoom', userId);
+
+// Listen for the userBlocked event
+socket.on('userBlocked', (data) => {
+    alert(data.message); // Notify the user about the blocking
+    // Perform logout action
+    window.location.href = '/user/user_login'; // Redirect to login page
+});
     </script>
 </body>
 </html>

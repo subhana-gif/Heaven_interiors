@@ -1,7 +1,6 @@
 const nodemailer = require('nodemailer');
 const user=require('../models/User')
 
-// Create a transporter object for sending emails
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     port: 587,
@@ -9,16 +8,11 @@ const transporter = nodemailer.createTransport({
     requireTLS: true,
     auth: {
         user: 'subhanathasni@gmail.com',
-        pass: 'snoh frjb ccrv hjcj' // Use environment variables for production
+        pass: 'snoh frjb ccrv hjcj' 
     }
 });
 
-// // Function to generate a 6-digit OTP
-// const generateOtp = () => {
-//     return 
-// };
 
-// Function to send OTP email
 const sendOtpEmail = async (req,to) => {
     const otp=Math.floor(100000 + Math.random() * 900000).toString();
     const mailOptions = {
@@ -30,7 +24,6 @@ const sendOtpEmail = async (req,to) => {
 
     try {
         const info = await transporter.sendMail(mailOptions);
-        console.log('OTP sent successfully:', info.response);
         req.session.otp=otp
         return;
     } catch (error) {
@@ -46,24 +39,16 @@ const renderOtpForm = (req, res) => {
 
 const verifyOtp = async (req, res) => {
     const { otp } = req.body;
-    console.log('session:',req.session.otp);
-    console.log('otp',otp);    
     if (otp == req.session.otp) {
         const userData = {
             email: req.session.email,
-            username: req.session.username, // Fixed typo here
+            username: req.session.username, 
             password: req.session.password
         };
 
-     
-        
-        
-
-        // Assuming you have a User model defined, save the user data correctly
         const newUser = new user(userData);
-        await newUser.save(); // Save the new user data to the database
-
-        req.session.otp = null; // Clear OTP from session
+        await newUser.save(); 
+        req.session.otp = null; 
         return res.redirect('/user/user_login');
     } else {
         return res.render('userSide/otpForm', {

@@ -2,9 +2,9 @@ const Category = require('../models/category');
 
 exports.renderCategoryPage = async (req, res) => {
     try {
-        const search = req.query.search || ''; // Get the search query from the request
-        const currentpage = parseInt(req.query.page) || 1; // Get the current page, default to 1 if not provided
-        const limit = 10; // Define how many categories to show per page
+        const search = req.query.search || ''; 
+        const currentpage = parseInt(req.query.page) || 1; 
+        const limit = 10;
         const skip = (currentpage - 1) * limit;
 
         const categories = await Category.find({
@@ -17,14 +17,13 @@ exports.renderCategoryPage = async (req, res) => {
         
         const totalPages = Math.ceil(totalCategories / limit);
 
-        // Pass errorMessage as null or an empty string
         res.render('adminPanel', {
             body: 'admin/category',
             categories,
             search,
             currentpage,
             totalPages,
-            errorMessage: null // Set default error message
+            errorMessage: null
         });
     } catch (error) {
         console.error("Error in renderCategoryPage:", error);
@@ -34,7 +33,7 @@ exports.renderCategoryPage = async (req, res) => {
             search: '',
             currentpage: 1,
             totalPages: 1,
-            errorMessage: 'An unexpected error occurred. Please try again.' // Pass error message
+            errorMessage: 'An unexpected error occurred. Please try again.'
         });
     }
 };
@@ -58,24 +57,24 @@ exports.addCategory = async (req, res) => {
             });
         }
 
-        // Create a new category object
         const newCategory = new Category({
-            name, // Keep the original case
+            name, 
             description,
             status: status === 'active' ? 'active' : 'inactive',
         });
 
-        // Save the new category
         await newCategory.save();
         res.redirect('/adminPanel/category');
     } catch (err) {
         console.error('Error saving category:', err);
 
-        // Check if the error is related to duplicate key (in case the unique constraint is violated)
-        if (err.code === 11000) {
+
+
+        // duplicate key error
+        if (err.code === 11000) { 
             return res.render('adminPanel', {
                 body: 'admin/category',
-                errorMessage: 'Category name must be unique and case-sensitive.',
+                errorMessage: 'Category name must be unique',
                 categories: await Category.find({}),
                 search: '',
                 currentpage: 1,
@@ -83,7 +82,6 @@ exports.addCategory = async (req, res) => {
             });
         }
 
-        // For any other errors, render a generic error message
         res.render('adminPanel', {
             body: 'admin/category',
             errorMessage: 'An unexpected error occurred. Please try again.',
@@ -120,7 +118,6 @@ exports.toggleCategoryStatus = async (req, res) => {
         const categoryId = req.params.id;
         const category = await Category.findById(categoryId);
 
-        // Toggle the isDelete status
         category.isDelete = !category.isDelete; 
         await category.save();
         res.redirect('/adminPanel/category'); 

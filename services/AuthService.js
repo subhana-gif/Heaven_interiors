@@ -1,9 +1,7 @@
-// services/AuthService.js
 
 const bcrypt = require('bcrypt');
-const User = require('../models/User'); // Ensure the path is correct
+const User = require('../models/User'); 
 
-// Function to authenticate user
 const authenticate = async (email, password) => {
   try {
     const user = await User.findOne({ email });
@@ -17,7 +15,6 @@ const authenticate = async (email, password) => {
   }
 };
 
-// Export the function
 module.exports = {
   authenticate
 };

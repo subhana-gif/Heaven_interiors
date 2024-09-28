@@ -19,7 +19,7 @@
         <table class="table table-striped mt-4">
             <thead>
                 <tr>
-                    <th>Username</th>  <!-- Changed from Name to Username -->
+                    <th>Username</th> 
                     <th>Email</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -57,25 +57,21 @@
         </table>
         
 
-        <!-- Pagination -->
         <nav aria-label="Page navigation example">
             <div class="d-flex justify-content-center">
                 <ul class="pagination">
-                    <!-- Previous button -->
                     <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
                         <a class="page-link" href="/adminPanel/customers?page=<%= currentPage - 1 %>&search=<%= search %>" aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
         
-                    <!-- Page number buttons -->
                     <% for (let i = 1; i <= totalPages; i++) { %>
                         <li class="page-item <%= currentPage === i ? 'active' : '' %>">
                             <a class="page-link" href="/adminPanel/customers?page=<%= i %>&search=<%= search %>"><%= i %></a>
                         </li>
                     <% } %>
         
-                    <!-- Next button -->
                     <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
                         <a class="page-link" href="/adminPanel/customers?page=<%= currentPage + 1 %>&search=<%= search %>" aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>

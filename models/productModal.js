@@ -8,13 +8,13 @@ const productSchema = new mongoose.Schema({
     stock: { type: Number, required: true },
     stockStatus: {type: String,enum: ['In Stock', 'Out of Stock'],required: true},
     images: [{ type: String }],
-    specifications: { type: Object, default: {} }, // Ensure this is an object
+    specifications: { type: Object, default: {} }, 
     highlights: { type: [String], default: [] },
             isDelete: {
         type: Boolean,
         default: false,
     }
-}, { timestamps: true }); // This will automatically add createdAt and updatedAt fields
+}, { timestamps: true });
 
 
 const reviewSchema = new mongoose.Schema({

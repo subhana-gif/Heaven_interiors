@@ -1,8 +1,7 @@
 const User = require('../models/User');
 const Category = require('../models/category');
 const bcrypt = require('bcrypt');
-const { generateOtp } = require('./otpController');  // Adjust the path to otpController.js accordingly
-const { sendOtpEmail } = require('./otpController');  // Adjust the path to otpController.js accordingly
+const { sendOtpEmail } = require('./otpController'); 
 
 // Render login page
 const renderUserLogin = (req, res) => {
@@ -14,7 +13,7 @@ const renderUserSignup = (req, res) => {
     const { errorMessage, email, username } = req.query;
     res.render('userSide/signup', {
         errorMessage: errorMessage || null,
-        successMessage: null,  // Define successMessage as null by default
+        successMessage: null, 
         email: email || '',
         username: username || ''
     });
@@ -46,8 +45,8 @@ const handleUserLogin = async (req, res) => {
         }
 
         req.session.user = {
-            id: user._id, // Or the appropriate user data
-            profileImage: user.profileImage // Assuming user has a profile image
+            id: user._id, 
+            profileImage: user.profileImage 
         };
         return res.redirect('/user/home');
     } catch (error) {
@@ -61,13 +60,10 @@ const handleUserLogin = async (req, res) => {
 
 // Handle user signup
 const handleUserSignup = async (req, res) => {
-    console.log('Request Body:', req.body);  // Log the request body to debug
 
     const { email, username, password, confirmPassword } = req.body;
 
-    // Check if passwords match
     if (password !== confirmPassword) {
-        console.log('Passwords do not match'); // Debugging log
         return res.render('userSide/signup', {
             errorMessage: 'Passwords do not match',
             successMessage: null,
@@ -87,12 +83,9 @@ const handleUserSignup = async (req, res) => {
             });
         }
 
-        // const newUser = new User({ email, username, password });
-        // await newUser.save();
         req.session.username=username;
         req.session.password=password;
-        req.session.email = email;  // Save email to session for OTP verification
-        console.log('Session email:', req.session.email);
+        req.session.email = email;
         await sendOtpEmail(req,email)
         
        return res.redirect('/user/otp_form');
@@ -108,21 +101,19 @@ const handleUserSignup = async (req, res) => {
 };
 
 
-// Handle user logout
 const handleUserLogout = (req, res) => {
     req.session.destroy(err => {
         if (err) {
             console.error('Error during logout:', err);
             return res.redirect('/user/home');
         }
-        res.clearCookie('connect.sid');  // Clear the session cookie (optional, based on session config)
-        return res.redirect('/user/user_login');  // Redirect to login page or home
+        res.clearCookie('connect.sid');  
+        return res.redirect('/user/user_login');
     });
 };
 
 
 const getUserProfile = (req, res) => {
-    // Sample user data, replace with actual data from your database
     const user = {
         name: "User Name",
         email: "user@example.com",
@@ -141,17 +132,9 @@ const getUserProfile = (req, res) => {
 
 const updateUserProfile = (req, res) => {
     const { name, email, phone } = req.body;
-
-    // Update user data in the database
-    // Here, you would typically perform a database operation to update the user.
-
-    console.log('Updated user data:', { name, email, phone });
-
-    // Redirect back to the profile page or send a success message
-    res.redirect('/user/profile'); // Redirect to the profile page
+    res.redirect('/user/profile'); 
 };
 
-// Exporting the controller methods
 module.exports = {
     renderUserLogin,
     renderUserSignup,
