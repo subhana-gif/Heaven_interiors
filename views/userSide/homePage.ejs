@@ -59,18 +59,17 @@
 
     <!-- Banner -->
     <div class="banner">
-        <!-- Banner content can be added here -->
     </div>
 
-    <!-- Category Links -->
     <div class="category-links">
-        <a href="#">NEW ARRIVALS</a>
-        <a href="#">BEDROOM</a>
-        <a href="#">FURNITURE</a>
-        <a href="#">KITCHEN</a>
-        <a href="#">DECORATING</a>
-        <a href="#">PLANTS</a>
+        <a href="/user/shop">NEW ARRIVALS</a>
+        <a href="/user/shop?category=Bedroom">BEDROOM</a>
+        <a href="/user/shop?category=Furniture">FURNITURE</a>
+        <a href="/user/shop?category=Kitchen">KITCHEN</a>
+        <a href="/user/shop?category=Decor">DECORATING</a>
+        <a href="/user/shop?category=Plants">PLANTS</a>
     </div>
+    
 
     <!-- Additional Image -->
     <div class="additional-image">
@@ -92,19 +91,15 @@
 
 
 
-        const socket = io(); // Connect to the Socket.IO server
+        const socket = io();
 
-// Assuming userId is available (you may need to embed it or fetch it)
-const userId = 'user-id-from-session'; // Replace with actual user ID
+const userId = 'user-id-from-session'; 
 
-// Join the room for this user
 socket.emit('joinRoom', userId);
 
-// Listen for the userBlocked event
 socket.on('userBlocked', (data) => {
-    alert(data.message); // Notify the user about the blocking
-    // Perform logout action
-    window.location.href = '/user/user_login'; // Redirect to login page
+    alert(data.message);
+    window.location.href = '/user/user_login'; 
 });
     </script>
 </body>

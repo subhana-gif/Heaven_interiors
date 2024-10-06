@@ -1,0 +1,92 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>order Management</title>
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container mt-5">
+            <h2 class="mb-4">Order Management</h2>
+            
+            <!-- Search bar -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <input type="text" id="searchBar" class="form-control" placeholder="Search Orders...">
+                </div>
+            </div>
+    
+            <!-- Orders Table -->
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Products</th>
+                        <th>Payment Method</th>
+                        <th>Total Price</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% orders.forEach(order => { %>
+                        <tr>
+                            <td><%= order._id %></td>
+                            <td>
+                               <%= order.address.name %><br>
+                              <%= order.address.mobileNumber %><br>
+                               <%= order.address.city %>, <%= order.address.state %>, <%= order.address.pinCode %>
+                            </td>
+                            <td>
+                                <ul>
+                                    <% order.cartItems.forEach(item => { %>
+                                        <li><%= item.name %><br>(Qty: <%= item.quantity %>)<br>₹<%= item.price %></li>
+                                    <% }) %>
+                                </ul>
+                            </td>
+                            <td><%= order.paymentMethod %></td>
+                            <td>₹<%= order.totalPrice %></td>
+                            <td>
+                                <%= order.status %>
+                            </td>
+                            <td>
+                                <!-- Update Status Dropdown -->
+                                <form action="/adminPanel/orders/<%= order._id %>/status" method="POST">
+                                    <input type="hidden" name="orderId" value="<%= order._id %>">
+                                    <select name="newStatus" class="form-select mb-2" onchange="this.form.submit()" style="background-color: rgb(213, 235, 213); color: green;">
+                                        <option value="Ordered" <%= order.status === 'Ordered' ? 'selected' : '' %>>Ordered</option>
+                                        <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                        <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                        <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                    </select>
+                                </form>
+    
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    
+        <!-- Bootstrap JS (for optional components) -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+        <!-- Optional: Add search functionality -->
+        <script>
+            document.getElementById('searchBar').addEventListener('keyup', function () {
+                const searchTerm = this.value.toLowerCase();
+                const rows = document.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const orderText = row.innerText.toLowerCase();
+                    row.style.display = orderText.includes(searchTerm) ? '' : 'none';
+                });
+            });
+        </script>
+        
+    </body>
+    </html>
+    
+

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heaven Interior</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+ <style>
+        .checkout-section {
+            width: 98%;
+            background-color: rgb(251, 251, 251);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .qty-form button {
+            padding: 5px;
+            margin: 0 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .btn-remove, .btn-delete{
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-edit{
+            background-color: #2ba44f;
+            color: white;
+            padding: 5px 10px;
+            cursor: pointer;
+            border: none;
+ 
+        }
+
+        .btn-checkout {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+
+        .btn-checkout:hover {
+            background-color: #218838;
+        }
+
+        .modal-content {
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        
+#orderSuccessModal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+}
+    </style>
+</head>
+<body>
+
+    <%- include('../partials/user_navbar.ejs') %>
+    <div class="container">
+        <h2>Checkout</h2>
+        <div class="checkout-section">
+            <h3>Your Cart</h3>
+            <% if (cart && cart.length > 0) { %> 
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% cart.forEach(item => { %>
+                            <tr>
+                                <td>
+                                    <img src="<%= item.image %>" alt="<%= item.name %>" style="width: 50px; height: auto;">
+                                    <p><%= item.name %></p>
+                                </td>
+                                <td>
+                                    <form action="/user/update-cart/<%= item.productId %>" method="POST" class="qty-form" style="display: inline;">
+                                        <input type="hidden" name="action" value="decrease">
+                                        <button type="submit" <%= item.quantity === 1 ? 'disabled' : '' %>>-</button>
+                                    </form>
+                                    <span><%= item.quantity %></span>
+                                    <form action="/user/update-cart/<%= item.productId %>" method="POST" class="qty-form" style="display: inline;">
+                                        <input type="hidden" name="action" value="increase">
+                                        <button type="submit" <%= item.quantity >= item.stock ? 'disabled' : '' %>>+</button>
+                                    </form>
+                                </td>
+                                <td>$<%= item.price.toFixed(2) %></td>
+                                <td>$<%= (item.price * item.quantity).toFixed(2) %></td>
+                                <td>
+                                    <form action="/user/remove-from-cart/<%= item.productId %>" method="POST">
+                                        <button type="submit" class="btn-remove">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+    
+                <!-- Total price calculation -->
+                <h4>Total Price: $<%= cart.reduce((total, item) => total + (item.price * item.quantity), 0) %></h4>
+            </div>
+    
+            <div class="checkout-section">
+                <h3>Select Payment Method</h3>
+                <form action="/user/checkout/placeOrder" method="POST">
+                    <h4>Payment Options:</h4>
+                    <div>
+                        <label>
+                            <input type="radio" name="paymentMethod" value="COD" required > Cash on Delivery
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            <input type="radio" name="paymentMethod" value="Credit Card" required  style="cursor: not-allowed"> Credit Card
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            <input type="radio" name="paymentMethod" value="PayPal" required  style="cursor: not-allowed"> PayPal
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="checkout-section">
+                    <h3>Your Addresses</h3>
+                    <button type="button" class="btn btn-success" onclick="openAddAddressModal()">Add New Address</button>
+
+                    <ul id="addressList">
+                        <% addresses.forEach(address => { %>
+                            <li>
+                                <input type="radio" name="selectedAddress" value="<%= address._id %>" required>
+                                <span style="margin-left: 8px;">
+                                    <%= address.name %><br>
+                                    <%= address.mobileNumber %><br>
+                                    <%= address.city %><br>
+                                    <%= address.state %><br>
+                                    <%= address.pinCode %><br>
+                                </span>
+                                <button type="button" class="btn-edit" onclick="editAddress('<%= address._id %>', '<%= address.name %>', '<%= address.mobileNumber %>', '<%= address.city %>', '<%= address.state %>', '<%= address.pinCode %>')">Edit</button>
+                                <button type="button" class="btn-delete" onclick="deleteAddress('<%= address._id %>')">Delete</button>
+                            </li>
+                        <% }) %>
+                    </ul>
+
+                <% } else { %>
+                    <p>Your cart is empty. Please add items to your cart before checking out.</p>
+                <% } %>
+                </div>
+                
+            </div>
+        </div>
+
+        <button type="submit" class="btn" style="background-color: #28a745; border-color: #28a745; color: white; font-size: 1.2rem; padding: 10px 20px; transition: background-color 0.3s, transform 0.3s; margin-top: 2%;" 
+        onmouseover="this.style.backgroundColor='#218838'; this.style.transform='scale(1.05)';" 
+        onmouseout="this.style.backgroundColor='#28a745'; this.style.transform='scale(1)';">
+        Place Order
+    </button>
+        </form>
+
+    <!-- Add Address Modal -->
+    <div class="modal" id="addAddressModal">
+        <div class="modal-content">
+            <h4>Add New Address</h4>
+            <form action="/user/checkout/addresses/add" method="POST" id="addAddressForm">
+                <input type="text" name="name" placeholder="Name" required class="form-control mb-2" id="addName">
+                <input type="text" name="mobileNumber" placeholder="Mobile Number" required class="form-control mb-2" id="addMobileNumber">
+                <input type="text" name="city" placeholder="City" required class="form-control mb-2" id="addCity">
+                <input type="text" name="state" placeholder="State" required class="form-control mb-2" id="addState">
+                <input type="text" name="pinCode" placeholder="Pin Code" required class="form-control mb-2" id="addPinCode">
+                <button type="submit" class="btn btn-success">Add Address</button>
+                <button type="button" class="btn btn-danger" onclick="closeAddAddressModal()">Close</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Address Modal -->
+<div class="modal" id="editAddressModal">
+    <div class="modal-content">
+        <h4>Edit Address</h4>
+        <form action="" method="POST" id="editAddressForm">
+            <input type="hidden" name="addressId" id="editAddressId">
+            <input type="text" name="name" placeholder="Name" required class="form-control mb-2" id="editName">
+            <input type="text" name="mobileNumber" placeholder="Mobile Number" required class="form-control mb-2" id="editMobileNumber">
+            <input type="text" name="city" placeholder="City" required class="form-control mb-2" id="editCity">
+            <input type="text" name="state" placeholder="State" required class="form-control mb-2" id="editState">
+            <input type="text" name="pinCode" placeholder="Pin Code" required class="form-control mb-2" id="editPinCode">
+            <button type="submit" class="btn btn-success">Update Address</button>
+            <button type="button" class="btn btn-danger" onclick="closeEditAddressModal()">Close</button>
+        </form>
+    </div>
+</div>
+
+    <%- include('../partials/footer.ejs') %>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+    <script>
+
+        function openAddAddressModal() {
+            document.getElementById('addAddressModal').style.display = 'block';
+        }
+        
+        function closeAddAddressModal() {
+            document.getElementById('addAddressModal').style.display = 'none';
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('addAddressModal');
+            if (event.target === modal) {
+                closeAddAddressModal();
+            }
+        }
+        
+        function editAddress(id, name, mobileNumber, city, state, pinCode) {
+    document.getElementById('editAddressId').value = id;
+    document.getElementById('editName').value = name;
+    document.getElementById('editMobileNumber').value = mobileNumber;
+    document.getElementById('editCity').value = city;
+    document.getElementById('editState').value = state;
+    document.getElementById('editPinCode').value = pinCode;
+
+    // Dynamically update the form action URL with the address ID
+    document.getElementById('editAddressForm').action = `/user/checkout/addresses/edit/${id}`;
+    
+    document.getElementById('editAddressModal').style.display = 'block';
+}
+
+function closeEditAddressModal() {
+    document.getElementById('editAddressModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById('editAddressModal');
+    if (event.target === modal) {
+        closeEditAddressModal();
+    }
+}
+
+function deleteAddress(id) {
+    if (confirm("Are you sure you want to delete this address?")) {
+        fetch(`/user/checkout/addresses/delete/${id}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Remove the deleted address from the DOM
+                const addressElement = document.querySelector(`li[data-address-id="${id}"]`);
+                if (addressElement) {
+                    addressElement.remove();
+                }
+            } else {
+                alert("Failed to delete address: " + data.message);
+            }
+        })
+    }
+}
+</script>
+</body>
+</html>

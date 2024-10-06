@@ -48,7 +48,7 @@
                     <th>Description</th>
                     <th>Price</th>
                     <th>Category</th>
-                    <th>Stock</th>
+                    <th>Quantity</th>
                     <th>Stock </th>
                     <th>Created</th>
                     <th>Updated</th>
@@ -180,7 +180,7 @@
         </div>
     </div>
 
-    <!-- Edit Product Modal (Dynamic based on product) -->
+    <!-- Edit Product Modal -->
     <% products.forEach(function(product) { %>
         <div class="modal fade" id="editProductModal<%= product._id %>" tabindex="-1" role="dialog" aria-labelledby="editProductModalLabel<%= product._id %>" aria-hidden="true">
             <div class="modal-dialog" role="document">

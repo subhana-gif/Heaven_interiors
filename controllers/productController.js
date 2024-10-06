@@ -1,7 +1,5 @@
 const Product = require('../models/productModal');
 const Category = require('../models/category');
-const sharp = require('sharp');
-
 
 exports.renderProductPage = async (req, res) => {
     try {
@@ -12,7 +10,7 @@ exports.renderProductPage = async (req, res) => {
 
         const products = await Product.find({
             name: { $regex: search, $options: 'i' }
-        }).skip(skip).limit(limit).populate('category');
+        }).skip(skip).limit(limit).populate('category').sort({createdAt:-1});
 
 
         const totalProducts = await Product.countDocuments({

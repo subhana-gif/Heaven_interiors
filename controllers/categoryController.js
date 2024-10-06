@@ -1,6 +1,7 @@
 const Category = require('../models/category');
 
 exports.renderCategoryPage = async (req, res) => {
+    
     try {
         const search = req.query.search || ''; 
         const currentpage = parseInt(req.query.page) || 1; 

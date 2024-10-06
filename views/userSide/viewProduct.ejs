@@ -1,261 +1,323 @@
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css"/>
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css"/>
-<style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heaven Interior</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <style>
     body {
         font-family: Arial, Helvetica, sans-serif;
         margin: 0;
         padding: 0;
         background-color: #f9f9f9;
     }
-    .zoom {
-            width: 400px; /* Adjust width as needed */
-            height: 400px; /* Adjust height as needed */
-            border: 1px solid #ddd; /* Optional border */
-            margin: 20px 0; /* Optional margin */
+        .zoom {
+                width: 400px; /* Adjust width as needed */
+                height: 400px; /* Adjust height as needed */
+                border: 1px solid #ddd; /* Optional border */
+                margin: 20px 0; /* Optional margin */
+            }
+    
+            .specifications {
+        background-color: #ffffff; /* White background for specifications */
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        padding: 10px;
+        overflow-x: auto; /* Enable horizontal scrolling for long text */
+        white-space: pre-wrap; /* Preserve formatting */
+        max-height: 300px; /* Limit height for better presentation */
+        overflow-y: auto; /* Enable vertical scrolling */
         }
-
-        .specifications {
-    background-color: #ffffff; /* White background for specifications */
-    border: 1px solid #ddd;
-    border-radius: 3px;
-    padding: 10px;
-    overflow-x: auto; /* Enable horizontal scrolling for long text */
-    white-space: pre-wrap; /* Preserve formatting */
-    max-height: 300px; /* Limit height for better presentation */
-    overflow-y: auto; /* Enable vertical scrolling */
-    }
-
-    .specs-reviews {
-    margin-top: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 20px;
-    background-color: #f8f9fa; /* Light background for contrast */
-}
-
-    /* Breadcrumb styling for inline view */
-    .breadcrumb {
-        display: flex;
-        padding: 10px 0;
-        list-style: none;
-        background: none;
-        margin-bottom: 20px;
-        border-bottom: 1px solid #ddd;
-    }
-
-    .breadcrumb-item {
-        display: inline;
-        margin-right: 10px;
-    }
-
-    .breadcrumb-item a {
-        color: #007bff;
-        text-decoration: none;
-    }
-
-    .breadcrumb-item + .breadcrumb-item::before {
-        content: '/';
-        margin: 0 5px;
-        color: #6c757d;
-    }
-
-    .breadcrumb-item.active {
-        color: #6c757d;
-    }
-
-    /* Layout container for image and details */
-    .product-container {
-        display: flex;
-        flex-direction: row;
+    
+        .specs-reviews {
+        margin-top: 20px;
         border: 1px solid #ddd;
         border-radius: 5px;
         padding: 20px;
-        background-color: white;
+        background-color: #f8f9fa; /* Light background for contrast */
     }
-
-    .image-section {
-        display: flex;
-        flex-direction: row;
-        flex-grow: 1;
-    }
-
-    /* Column for vertical images */
-    .thumbnail-container {
-        display: flex;
-        flex-direction: column;
-        margin-top:4%;
-        margin-right: 1%;
-    }
-
-    .thumbnail {
-        cursor: pointer;
-        width: 100px; /* Thumbnail width */
-        height: 100px; /* Thumbnail height */
-        margin-bottom: 10px;
+    
+        /* Breadcrumb styling for inline view */
+        .breadcrumb {
+            display: flex;
+            padding: 10px 0;
+            list-style: none;
+            background: none;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+    
+        .breadcrumb-item {
+            display: inline;
+            margin-right: 10px;
+        }
+    
+        .breadcrumb-item a {
+            color: #007bff;
+            text-decoration: none;
+        }
+    
+        .breadcrumb-item + .breadcrumb-item::before {
+            content: '/';
+            margin: 0 5px;
+            color: #6c757d;
+        }
+    
+        .breadcrumb-item.active {
+            color: #6c757d;
+        }
+    
+        /* Layout container for image and details */
+        .product-container {
+            display: flex;
+            flex-direction: row;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            background-color: white;
+        }
+    
+        .image-section {
+            display: flex;
+            flex-direction: row;
+            flex-grow: 1;
+        }
+    
+        /* Column for vertical images */
+        .thumbnail-container {
+            display: flex;
+            flex-direction: column;
+            margin-top:4%;
+            margin-right: 1%;
+        }
+    
+        .thumbnail {
+            cursor: pointer;
+            width: 100px; /* Thumbnail width */
+            height: 100px; /* Thumbnail height */
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            object-fit: cover;
+        }
+    
+        /* Main image */
+        .main-image {
         border: 1px solid #ddd;
+        width: 25em; /* Increased width */
+        height: 25em; /* Increased height */
         object-fit: cover;
+        margin-right: 20px;
     }
-
-    /* Main image */
-    .main-image {
-    border: 1px solid #ddd;
-    width: 25em; /* Increased width */
-    height: 25em; /* Increased height */
-    object-fit: cover;
-    margin-right: 20px;
-}
-
-    /* Product details section */
-    .product-details {
-        flex-grow: 1;
-    }
-
-    .product-price {
-        font-size: 24px;
-        color: #28a745;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-
-    .product-discount {
-        color: #dc3545;
-        font-weight: bold;
-        font-size: 20px;
-    }
-
-    .offers {
-        background-color: #f8f9fa;
-        padding: 15px;
-        margin-bottom: 20px;
-        border-radius: 5px;
-    }
-
-    .offer-item {
-        margin-bottom: 10px;
-    }
-
-    .offer-item i {
-        color: #28a745;
-        margin-right: 5px;
-    }
-
-    .btn-inline {
-    display: inline-flex;
-    align-items: center;
-    margin-right: 10px;
-}
-
-    .btn-success, .btn-primary {
-        width: 150px;
+    
+        /* Product details section */
+        .product-details {
+            flex-grow: 1;
+        }
+    
+        .product-price {
+            font-size: 24px;
+            color: #28a745;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    
+        .product-discount {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 20px;
+        }
+    
+        .offers {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+    
+        .offer-item {
+            margin-bottom: 10px;
+        }
+    
+        .offer-item i {
+            color: #28a745;
+            margin-right: 5px;
+        }
+    
+        .btn-inline {
+        display: inline-flex;
+        align-items: center;
         margin-right: 10px;
     }
-
-    /* Spec and review sections */
-    .specs-reviews {
-        margin-top: 20px;
-        font-family: Arial, Helvetica, sans-serif;
+    
+        .btn-success, .btn-primary {
+            width: 150px;
+            margin-right: 10px;
+        }
+    
+        /* Highlights Section */
+    .highlights, .specifications {
+        background-color: #f5f5f5; /* Light background */
+        border: 1px solid #ddd; /* Border for separation */
+        border-radius: 8px; /* Rounded corners */
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        font-family: 'Arial', sans-serif; /* Use consistent font */
+        line-height: 1.6; /* Better readability */
     }
-
-    .specs-reviews h4 {
-        font-family: Arial, Helvetica, sans-serif;
-        margin-top: 20px;
+    
+    .highlights h4, .specifications h4 {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #333;
+        font-weight: bold;
+        text-transform: uppercase;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 5px;
     }
-
-
-    .related-products-slider {
-    position: relative;
-    width: 100%;
-    padding: 20px 0;
-}
-
-.slider-container {
-    display: flex;
-    justify-content: space-between;
-}
-
-.related-product-card {
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    overflow: hidden;
-    background-color: white;
-    transition: box-shadow 0.3s;
-    display: flex;
-    flex-direction: column;
-    height: 75%;
-    margin: 1em; /* Margin around each card */
-}
-
-.card-content {
-    display: flex;
-    flex-direction: row;
-}
-
-.product-image {
-    width: 70%; /* Adjust image width */
-}
-
-.product-image img {
-    max-width: 100%;
-    height: auto;
-}
-
-.product-details {
-    width: 60%; /* Adjust details width */
-    padding-left: 15px;
-}
-
-.slick-prev, .slick-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: #fff;
-    border: 1px solid #ddd;
-    padding: 5px 10px;
-    cursor: pointer;
-    z-index: 10;
-}
-
-.slick-prev {
-    left: 0;
-}
-
-.slick-next {
-    right: 0;
-}
-
-@media screen and (max-width: 768px) {
-    .related-product-card {
-        width: 100%; /* Full width on smaller screens */
+    
+    /* Highlight Content */
+    .highlights pre, .specifications pre {
+        white-space: pre-wrap; /* Preserve formatting */
+        word-wrap: break-word; /* Break long words */
+        background-color: #fff;
+        border-radius: 5px;
+        padding: 10px;
+        margin: 0;
+        font-size: 14px;
+        color: #555;
     }
-
-    .card-content {
-        flex-direction: column;
+    
+    /* Add icons for Highlights */
+    .highlights li::before, .specifications li::before {
+        content: "\2713"; /* Checkmark symbol */
+        color: #28a745; /* Green checkmark */
+        margin-right: 8px;
+        font-weight: bold;
     }
-
-    .product-image, .product-details {
+    
+    
+        .specs-reviews {
+            margin-top: 20px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+    
+        .specs-reviews h4 {
+            font-family: Arial, Helvetica, sans-serif;
+            margin-top: 20px;
+        }
+    
+    
+        .related-products-slider {
+        position: relative;
         width: 100%;
+        padding: 20px 0;
     }
-
+    
+    .slider-container {
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .related-product-card {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        overflow: hidden;
+        background-color: white;
+        transition: box-shadow 0.3s;
+        display: flex;
+        flex-direction: column;
+        height: 75%;
+        margin: 1em; /* Margin around each card */
+    }
+    
+    .card-content {
+        display: flex;
+        flex-direction: row;
+    }
+    
+    .product-image {
+        width: 70%; /* Adjust image width */
+    }
+    
+    .product-image img {
+        max-width: 100%;
+        height: auto;
+    }
+    
     .product-details {
-        padding-left: 0;
-        margin-top: 10px;
+        width: 60%; /* Adjust details width */
+        padding-left: 15px;
     }
-}
+    
+    .slick-prev, .slick-next {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: #fff;
+        border: 1px solid #ddd;
+        padding: 5px 10px;
+        cursor: pointer;
+        z-index: 10;
+    }
+    
+    .slick-prev {
+        left: 0;
+    }
+    
+    .slick-next {
+        right: 0;
+    }
+    
+    @media screen and (max-width: 768px) {
+        .related-product-card {
+            width: 100%; /* Full width on smaller screens */
+        }
+    
+        .card-content {
+            flex-direction: column;
+        }
+    
+        .product-image, .product-details {
+            width: 100%;
+        }
+    
+        .product-details {
+            padding-left: 0;
+            margin-top: 10px;
+        }
+    }
+    
+    
+    </style>
+    
 
+</head>
+<body>
 
-</style>
+    <%- include('../partials/user_navbar.ejs') %>
 
-<%- include('../partials/user_navbar', { user: user }) %>
-
-<div class="container">
+    <div class="container">
     <h1><%= product.name %></h1>
 
     <!-- Breadcrumbs -->
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/user/home">Home</a></li>
-        <li class="breadcrumb-item"><a href="/user/shop">Shop</a></li>
+    
+        <% if (source === 'productList') { %>
+            <li class="breadcrumb-item"><a href="/user/category/<%= product.category._id %>"><%= product.category.name %></a></li>
+        <% } else if (source === 'searchResult') { %>
+            <li class="breadcrumb-item"><a href="/user/search">Search</a></li>
+        <% } else { %>
+            <li class="breadcrumb-item"><a href="/user/shop">Shop</a></li>
+        <% } %>
+    
         <li class="breadcrumb-item active"><%= product.name %></li>
     </ol>
+    
 
     <!-- Product layout -->
     <div class="product-container">
@@ -279,8 +341,13 @@
             <p class="product-rating">Rating: <%= product.rating %> / 5</p>
             <p class="product-description"><%= product.description %></p>
             <p class="product-category">Category: <strong><%= product.category ? product.category.name : 'Uncategorized' %></strong></p>
-            <p>Stock: <%= product.stockStatus %></p>
-
+            <% if (product.stockStatus === 'In Stock') { %>
+                <p style="color: green;"><%= product.stock %> left</p>
+                <% } else { %>
+                <p class="out-of-stock" style="color: #dc3545;">Out of stock</p>
+            <% } %>
+            
+                       
             <!-- Offers Section -->
             <div class="offers">
                 <h5>Available Offers</h5>
@@ -289,9 +356,24 @@
 
             <!-- Action Buttons -->
             <div class="btn-inline">
-                <button class="btn btn-success" <%= product.stock === 0 ? 'disabled' : '' %>>Add to Cart</button>
-                <button class="btn btn-primary">Buy Now</button>
+                <% if (product.stockStatus === 'In Stock') { %>
+                    <form action="/user/add-to-cart/<%= product._id %>" method="POST">
+                        <button type="submit" class="btn btn-success" <%= product.stock === 0 ? 'disabled' : '' %>>Add to Cart</button>
+                    </form>                
+                <% } else { %> 
+                    <button class="btn btn-primary" style="cursor: not-allowed;">Add to Cart</button>
+                <% } %>
+              
+            
+                <% if (product.stockStatus === 'In Stock') { %>
+                    <form action="/user/add-to-cart/<%= product._id %>" method="POST">
+                        <button type="submit" class="btn btn-success" <%= product.stock === 0 ? 'disabled' : '' %>>Buy Now</button>
+                    </form>                
+                <% } else { %> 
+                    <button class="btn btn-primary" style="cursor: not-allowed;">Buy Now</button>
+                <% } %>
             </div>
+            
         </div>
     </div>
 
@@ -362,69 +444,31 @@
     </div>
 </div>
 
-<%- include('../partials/footer.ejs') %>
+    <%- include('../partials/footer') %>
 
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/elevatezoom/3.0.8/jquery.elevateZoom.min.js"></script>
-<script>
-    $(document).ready(function(){
-        // Initialize Slick slider for related products
-        $('.slider-container').slick({
-            slidesToShow: 3,
-            slidesToScroll: 1,
-            prevArrow: '.slick-prev',
-            nextArrow: '.slick-next',
-            infinite: false,
-            responsive: [
-                {
-                    breakpoint: 768,
-                    settings: {
-                        slidesToShow: 1
-                    }
-                }
-            ]
-        });
-    
-        // Initialize ElevateZoom on the main image
-        $('#mainImage').on('load', function() {
-        $(this).elevateZoom({
-            zoomType: "inner",
-            cursor: "crosshair",
-            scrollZoom: true,
-            zoomWindowWidth: 400,
-            zoomWindowHeight: 400
-        });
-    }).each(function() {
-        if(this.complete) $(this).load(); // For cached images
-    });
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        function toggleProfileMenu() {
+            const dropdown = document.querySelector('.profile-dropdown');
+            dropdown.classList.toggle('visible');
+            dropdown.classList.toggle('hidden');
+        }
+
+
+
+        const socket = io();
+
+const userId = 'user-id-from-session'; 
+
+socket.emit('joinRoom', userId);
+
+socket.on('userBlocked', (data) => {
+    alert(data.message);
+    window.location.href = '/user/user_login'; 
 });
-
-// Function to change the main image and reinitialize ElevateZoom
-function changeMainImage(image) {
-    // Change the image source
-    $('#mainImage').attr('src', image);
-
-    // Destroy the existing ElevateZoom instance if it exists
-    if ($.fn.elevateZoom) {
-        $('#mainImage').data('elevateZoom').destroy();
-    }
-
-    // Reinitialize ElevateZoom on the new main image
-    $('#mainImage').on('load', function() {
-        $(this).elevateZoom({
-            zoomType: "inner",
-            cursor: "crosshair",
-            scrollZoom: true,
-            zoomWindowWidth: 400,
-            zoomWindowHeight: 400
-        });
-    }).each(function() {
-        if(this.complete) $(this).load(); // For cached images
-    });
-    }
     </script>
-    
-    
+</body>
+</html>

@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Heaven Interior - Shop</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>Heaven Interior</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+</head>
+<body>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -128,18 +132,15 @@
 }
 
     </style>
-</head>
-<body>
 
-
-    <%- include('../partials/user_navbar.ejs', { user: user }) %>
+    <%- include('../partials/user_navbar.ejs') %>
 
     <div class="container">
         <div class="row">
             <% if (products.length > 0) { %>
                 <% products.forEach(function(product) { %>
                     <div class="col-md-4 mb-4"> 
-                        <a href="/user/product/<%= product._id %>">                        
+                        <a href="/user/product/<%= product._id %>?source=productList">                        
                             <div class="product-card">
                             <div class="product-image">
                                 <img src="/<%= product.images[0] || 'placeholder.jpg' %>" alt="<%= product.name %>">
@@ -147,11 +148,17 @@
                             <div class="product-info">
                                 <h5 class="product-title"><%= product.name %></h5>
                                 <p class="product-description"><%= product.description %></p>
+                                <% if (product.stockStatus === 'In Stock') { %>
+                                    <p style="color: green;"><%= product.stock %> left</p>
+                                <% } else { %>
+                                    <p class="out-of-stock" style="color: #dc3545;">Out of stock</p>
+                                <% } %>
                                 <div class="product-footer">
                                     <span class="product-price">₹<%= product.price %></span>
                                     <a href="/wishlist/add/<%= product._id %>" class="wishlist-button">
                                         <i class="far fa-heart"></i> <!-- Font Awesome like icon -->
                                     </a>
+                                    
                                 </div>
                             </div>
                             
@@ -162,23 +169,33 @@
                 <div class="col-12">No products found</div>
             <% } %>
         </div>
-    </div>
-    
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    </div>   
+
+    <%- include('../partials/footer') %>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script>
-        // Toggle profile dropdown menu
         function toggleProfileMenu() {
             const dropdown = document.querySelector('.profile-dropdown');
+            dropdown.classList.toggle('visible');
             dropdown.classList.toggle('hidden');
         }
 
-        // Toggle cart dropdown (future implementation)
-        function toggleCartMenu() {
-            alert("Cart functionality to be implemented!");
-        }
-    </script>
 
+
+        const socket = io();
+
+const userId = 'user-id-from-session'; 
+
+socket.emit('joinRoom', userId);
+
+socket.on('userBlocked', (data) => {
+    alert(data.message);
+    window.location.href = '/user/user_login'; 
+});
+    </script>
 </body>
 </html>

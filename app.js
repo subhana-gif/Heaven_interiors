@@ -1,11 +1,14 @@
 const express = require('express');
+const http = require('http');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-const passport = require('passport'); // Require passport here
-const path=require('path')
-const morgan=require('morgan')
+const passport = require('passport');
+
+//  const path=require('path')
+// const morgan=require('morgan')
+
 require('./config/passport_setup');
 
 // Import routes
@@ -13,7 +16,6 @@ const adminRoutes = require('./routes/adminRoutes');
 const productRoutes = require('./routes/productRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const customerRoutes = require('./routes/customerRoutes');
-const orderRoutes = require('./routes/orderRoutes'); 
 const offerRoutes = require('./routes/offerRoutes'); 
 const settingRoutes = require('./routes/settingRoutes');
 const userRoutes = require('./routes/userRoutes') 
@@ -21,44 +23,55 @@ const authRoutes = require('./routes/auth');
 const otpRoutes = require('./routes/otpRoutes');
 const homeRoutes = require('./routes/homeRoutes');
 const userProductRoutes = require('./routes/userProductRoutes');
+const cartRoutes=require('./routes/cartRoutes')
+const checkoutRoutes=require('./routes/checkoutRoutes')
+const orderRoutes=require('./routes/orderRoutes')
+const orderAdminRoutes=require('./routes/orderAdminRoutes')
+const profilRoutes=require('./routes/profileRoutes')
+const searchRoutes=require('./routes/searchRoutes')
+
 const nocache = require('nocache');
-// Load environment variables from .env file
 dotenv.config();
 
-// Initialize the app
 const app = express();
 
-// Middleware
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'yourSecretKey', // Use environment variable for security
+  secret: process.env.SESSION_SECRET || 'yourSecretKey', 
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false } // Set to true if using HTTPS
+  cookie: { secure: false } 
 }));
 
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store');
   next();
 });
-// app.use(morgan('tiny')); 
+
 dotenv.config();
 app.use(nocache())
 
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static('uploads'));
 app.use(express.static("uploads"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(express.static('public')); // Serve static files
-app.set('view engine', 'ejs'); // Set view engine to EJS
+app.use(express.static('public'));
+app.set('view engine', 'ejs'); 
+
 
 // Passport configuration
 require('./config/passport_setup');
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Connect to MongoDB
+
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;  // user will be available globally in views
+  next();
+});
+
+
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -71,17 +84,21 @@ app.use('/adminPanel', adminRoutes);
 app.use('/adminPanel', categoryRoutes);
 app.use('/adminPanel', customerRoutes);
 app.use('/adminPanel', productRoutes);
-app.use('/adminPanel', orderRoutes)
+app.use('/adminPanel', orderAdminRoutes)
 app.use('/adminPanel', offerRoutes);
 app.use('/adminPanel', settingRoutes);
 
 // userRoues
 app.use('/auth', authRoutes);
-app.use('/user',userRoutes);
+app.use('/user', userRoutes);
 app.use('/user', otpRoutes);
 app.use('/user', homeRoutes);
 app.use('/user', userProductRoutes);
+app.use('/user', cartRoutes)
+app.use('/user', checkoutRoutes)
+app.use('/user', orderRoutes)
+app.use('/user', profilRoutes)
+app.use('/user', searchRoutes)
 
-// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

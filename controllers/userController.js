@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Category = require('../models/category');
 const bcrypt = require('bcrypt');
+const Cart=require('../models/cart')
 const { sendOtpEmail } = require('./otpController'); 
 
 // Render login page
@@ -45,9 +46,14 @@ const handleUserLogin = async (req, res) => {
         }
 
         req.session.user = {
-            id: user._id, 
-            profileImage: user.profileImage 
+            _id: user._id,
+            email: user.email,
+            username: user.username
         };
+
+        const cart = await Cart.findOne({ userId: user._id });
+        req.session.cart = cart ? cart.items : [];
+        console.log(req.session.user)
         return res.redirect('/user/home');
     } catch (error) {
         console.error('Error during login:', error);
@@ -113,27 +119,6 @@ const handleUserLogout = (req, res) => {
 };
 
 
-const getUserProfile = (req, res) => {
-    const user = {
-        name: "User Name",
-        email: "user@example.com",
-        phone: "(123) 456-7890",
-        orders: [
-            { id: 12345, date: "2024-01-01", status: "Delivered" },
-            { id: 12346, date: "2024-02-01", status: "Shipped" }
-        ],
-        wishlist: ["Item 1", "Item 2"]
-    };
-
-    res.render('userSide/profile', { user });
-};
-
-
-
-const updateUserProfile = (req, res) => {
-    const { name, email, phone } = req.body;
-    res.redirect('/user/profile'); 
-};
 
 module.exports = {
     renderUserLogin,
@@ -141,6 +126,4 @@ module.exports = {
     handleUserLogin,
     handleUserSignup,
     handleUserLogout,
-    getUserProfile,
-    updateUserProfile
 };

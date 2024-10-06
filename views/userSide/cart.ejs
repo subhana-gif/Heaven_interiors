@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heaven Interior</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+   <style>
+   /* cart.css */
+
+.cart-container {
+    width: 80%;
+    margin: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 8px;
+    text-align: center;
+}
+
+.qty-form {
+    display: inline-block;
+}
+
+.qty-form button {
+    padding: 5px;
+    margin: 0 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn-remove {
+    background-color: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-remove:hover {
+    background-color: #c82333;
+}
+
+.btn-checkout {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    text-decoration: none;
+    margin-top: 20px;
+}
+
+.btn-checkout:hover {
+    background-color: #218838;
+}
+</style>
+
+</head>
+<body>
+
+    <%- include('../partials/user_navbar.ejs') %>
+
+    <div class="cart-container">
+    <h1>Your Shopping Cart</h1>
+
+    <% if (cart.length === 0) { %>
+        <p>Your cart is empty.</p>
+    <% } else { %>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% cart.forEach(item => { %>
+                    <tr>
+                        <!-- Product image and name -->
+                        <td>
+                            <img src="<%= item.image %>" alt="<%= item.name %>" style="width: 50px; height: auto;">
+                            <p><%= item.name %></p>
+                        </td>
+            
+                        <!-- Quantity controls -->
+                        <td>
+                            <form action="/user/update-cart/<%= item.productId %>" method="POST" class="qty-form">
+                                <input type="hidden" name="action" value="decrease">
+                                <button type="submit" <%= item.quantity === 1 ? 'disabled' : '' %>>-</button>
+                            </form>
+                            <%= item.quantity %>
+                            <form action="/user/update-cart/<%= item.productId %>" method="POST" class="qty-form">
+                                <input type="hidden" name="action" value="increase">
+                                <button type="submit" <%= item.quantity >= item.stock ? 'disabled' : '' %>>+</button>
+                            </form>
+                        </td>
+                        
+            
+                        <!-- Product price -->
+                        <td>$<%= item.price %></td>
+            
+                        <!-- Product total (quantity * price) -->
+                        <td>$<%= (item.price * item.quantity).toFixed(2) %></td>
+            
+                        <!-- Remove button -->
+                        <td>
+                            <form action="/user/remove-from-cart/<%= item.productId %>" method="POST">
+                                <button type="submit" class="btn-remove">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+            
+        </table>
+    <% } %>
+
+    <a href="/user/checkout" class="btn-checkout">Proceed to Checkout</a>
+</div>
+    <%- include('../partials/footer') %>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        function toggleProfileMenu() {
+            const dropdown = document.querySelector('.profile-dropdown');
+            dropdown.classList.toggle('visible');
+            dropdown.classList.toggle('hidden');
+        }
+
+
+
+        const socket = io();
+
+const userId = 'user-id-from-session'; 
+
+socket.emit('joinRoom', userId);
+
+socket.on('userBlocked', (data) => {
+    alert(data.message);
+    window.location.href = '/user/user_login'; 
+});
+    </script>
+</body>
+</html>

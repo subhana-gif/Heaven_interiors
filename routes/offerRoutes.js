@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const offerController = require('../controllers/offerController');
+const authMiddleware=require('../middleware/authMiddleware')
+const noCache=require('../middleware/noCacheMiddleware')
 
-router.get('/offers', (req, res) => {
+router.get('/offers', authMiddleware.isAdminAuthenticated,noCache, (req, res) => {
     res.render('adminPanel', { body: 'admin/offers' });
 });
 module.exports = router;

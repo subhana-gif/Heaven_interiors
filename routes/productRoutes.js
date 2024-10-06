@@ -2,10 +2,12 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const upload = require('../middleware/uploadMiddleware'); 
-const Product = require('../models/productModal'); 
-const Category = require('../models/category'); 
+const authMiddleware=require('../middleware/authMiddleware')
+const nocache=require('../middleware/noCacheMiddleware')
 
-router.get('/products', productController.renderProductPage);
+
+
+router.get('/products', authMiddleware.isAdminAuthenticated,nocache,productController.renderProductPage);
 router.post('/products/add', upload.array('images', 3), productController.addProduct);
 router.post('/products/edit/:id', upload.array('images', 3), productController.editProduct);
 router.get('/products/view/:id', productController.viewProduct);

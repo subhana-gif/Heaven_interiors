@@ -34,5 +34,16 @@ const reviewSchema = new mongoose.Schema({
     }
 });
 
+
+productSchema.pre('save', function (next) {
+    if (this.stock <= 0) {
+        this.stock = 0; // Ensure stock doesn't go negative
+        this.stockStatus = 'Out of Stock'; // Set status to out of stock
+    } else {
+        this.stockStatus = 'In Stock'; // Set status to in stock if stock is greater than zero
+    }
+    next();
+});
+
 const Product = mongoose.model('Product', productSchema);
 module.exports = Product;
