@@ -7,7 +7,9 @@ const UserSchema = new mongoose.Schema({
     password: { type: String }, 
     isBlocked: { type: Boolean, default: false },
     provider: { type: String, default: 'local' }, 
-    googleId: { type: String } 
+    googleId: { type: String },
+    resetPasswordToken: { type: String }, // Field for the password reset token
+    resetPasswordExpires: { type: Date }   // Field for the token expiration
 });
 
 UserSchema.pre('save', async function (next) {

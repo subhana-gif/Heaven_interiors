@@ -7,7 +7,7 @@ exports.renderUserProductPage = async (req, res) => {
         let products;
 
         if (categoryName) {
-            const category = await Category.findOne({ name: categoryName });
+            const category = await Category.findOne({ name: categoryName,status: 'active' });
 
             if (category) {
                 products = await Product.find({
@@ -18,7 +18,8 @@ exports.renderUserProductPage = async (req, res) => {
                 products = [];
             }
         } else {
-            products = await Product.find({ isDelete: false });
+            const activeCategories = await Category.find({ status: 'active' }).select('_id');
+            products = await Product.find({  category: { $in: activeCategories },isDelete: false });
         }
 
         const user = req.user || null;
@@ -34,7 +35,7 @@ exports.viewProduct = async (req, res) => {
         const product = await Product.findById(req.params.id).populate('category');
         const selectedAddressId = req.session.selectedAddressId || null;
 
-        if (!product || product.isDelete) {
+        if (!product || product.isDelete || (product.category && product.category.status !== 'active')) {
             return res.status(404).send('Product not found');
         }
         const source = req.query.source || 'shop'; 

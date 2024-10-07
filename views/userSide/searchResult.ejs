@@ -4,15 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search Results</title>
-    <!-- Include CSS and Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/path/to/your/styles.css"> <!-- Adjust path as necessary -->
-    <style>
-        /* You can add any additional styles here */
-    </style>
+    <link rel="stylesheet" href="/path/to/your/styles.css"> 
 </head>
 <body>
-    <!-- Include the Header Partial -->
     <%- include('../partials/user_navbar.ejs') %>
 
     <div class="container mt-5">
@@ -41,7 +36,7 @@
                     <% results.forEach(item => { %>
                         <div class="col-md-4 mb-4">
                             <div class="card">
-                                <img src="<%= item.image || '/path/to/default/image.jpg' %>" class="card-img-top" alt="<%= item.name %>">
+                                <img src="<%= item.image %>" class="card-img-top" alt="<%= item.name %>">
                                 <div class="card-body">
                                     <h5 class="card-title"><%= item.name %></h5>
                                     <p class="card-text">Price: <%= item.price %></p>
@@ -59,23 +54,17 @@
         </div>
     </div>
 
-    <!-- Include the Footer Partial -->
     <%- include('../partials/footer') %>
 
-    <!-- Include JavaScript -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     
     <script>
-        // Function to reload the page based on the selected sorting option
         function sortResults(sortOption) {
-            // Get the current search query
             const query = "<%= query %>";
-
-            // Redirect the page with the selected sorting option
             window.location.href = `/user/search?q=${query}&sort=${sortOption}`;
-        }
+    }
     </script>
 </body>
 </html>

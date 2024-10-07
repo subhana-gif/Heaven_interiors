@@ -71,6 +71,12 @@ th, td {
 
     <%- include('../partials/user_navbar.ejs') %>
 
+    <% if (errorMessage) { %>
+        <div style="font-size: larger; color: #c82333;">
+            <%= errorMessage %>
+        </div>
+    <% } %>
+
     <div class="cart-container">
     <h1>Your Shopping Cart</h1>
 
@@ -111,10 +117,10 @@ th, td {
                         
             
                         <!-- Product price -->
-                        <td>$<%= item.price %></td>
+                        <td>₹<%= item.price %></td>
             
                         <!-- Product total (quantity * price) -->
-                        <td>$<%= (item.price * item.quantity).toFixed(2) %></td>
+                        <td>₹<%= (item.price * item.quantity).toFixed(2) %></td>
             
                         <!-- Remove button -->
                         <td>

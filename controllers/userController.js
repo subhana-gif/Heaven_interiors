@@ -1,5 +1,6 @@
 const User = require('../models/User');
-const Category = require('../models/category');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const Cart=require('../models/cart')
 const { sendOtpEmail } = require('./otpController'); 
@@ -117,7 +118,6 @@ const handleUserLogout = (req, res) => {
         return res.redirect('/user/user_login');
     });
 };
-
 
 
 module.exports = {

@@ -1,16 +1,12 @@
-// searchController.js
-
-const Product = require('../models/productModal'); // Adjust path as necessary
-const Category = require('../models/category'); // Adjust path as necessary
+const Product = require('../models/productModal'); 
+const Category = require('../models/category'); 
 
 // Function to get search suggestions
 exports.getSearchSuggestions = async (req, res) => {
     const query = req.query.q;
 
     try {
-        // Find products matching the query
         const products = await Product.find({ name: { $regex: query, $options: 'i' } }).limit(5);
-        // Find categories matching the query
         const categories = await Category.find({ name: { $regex: query, $options: 'i' } }).limit(5);
 
         const suggestions = [
@@ -30,24 +26,27 @@ exports.getSearchResults = async (req, res) => {
     const sort = req.query.sort;
 
     try {
-        // Ensure we're querying only string fields with regex
         const searchRegex = new RegExp(query, 'i'); // 'i' for case-insensitive search
-
-        // Find categories that match the query (if searching by category)
         const categories = await Category.find({ name: { $regex: searchRegex } });
-
-        // Extract category IDs for querying products by category
         const categoryIds = categories.map(category => category._id);
-
-        // Search for products matching the query in either the name or category
         let results = await Product.find({
             $or: [
                 { name: { $regex: searchRegex } },        // Case-insensitive search for product name
                 { category: { $in: categoryIds } }        // Search by matching category IDs
             ]
-        }).populate('category'); // Populates the category field with category details
+        }).populate('category'); 
 
-        // Sorting logic based on the sort parameter
+        results = results.map(product => {
+            const productImagePath = product.images && product.images.length > 0
+                ? `/uploads/${product.images[0].split('\\').pop().split('/').pop()}`
+                : '/uploads/placeholder.jpg'; // Default placeholder if no image
+
+            return {
+                ...product._doc, // Spread other fields like name, price, etc.
+                image: productImagePath
+            };
+        });
+        
         switch (sort) {
             case 'popularity':
                 results = results.sort((a, b) => b.popularity - a.popularity);
@@ -80,7 +79,6 @@ exports.getSearchResults = async (req, res) => {
                 break;
         }
 
-        // Render the search results page with the sorted results
         res.render('userSide/searchResult', { query, results });
     } catch (err) {
         console.error(err);

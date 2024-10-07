@@ -33,7 +33,7 @@
                         <td><%= customer.email %></td>
                         <td><%= customer.isBlocked ? 'Blocked' : 'Active' %></td> <!-- Display status -->
                         <td>
-                            <form action="/adminPanel/customers/toggle-status/<%= customer._id %>" method="POST" style="display:inline-block;">
+                            <form action="/adminPanel/customers/toggle-status/<%= customer._id %>" method="POST" style="display:inline-block;" onsubmit="return confirmToggleStatus()">
                                 <button type="submit" class="btn btn-sm <%= customer.isBlocked ? 'btn-success' : 'btn-danger' %>">
                                     <%= customer.isBlocked ? 'Unblock' : 'Block' %>
                                 </button>
@@ -84,5 +84,11 @@
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+         function confirmToggleStatus() {
+        const action = '<%= customers.isBlocked ? "unblock" : "block" %>';
+        return confirm(`Are you sure you want to ${action} this customers?`);
+         }
+    </script>
 </body>
 </html>

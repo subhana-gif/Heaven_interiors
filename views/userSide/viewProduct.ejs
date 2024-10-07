@@ -306,19 +306,10 @@
     <!-- Breadcrumbs -->
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/user/home">Home</a></li>
-    
-        <% if (source === 'productList') { %>
-            <li class="breadcrumb-item"><a href="/user/category/<%= product.category._id %>"><%= product.category.name %></a></li>
-        <% } else if (source === 'searchResult') { %>
-            <li class="breadcrumb-item"><a href="/user/search">Search</a></li>
-        <% } else { %>
-            <li class="breadcrumb-item"><a href="/user/shop">Shop</a></li>
-        <% } %>
-    
+        <li class="breadcrumb-item"><a href="/user/shop">Shop</a></li>
         <li class="breadcrumb-item active"><%= product.name %></li>
     </ol>
     
-
     <!-- Product layout -->
     <div class="product-container">
         <!-- Image Section -->
@@ -421,13 +412,11 @@
         <div class="related-products-slider">
             <div class="slider-container">
                 <% relatedProducts.forEach(relatedProduct => { %>
-                    <div class="related-product-card"> <!-- Each card should be a slide -->
+                    <div class="related-product-card"> 
                         <div class="card-content">
-                            <!-- Left side: Product Image -->
                             <div class="product-image">
                                 <img src="/<%= relatedProduct.images[0] ? relatedProduct.images[0].split('\\').pop().split('/').pop() : 'placeholder.jpg' %>" alt="<%= relatedProduct.name %>" class="main-image">
                             </div>
-                            <!-- Right side: Product Details -->
                             <div class="product-details">
                                 <h5><a href="/user/shop/<%= relatedProduct._id %>"><%= relatedProduct.name %></a></h5>
                                 <p><%= relatedProduct.description %></p>
@@ -437,9 +426,6 @@
                     </div>
                 <% }); %>
             </div>
-            <!-- Navigation arrows -->
-            <button class="slick-prev" aria-label="Previous">&lt;</button>
-            <button class="slick-next" aria-label="Next">&gt;</button>
         </div>
     </div>
 </div>
@@ -456,6 +442,15 @@
             dropdown.classList.toggle('visible');
             dropdown.classList.toggle('hidden');
         }
+
+
+        function changeMainImage(newImageSrc) {
+        // Select the main image element
+        const mainImage = document.getElementById('mainImage');
+        
+        // Change the src of the main image
+        mainImage.src = newImageSrc;
+    }
 
 
 

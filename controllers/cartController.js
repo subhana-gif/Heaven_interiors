@@ -15,11 +15,24 @@ exports.addToCart = async (req, res) => {
         if (!product) {
             return res.status(404).send('Product not found');
         }
+        const stockLeft = product.stock;
 
         const existingProductIndex = cart.findIndex(item => item.productId === productId);
         if (existingProductIndex >= 0) {
-            cart[existingProductIndex].quantity += quantity;
-        } else {
+            const currentQuantity = cart[existingProductIndex].quantity;
+            const newQuantity = currentQuantity + quantity;
+
+            // Ensure quantity does not exceed stock and the limit (5)
+            if (newQuantity <= stockLeft && newQuantity <= 5) {
+                cart[existingProductIndex].quantity = newQuantity;
+            } else {
+                // Send a message to the user if stock limit or max quantity is exceeded
+                return res.render('userSide/cart', {
+                    cart,
+                    errorMessage: 'Cannot add more than available stock or maximum limit of 5'
+                });            }
+            } else {
+                if (quantity <= stockLeft && quantity <= 5) {
             cart.push({
                 productId: product.id,
                 name: product.name,
@@ -28,6 +41,7 @@ exports.addToCart = async (req, res) => {
                 quantity: quantity
             });
         }
+    }
 
         req.session.cart = cart; // Save the updated cart in the session
 
@@ -45,9 +59,6 @@ exports.addToCart = async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 };
-
-
-
 
 exports.updateCart = async (req, res) => {
     const productId = req.params.id;
@@ -90,8 +101,6 @@ exports.updateCart = async (req, res) => {
     }
 };
 
-
-// Remove from Cart
 exports.removeFromCart = (req, res) => {
     const productId = req.params.id;
     let cart = req.session.cart || [];
@@ -119,7 +128,7 @@ exports.renderCart =async (req, res) => {
     }));
     console.log("Detailed Cart:", detailedCart);
     const addresses = await Address.find({ userId: req.user._id });
-    res.render('userSide/cart', { cart: detailedCart, user: req.session.user,addresses });
+    res.render('userSide/cart', { cart: detailedCart, user: req.session.user,addresses ,errorMessage:''});
     }catch(error){
         console.error(error);
         res.status(500).send('Server error')

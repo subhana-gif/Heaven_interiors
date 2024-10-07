@@ -135,8 +135,8 @@
                                         <button type="submit" <%= item.quantity >= item.stock ? 'disabled' : '' %>>+</button>
                                     </form>
                                 </td>
-                                <td>$<%= item.price.toFixed(2) %></td>
-                                <td>$<%= (item.price * item.quantity).toFixed(2) %></td>
+                                <td>₹<%= item.price.toFixed(2) %></td>
+                                <td>₹<%= (item.price * item.quantity).toFixed(2) %></td>
                                 <td>
                                     <form action="/user/remove-from-cart/<%= item.productId %>" method="POST">
                                         <button type="submit" class="btn-remove">Remove</button>
@@ -148,7 +148,7 @@
                 </table>
     
                 <!-- Total price calculation -->
-                <h4>Total Price: $<%= cart.reduce((total, item) => total + (item.price * item.quantity), 0) %></h4>
+                <h2 style="font-weight: bolder; color: #14482a;">Total Price: ₹<%= cart.reduce((total, item) => total + (item.price * item.quantity), 0) %></h2>
             </div>
     
             <div class="checkout-section">
@@ -271,7 +271,7 @@
     document.getElementById('editPinCode').value = pinCode;
 
     // Dynamically update the form action URL with the address ID
-    document.getElementById('editAddressForm').action = `/user/checkout/addresses/edit/${id}`;
+    document.getElementById('editAddressForm').action = `/user/checkout/addresses/edit/₹{id}`;
     
     document.getElementById('editAddressModal').style.display = 'block';
 }
@@ -289,14 +289,14 @@ window.onclick = function(event) {
 
 function deleteAddress(id) {
     if (confirm("Are you sure you want to delete this address?")) {
-        fetch(`/user/checkout/addresses/delete/${id}`, {
+        fetch(`/user/checkout/addresses/delete/₹{id}`, {
             method: 'POST'
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 // Remove the deleted address from the DOM
-                const addressElement = document.querySelector(`li[data-address-id="${id}"]`);
+                const addressElement = document.querySelector(`li[data-address-id="₹{id}"]`);
                 if (addressElement) {
                     addressElement.remove();
                 }

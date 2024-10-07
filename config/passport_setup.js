@@ -17,7 +17,6 @@ async function(accessToken, refreshToken, profile, done) {
     try {
         let user = await User.findOne({ email });
 
-        // If no user exists, create a new one with Google profile info
         if (!user) {
             user = new User({
                 email,
