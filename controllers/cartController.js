@@ -22,11 +22,9 @@ exports.addToCart = async (req, res) => {
             const currentQuantity = cart[existingProductIndex].quantity;
             const newQuantity = currentQuantity + quantity;
 
-            // Ensure quantity does not exceed stock and the limit (5)
             if (newQuantity <= stockLeft && newQuantity <= 5) {
                 cart[existingProductIndex].quantity = newQuantity;
             } else {
-                // Send a message to the user if stock limit or max quantity is exceeded
                 return res.render('userSide/cart', {
                     cart,
                     errorMessage: 'Cannot add more than available stock or maximum limit of 5'
@@ -43,13 +41,11 @@ exports.addToCart = async (req, res) => {
         }
     }
 
-        req.session.cart = cart; // Save the updated cart in the session
+        req.session.cart = cart; 
 
-        // Save cart to database
         await Cart.findOneAndUpdate(
-            { userId: req.user._id }, // Find cart for this user
-            { items: cart }, // Update items
-            { upsert: true, new: true } // Create if it doesn't exist
+            { userId: req.user._id }, 
+            { items: cart }, 
         );
 
         console.log("Cart after adding product:", req.session.cart);
@@ -66,7 +62,7 @@ exports.updateCart = async (req, res) => {
     let cart = req.session.cart || [];
 
     try {
-        const productFromDb = await Product.findById(productId); //  you're using Mongoose
+        const productFromDb = await Product.findById(productId); 
 
         if (!productFromDb) {
             req.send('error', 'Product not found.');
@@ -96,7 +92,6 @@ exports.updateCart = async (req, res) => {
         res.redirect('/user/cart');
     } catch (error) {
         console.error(error);
-        // res.send('error', 'An error occurred while updating the cart.');
         res.redirect('/user/cart');
     }
 };

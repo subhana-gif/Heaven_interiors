@@ -1,4 +1,4 @@
-require('dotenv').config(); // Ensure dotenv is loaded
+require('dotenv').config(); 
 
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
@@ -22,7 +22,7 @@ async function(accessToken, refreshToken, profile, done) {
                 email,
                 provider: 'google',
                 googleId,
-                username: profile.displayName // Optionally store display name from Google
+                username: profile.displayName 
             });
             await user.save();
         }

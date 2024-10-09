@@ -51,7 +51,7 @@ exports.addCategory = async (req, res) => {
             return res.render('adminPanel', {
                 body: 'admin/category',
                 errorMessage: 'Category name must be unique and case-sensitive.',
-                categories: await Category.find({}), // Fetch categories again
+                categories: await Category.find({}),
                 search: '',
                 currentpage: 1,
                 totalPages: 1

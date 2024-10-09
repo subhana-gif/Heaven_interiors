@@ -26,23 +26,23 @@ exports.getSearchResults = async (req, res) => {
     const sort = req.query.sort;
 
     try {
-        const searchRegex = new RegExp(query, 'i'); // 'i' for case-insensitive search
+        const searchRegex = new RegExp(query, 'i');
         const categories = await Category.find({ name: { $regex: searchRegex } });
         const categoryIds = categories.map(category => category._id);
         let results = await Product.find({
             $or: [
-                { name: { $regex: searchRegex } },        // Case-insensitive search for product name
-                { category: { $in: categoryIds } }        // Search by matching category IDs
+                { name: { $regex: searchRegex } },        
+                { category: { $in: categoryIds } }       
             ]
         }).populate('category'); 
 
         results = results.map(product => {
             const productImagePath = product.images && product.images.length > 0
                 ? `/uploads/${product.images[0].split('\\').pop().split('/').pop()}`
-                : '/uploads/placeholder.jpg'; // Default placeholder if no image
+                : '/uploads/placeholder.jpg'; 
 
             return {
-                ...product._doc, // Spread other fields like name, price, etc.
+                ...product._doc,
                 image: productImagePath
             };
         });

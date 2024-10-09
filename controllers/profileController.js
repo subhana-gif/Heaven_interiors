@@ -11,7 +11,7 @@ exports.getProfilePage = async (req, res) => {
     }
 
     try {
-        const userId = req.user._id; // Assuming the user is stored in req.user
+        const userId = req.user._id;
         const user = await User.findById(userId).select('email username');
         const addresses = await Address.find({ userId });
 
@@ -19,7 +19,6 @@ exports.getProfilePage = async (req, res) => {
             return res.status(404).send('User not found');
         }
 
-        // Render the profile page with user information and addresses
         res.render('userSide/profile', {
             user,
             addresses
@@ -43,7 +42,6 @@ exports.getPersonalInformation = async (req, res) => {
             return res.status(404).send('User not found');
         }
 
-        // Send the personal information data as HTML with an editable form
         res.send(`
             <h3 style="color:green">Personal Information</h3>
             <p><strong>Email:</strong> <span id="user-email">${user.email}</span></p>
@@ -100,13 +98,10 @@ exports.updateProfile = async (req, res) => {
     try {
         const updateData = { email, username };
 
-        // If a new password is provided, hash it and update
         if (password && password.trim() !== '') {
             const hashedPassword = await bcrypt.hash(password, 10);
             updateData.password = hashedPassword;
         }
-
-        // Update the user information
         const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
 
         if (!updatedUser) {
@@ -131,7 +126,6 @@ exports.updatePassword = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
 
-        // Hash the new password and save it
         user.password = await bcrypt.hash(password, 10);
         await user.save();
 
@@ -148,14 +142,13 @@ exports.getUserAddresses = async (req, res) => {
     }
 
     try {
-        const userId = req.user._id; // Assuming you're using session and user is stored in req.user
+        const userId = req.user._id; 
         const addresses = await Address.find({ userId });
 
         if (!addresses || addresses.length === 0) {
             return res.status(404).send('No addresses found');
         }
 
-        // Send the addresses as HTML
         let addressesHtml = '<h3 style="color:green">Your Addresses</h3>';
         addresses.forEach(address => {
             addressesHtml += `
@@ -261,14 +254,13 @@ exports.getEditAddress = async (req, res) => {
     }
 
     try {
-        const addressId = req.params.id; // Address ID from request parameters
+        const addressId = req.params.id;
         const address = await Address.findById(addressId);
 
         if (!address) {
             return res.status(404).send('Address not found');
         }
 
-        // Send the address as HTML in a form
         const editAddressHtml = `
             <h3 style="color:green">Edit Address</h3>
             <form id="edit-address-form" method="POST" action="/user/addresses/${addressId}/edit">
@@ -294,14 +286,14 @@ exports.updateAddress = async (req, res) => {
         return res.status(401).send('Unauthorized');
     }
 
-    const addressId = req.params.id; // Address ID from request parameters
-    const { name, mobileNumber, address, city, state, pinCode } = req.body; // Extract updated data from request body
+    const addressId = req.params.id;
+    const { name, mobileNumber, address, city, state, pinCode } = req.body; 
 
     try {
         const updatedAddress = await Address.findByIdAndUpdate(
             addressId,
             { name, mobileNumber, address, city, state, pinCode },
-            { new: true } // Return the updated document
+            { new: true } 
         );
 
         if (!updatedAddress) {
@@ -321,7 +313,7 @@ exports.deleteAddress = async (req, res) => {
     }
 
     try {
-        const addressId = req.params.id; // Address ID from request parameters
+        const addressId = req.params.id; 
         const deletedAddress = await Address.findByIdAndDelete(addressId);
 
         if (!deletedAddress) {
@@ -363,8 +355,8 @@ exports.addNewAddress = async (req, res) => {
 
 exports.getOrders = async (req, res) => {
     try {
-        const userId = req.user.id; // Get user ID from the request
-        const orders = await Order.find({ user: userId }); // Fetch orders for the user
+        const userId = req.user.id; 
+        const orders = await Order.find({ user: userId });
         res.render('userSide/orders', { orders });
     } catch (error) {
         console.error('Error fetching orders:', error);

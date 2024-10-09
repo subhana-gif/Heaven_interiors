@@ -18,26 +18,21 @@ const updateOrderStatus = async (req, res) => {
     const newStatus = req.body.newStatus;
 
     try {
-        // Find the order by ID
         const order = await Order.findById(orderId);
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
         }
 
-        // Update the order status
         order.status = newStatus;
 
-        // If the status is "Cancelled", also update the status of all cart items to "Cancelled"
         if (newStatus === 'Cancelled') {
             order.cartItems.forEach(item => {
                 item.status = 'Cancelled';
             });
         }
 
-        // Save the updated order
         await order.save();
 
-        // Redirect back to the admin orders page or send a success response
         res.redirect('/adminPanel/orders');
     } catch (error) {
         console.error('Error updating order status:', error);

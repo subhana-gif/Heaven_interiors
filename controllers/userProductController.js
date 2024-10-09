@@ -3,7 +3,7 @@ const Category = require('../models/category');
 
 exports.renderUserProductPage = async (req, res) => {
     try {
-        const categoryName = req.query.category; // Get category name from query string
+        const categoryName = req.query.category;
         let products;
 
         if (categoryName) {

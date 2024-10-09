@@ -29,7 +29,7 @@
         <ul>
             <% order.cartItems.forEach(item => { %>
                 <li>
-                    <img src="<%= item.image %>" alt="<%= item.name %>" style="width: 50px; height: auto;">
+                    <img src="/<%= item.image %>" alt="<%= item.name %>" style="width: 50px; height: auto;">
                     <%= item.name %> - Quantity: <%= item.quantity %> - Price: $<%= (item.price * item.quantity).toFixed(2) %>
                 </li>
             <% }); %>

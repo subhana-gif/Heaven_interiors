@@ -120,10 +120,157 @@ const handleUserLogout = (req, res) => {
 };
 
 
+const renderForgotPassword = (req, res) => {
+    res.render('userSide/forgetPassword', { errorMessage: null, successMessage: null });
+};
+
+// Handle forgot password (send reset email)
+const handleForgotPassword = async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.render('userSide/forgetPassword', {
+                errorMessage: 'No account with that email found',
+                successMessage: null
+            });
+        }
+
+        // Create password reset token
+        const token = crypto.randomBytes(20).toString('hex');
+        const resetTokenExpiry = Date.now() + 3600000; 
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = resetTokenExpiry;
+        await user.save();
+        
+        
+        console.log('Reset Token:', user.resetPasswordToken);
+        console.log('Reset Token Expiry:', user.resetPasswordExpires);
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            port: 587,
+            secure: false,
+            requireTLS: true,
+            auth: {
+                user: 'subhanathasni@gmail.com',
+                pass: 'iaae sycc iwel tjji' 
+            }
+        });
+
+        const mailOptions = {
+            to: user.email,
+            from: 'subhanathasni@gmail.com',
+            subject: 'Password Reset',
+            text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
+                Please click on the following link, or paste this into your browser to complete the process:\n\n
+                http://${req.headers.host}/user/reset_password/${token}\n\n
+                If you did not request this, please ignore this email and your password will remain unchanged.\n`
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        return res.render('userSide/forgetPassword', {
+            errorMessage: null,
+            successMessage: 'An e-mail has been sent with further instructions.'
+        });
+    } catch (error) {
+        console.error('Error during forgot password:', error);
+        return res.render('userSide/forgetPassword', {
+            errorMessage: 'Internal server error',
+            successMessage: null
+        });
+    }
+};
+
+// Render reset password page
+const renderResetPassword = async (req, res) => {
+    const { token } = req.params;
+    try {
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() } 
+        });
+
+        if (!user) {
+            return res.render('userSide/resetPassword', {
+                errorMessage: 'Password reset token is invalid or has expired',
+                successMessage: null,
+                token
+            });
+        }
+
+        res.render('userSide/resetPassword', {
+            errorMessage: null,
+            successMessage: null,
+            token
+        });
+    } catch (error) {
+        console.error('Error rendering reset password page:', error);
+        return res.render('userSide/resetPassword', {
+            errorMessage: 'Internal server error',
+            successMessage: null,
+            token
+        });
+    }
+};
+
+// Handle password reset
+const handleResetPassword = async (req, res) => {
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword) {
+        return res.render('userSide/resetPassword', {
+            errorMessage: 'Passwords do not match',
+            successMessage: null,
+            token
+        });
+    }
+
+    try {
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() } 
+        });
+
+        if (!user) {
+            return res.render('userSide/resetPassword', {
+                errorMessage: 'Password reset token is invalid or has expired',
+                successMessage: null,
+                token
+            });
+        }
+
+
+        user.password = await bcrypt.hash(password, 10);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        return res.render('userSide/user_login', {
+            errorMessage: null,
+            successMessage: 'Password has been successfully reset. Please log in.'
+        });
+    } catch (error) {
+        console.error('Error during password reset:', error);
+        return res.render('userSide/resetPassword', {
+            errorMessage: 'Internal server error',
+            successMessage: null,
+            token
+        });
+    }
+};
+
+
 module.exports = {
     renderUserLogin,
     renderUserSignup,
     handleUserLogin,
     handleUserSignup,
     handleUserLogout,
+    renderForgotPassword,
+    handleForgotPassword,
+    renderResetPassword,
+    handleResetPassword
 };

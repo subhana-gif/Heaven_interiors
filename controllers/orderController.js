@@ -7,7 +7,7 @@ exports.getOrders = async (req, res) => {
             return res.redirect('/user/user_login');
         }
 
-        const userId = req.user._id; // Get user ID from the authenticated user
+        const userId = req.user._id;
         const search = req.query.search || ''; 
         const currentPage = parseInt(req.query.page) || 1; 
         const limit = 10;
@@ -17,7 +17,7 @@ exports.getOrders = async (req, res) => {
         const orders = await Order.find({ user: userId })
         .skip(skip).limit(limit);
         
-        const totalOrders = await Order.countDocuments({ user: userId }); // Total number of orders
+        const totalOrders = await Order.countDocuments({ user: userId }); 
         const totalPages = Math.ceil(totalOrders / limit);
 
         res.render('userSide/orders', {
@@ -32,31 +32,22 @@ exports.getOrders = async (req, res) => {
     }
 };
 
-
-
-// Logic to cancel an order
 exports.cancelOrder = async (req, res) => {
     const { orderId, productId } = req.params;
     try {
-        // Find the order in the database
         const order = await Order.findById(orderId);
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found' });
         }
-
-        // Find the item in the cartItems array
         const item = order.cartItems.find(item => item.productId.toString() === productId);
         if (item) {
-            // Update the status of the item to 'Cancelled'
             item.status = 'Cancelled';
 
-            // Check if all items in the order are cancelled
             const allCancelled = order.cartItems.every(item => item.status === 'Cancelled');
             if (allCancelled) {
-                order.status = 'Cancelled'; // Update the order status if all items are cancelled
+                order.status = 'Cancelled';
             }
 
-            // Save the updated order
             await order.save();
             return res.redirect('/user/orders')
         } else {
