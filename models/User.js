@@ -9,10 +9,12 @@ const UserSchema = new mongoose.Schema({
     provider: { type: String, default: 'local' }, 
     googleId: { type: String },
     resetPasswordToken: { type: String }, 
-    resetPasswordExpires: { type: Date } 
+    resetPasswordExpires: { type: Date },
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]
 });
 
 UserSchema.pre('save', async function (next) {
+    console.log('Password before save:', this.password);
     if (!this.isModified('password') || !this.password) return next();
     try {
         const salt = await bcrypt.genSalt(10);

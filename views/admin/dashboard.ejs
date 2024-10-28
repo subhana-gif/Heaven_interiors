@@ -1,2 +1,229 @@
-<h1 style="margin-top: 2em;">Dashboard</h1>
-<p style="margin-top: 1em;">Welcome to the Dashboard!</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Report</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .report-section {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body style="margin-top: 5%;">
+    <h1>Generate Sales Report</h1>
+    
+    <div>
+        <input type="radio" id="daily" name="reporting-period" value="daily" checked>
+        <label for="daily">Daily</label>
+        
+        <input type="radio" id="weekly" name="reporting-period" value="weekly">
+        <label for="weekly">Weekly</label>
+        
+        <input type="radio" id="monthly" name="reporting-period" value="monthly">
+        <label for="monthly">Monthly</label>
+        
+        <input type="radio" id="custom" name="reporting-period" value="custom">
+        <label for="custom">Custom Date Range</label>
+    </div>
+    
+    <div id="custom-date-range" style="display: none;">
+        <label for="start-date">Start Date:</label>
+        <input type="date" id="start-date" required>
+        
+        <label for="end-date">End Date:</label>
+        <input type="date" id="end-date" required>
+    </div>
+
+    <button id="generate-report" style="background-color: green;">Generate Report</button>
+    
+    <div id="report-results" style="display: none;">
+        <h2>Sales Report</h2>
+        <table id="sales-report-table" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Total Amount</th>
+                    <th>Sales Count</th>
+                    <th>Total Discount</th>
+                    <th>Coupons Deducted</th>
+                </tr>
+            </thead>
+            <tbody id="report-body"></tbody>
+        </table>
+        <p>Total Sales Count: <span id="totalSalesCount"></span></p>
+        <p>Total Order Amount: <span id="totalOrderAmount"></span></p>
+        <p>Total Discount: <span id="totalDiscount"></span></p>
+        <p>Total Coupons Deducted: <span id="totalCouponsDeducted"></span></p>
+        <button id="download-pdf">Download PDF</button>
+        <button id="download-excel">Download Excel</button>
+    </div>
+
+  <script>
+    let salesData=[]; 
+ document.querySelectorAll('input[name="reporting-period"]').forEach((elem) => {
+            elem.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    document.getElementById('custom-date-range').style.display = 'block';
+                } else {
+                    document.getElementById('custom-date-range').style.display = 'none';
+                }
+            });
+        });
+
+        document.getElementById('generate-report').addEventListener('click', async () => {
+            const reportingPeriod = document.querySelector('input[name="reporting-period"]:checked').value;
+            let startDate, endDate;
+
+            if (reportingPeriod === 'custom') {
+                startDate = document.getElementById('start-date').value;
+                endDate = document.getElementById('end-date').value;
+
+                if (!startDate || !endDate) {
+                    alert("Please select both start and end date.");
+                    return;
+                }
+            } else {
+                // Set the startDate and endDate based on the selected period
+                const today = new Date();
+                if (reportingPeriod === 'daily') {
+                    startDate = endDate = today.toISOString().split('T')[0]; // Today's date
+                } else if (reportingPeriod === 'weekly') {
+                    const lastWeek = new Date(today);
+                    lastWeek.setDate(today.getDate() - 7);
+                    startDate = lastWeek.toISOString().split('T')[0];
+                    endDate = today.toISOString().split('T')[0];
+                } else if (reportingPeriod === 'monthly') {
+                    const lastMonth = new Date(today);
+                    lastMonth.setMonth(today.getMonth() - 1);
+                    startDate = lastMonth.toISOString().split('T')[0];
+                    endDate = today.toISOString().split('T')[0];
+                }
+            }
+
+            try {
+                const response = await fetch(`/adminPanel/sales-report?startDate=${startDate}&endDate=${endDate}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error);
+                }
+                // Check if salesData exists and is an array
+                if (!data || !data.salesData || !Array.isArray(data.salesData)) {
+                    throw new Error("Invalid data format received from the server.");
+                }
+
+                // Display the results
+                document.getElementById('report-results').style.display = 'block';
+                const reportBody = document.getElementById('report-body');
+                reportBody.innerHTML = ''; // Clear previous results
+                salesData = data.salesData;
+                data.salesData.forEach(item => {
+                    const row = `<tr>
+                        <td>${item._id}</td>
+                        <td>${item.totalSales}</td>
+                        <td>${item.totalOrders}</td>
+                        <td>${item.totalDiscount}</td>
+                        <td>${item.couponsDeducted}</td>
+                    </tr>`;
+                    reportBody.insertAdjacentHTML('beforeend', row);
+                });
+
+                const totals = data.overallTotals; // Access overall totals
+                // e.g., display them in a specific element on the page
+                document.getElementById('totalSalesCount').innerText = totals.totalSalesCount;
+                document.getElementById('totalOrderAmount').innerText = totals.totalOrderAmount;
+                document.getElementById('totalDiscount').innerText = totals.totalDiscount;
+                document.getElementById('totalCouponsDeducted').innerText = totals.totalCouponsDeducted;
+
+
+            } catch (error) {
+                console.error("Error fetching report data:", error);
+                alert("Failed to generate report: " + error.message);
+            }
+        });
+
+        async function fetchSalesReportData() {
+    const response = await fetch('/adminPanel/sales-report'); // Adjust the endpoint accordingly
+    if (!response.ok) {
+        throw new Error('Failed to fetch sales report data');
+    }
+    return await response.json(); // Assuming this returns an object with `salesData` key
+}
+        
+const downloadPDFButton = document.getElementById('download-pdf');
+downloadPDFButton.addEventListener('click', async () => {
+    try {
+        if (!salesData.length) {
+            alert("No report data available. Please generate the report first.");
+            return;
+        }
+
+        const response = await fetch('/adminPanel/report/pdf', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ salesData })     
+        });
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sales-report.pdf';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } else {
+            alert('Error generating PDF report');
+        }
+    } catch (error) {
+        console.error('Error downloading PDF:', error);
+        alert('An error occurred while generating the PDF');
+    }
+});
+
+// Event to download Excel
+const downloadExcelButton = document.getElementById('download-excel');
+downloadExcelButton.addEventListener('click', async () => {
+    try {
+        if (!salesData.length) {
+            alert("No report data available. Please generate the report first.");
+            return;
+        }
+        
+        const response = await fetch('/adminPanel/report/excel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({salesData})
+        });
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sales-report.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } else {
+            alert('Error generating Excel report');
+        }
+    } catch (error) {
+        console.error('Error downloading Excel:', error);
+        alert('An error occurred while generating the Excel file');
+    }
+});
+
+
+</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>  
+  </body>
+</html>

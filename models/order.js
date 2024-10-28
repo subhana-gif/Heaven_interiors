@@ -12,6 +12,11 @@ const cartItemSchema = new mongoose.Schema({
 
 // Main order schema
 const orderSchema = new mongoose.Schema({
+    orderNumber: {
+        type: String,
+        unique: true,
+        required: true
+    },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     cartItems: [cartItemSchema],
     paymentMethod: { type: String, required: true },
@@ -23,15 +28,19 @@ const orderSchema = new mongoose.Schema({
         pinCode: { type: String, required: true }
     },
     totalPrice: { type: Number, required: true },
+    discount: { type: Number, default: 0 }, 
+    coupon: { type: String },
+    couponDeduction: { type: Number, default: 0 },
     status: {
         type: String,
-        enum: ['Ordered', 'Shipped', 'Delivered', 'Cancelled'],
+        enum: ['Ordered', 'Shipped', 'Delivered', 'Cancelled','Returned'],
         default: 'Ordered'
     },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
     paymentStatus: {
         type: String    },
+    deliveredDate: { type: Date },
     statusHistory: [
         {
             status: { type: String, enum: ['Ordered', 'Shipped', 'Delivered', 'Cancelled'] },

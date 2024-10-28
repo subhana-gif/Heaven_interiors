@@ -4,11 +4,12 @@ const express = require('express');
 const router = express.Router();
 
 const adminRoutes = require('./adminRoutes');
+const dashboardRoutes = require('./dashboardRoutes')
 const categoryRoutes = require('./categoryRoutes');
 const customerRoutes = require('./customerRoutes');
 const productRoutes = require('./productRoutes');
 const orderAdminRoutes = require('./orderAdminRoutes');
-const offerRoutes = require('./offerRoutes');
+const couponRoutes = require('./couponRoutes');
 const settingRoutes = require('./settingRoutes');
 
 const authRoutes = require('./auth');
@@ -21,15 +22,21 @@ const checkoutRoutes = require('./checkoutRoutes');
 const orderRoutes = require('./orderRoutes');
 const profileRoutes = require('./profileRoutes');
 const searchRoutes = require('./searchRoutes');
+const wishlistRotes = require('./wishlistRoutes')
+const walletRoutes = require('./walletRoutes')
+const offerRoutes = require('./offerRoutes')
+
 
 // Admin Routes
 router.use('/adminPanel', adminRoutes);
+router.use('/adminPanel',dashboardRoutes)
 router.use('/adminPanel', categoryRoutes);
 router.use('/adminPanel', customerRoutes);
 router.use('/adminPanel', productRoutes);
 router.use('/adminPanel', orderAdminRoutes);
-router.use('/adminPanel', offerRoutes);
+router.use('/adminPanel', couponRoutes);
 router.use('/adminPanel', settingRoutes);
+router.use('/adminPanel',offerRoutes)
 
 // User Routes
 router.use('/auth', authRoutes);
@@ -42,5 +49,8 @@ router.use('/user', checkoutRoutes);
 router.use('/user', orderRoutes);
 router.use('/user', profileRoutes);
 router.use('/user', searchRoutes);
+router.use('/user',wishlistRotes)
+router.use('/user',walletRoutes)
+
 
 module.exports = router;

@@ -10,6 +10,6 @@ router.get('/logout', userController.handleUserLogout);
 router.get('/forgot_password', userController.renderForgotPassword);
 router.post('/forgot_password', userController.handleForgotPassword);
 router.get('/reset_password/:token', userController.renderResetPassword);
-router.post('/reset_password', userController.handleResetPassword);
+router.post('/reset_password/:token', userController.handleResetPassword);
 
 module.exports = router;

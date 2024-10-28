@@ -4,25 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Heaven Interior</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
-</head>
-<body>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-        }
+<style>
+    body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+}
 
-        a {
-            text-decoration: none;
-            color: black;
-        }
+a {
+    text-decoration: none; /* Removes underline from all links */
+    color: inherit; /* Ensures the color is inherited rather than default blue */
+}
 
-      
+
+.product-page {
+    display: flex;
+    margin-left: 3%;
+    margin-right: 1%;
+}
+
+.sidebar {
+    margin-top: 1em;
+    width: 18%;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding-left: 1%;
+    margin-right: 2%;
+    position: sticky; /* Keeps sidebar fixed when scrolling */
+    top: 20px; /* Distance from the top when sticky */
+    height: fit-content; }
+
+.sidebar label {
+    margin-bottom: 1em; /* Space between the title and checkboxes */
+}
+
+.product-list {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 items per row */
+    gap: 2%;
+}
+
 .product-card {
     border: 1px solid #ddd;
     border-radius: 10px;
@@ -32,116 +59,120 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    margin: 1em; /* Margin around each card */
+    width: 100%;
+    margin: 1em;
 }
 
-/* Additional margin for vertical spacing between rows */
-.row > div {
-    margin-bottom: 20px; /* Adjust as needed for spacing */
+.product-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-    /* Hover effect */
-    .product-card:hover {
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
+.product-image img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
 
-    /* Image Styling */
-    .product-image img {
-        width: 100%;
-        height: 250px; /* Adjust this height as needed */
-        object-fit: cover;
-    }
-
-    /* Product Information */
-    .product-info {
-        padding: 15px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        flex-grow: 1;
-    }
-
-    .product-title {
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 10px;
-    }
-
-    .product-description {
-        font-size: 0.95rem;
-        color: #666;
-        margin-bottom: 15px;
-        flex-grow: 1; /* Takes up available space */
-    }
-
-    /* Footer: Price and Wishlist */
-    .product-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .product-price {
-        font-size: 1.1rem;
-        font-weight: bold;
-        color: #333;
-    }
-
-    .wishlist-button {
-        color: #ff0000; /* Red for the like button */
-        font-size: 1.3rem;
-        text-decoration: none;
-    }
-
-    .wishlist-button:hover {
-        color: #cc0000;
-    }
-
-    .row {
+.product-info {
+    padding: 15px;
     display: flex;
-    flex-wrap: wrap; /* Allows items to wrap to the next line if there's not enough space */
-    margin: 0 -15px; /* Adjusts for padding on columns */
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
 }
 
-.col-md-4 {
-    padding: 0 15px; /* Add horizontal padding */
-    flex: 0 0 33.33%; /* Sets each column to take up one-third of the row */
-    max-width: 33.33%; /* Limits the maximum width to one-third */
-    box-sizing: border-box; /* Includes padding in the width calculation */
+.product-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
 }
 
+.product-description {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 15px;
+    flex-grow: 1;
+}
 
-    /* Optional: Making the Price and Button Align at the Bottom */
-    .product-footer {
-        padding-top: 10px;
-        border-top: 1px solid #eee;
+.product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.product-price {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.wishlist-button {
+    color: #ff0000;
+    font-size: 1.3rem;
+    text-decoration: none;
+}
+
+.wishlist-button:hover {
+    color: #cc0000;
+}
+
+/* Responsive for small screens */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
     }
-        /* Responsive for small screens */
-        @media (max-width: 600px) {
-            .search-bar input {
-                width: 100px;
-            }
-        }
-
-        @media (max-width: 768px) {
-    .col-md-4 {
-        flex: 0 0 100%; /* Full width on small screens */
-        max-width: 100%;
+    .product-list {
+        grid-template-columns: 1fr;
     }
 }
 
-    </style>
+</style>
+
 
     <%- include('../partials/user_navbar.ejs') %>
 
-    <div class="container">
-        <div class="row">
+    <div class="container product-page">
+        <aside class="sidebar">
+            <h3>Categories</h3>
+            <form id="filterForm">
+                <div class="category-filter">
+                    <% categories.forEach(category => { %>
+                        <label>
+                            <input type="checkbox" name="category" value="<%= category._id %>">
+                            <%= category.name %>
+                        </label><br>
+                    <% }) %>
+                </div>
+    
+                <h3>Sort By</h3>
+                <div class="sort-filter">
+                    <label>
+                        <input type="radio" name="sort" value="popularity">
+                        Popularity
+                    </label>
+                    <label>
+                        <input type="radio" name="sort" value="priceLowToHigh">
+                        Price: Low to High
+                    </label>
+                    <label>
+                        <input type="radio" name="sort" value="priceHighToLow">
+                        Price: High to Low
+                    </label>
+                    <label>
+                        <input type="radio" name="sort" value="newArrivals">
+                        New Arrivals
+                    </label>
+                </div>
+            </form>
+        </aside>       
+        <div class="product-list" id="productsContainer">
             <% if (products.length > 0) { %>
                 <% products.forEach(function(product) { %>
-                    <div class="col-md-4 mb-4"> 
-                        <a href="/user/product/<%= product._id %>?source=productList">                        
-                            <div class="product-card">
+                    <div class="product-card">
+                        <a href="/user/product/<%= product._id %>?source=productList">
                             <div class="product-image">
                                 <img src="/<%= product.images[0] || 'placeholder.jpg' %>" alt="<%= product.name %>">
                             </div>
@@ -154,48 +185,158 @@
                                     <p class="out-of-stock" style="color: #dc3545;">Out of stock</p>
                                 <% } %>
                                 <div class="product-footer">
-                                    <span class="product-price">₹<%= product.price %></span>
-                                    <a href="/wishlist/add/<%= product._id %>" class="wishlist-button">
-                                        <i class="far fa-heart"></i> <!-- Font Awesome like icon -->
+                                    <div class="product-price">
+                                        <% if (product.discountedPrice) { %>
+                                            <span style="text-decoration: line-through; color: #999;">₹<%= product.price %></span>
+                                            <h5 style="display: inline; color: #3b940f; font-weight: 700;">₹<%= product.discountedPrice %></h5>
+                                        <% } else { %>
+                                            <h5 style="color: #3b940f; font-weight: 700;">₹<%= product.price %></h5>
+                                        <% } %>
+                                    </div>
+                                    <a href="#" class="wishlist-button <%= isAuthenticated ? '' : 'disabled' %>" data-product-id="<%= product._id %>" onclick="handleWishlist('<%= product._id %>', this, <%= isAuthenticated %>)">
+                                        <%= wishlist.includes(product._id.toString()) ? '❤️' : '🤍' %>
                                     </a>
-                                    
                                 </div>
                             </div>
-                            
-                        </div>
+                        </a>
                     </div>
                 <% }); %>
             <% } else { %>
-                <div class="col-12" style="margin: 5%; color: #cc0000;">No products found</div>
+                <div class="no-products">No products found</div>
             <% } %>
         </div>
-    </div>   
+    </div>
+     
 
     <%- include('../partials/footer') %>
+
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        function toggleProfileMenu() {
-            const dropdown = document.querySelector('.profile-dropdown');
-            dropdown.classList.toggle('visible');
-            dropdown.classList.toggle('hidden');
+   <script>
+
+    async function handleWishlist(productId, element, isAuthenticated) {
+        if (!isAuthenticated) { 
+            alert("You need to log in to use the wishlist.");
+            window.location.href = '/user/user_login'; 
+        return;
+    }
+
+    try {
+        const response = await fetch(`/user/wishlist/toggle/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            
+            if (data.action == 'added') {
+                element.innerHTML = '❤️'; // Change heart to filled
+                element.classList.add('active'); // Optionally, add a class to indicate active
+            } else {
+                element.innerHTML = '🤍'; // Change heart to outlined
+                element.classList.remove('active'); // Optionally, remove the active class
+            }
+
+        } else {
+            alert('Failed to update wishlist. Please try again.');
         }
+    } catch (error) {
+        console.error('Error toggling wishlist:', error);
+        alert('An error occurred while updating the wishlist.');
+    }
+}
 
+document.addEventListener('DOMContentLoaded', () => {
+    function filterProducts() {
+        const selectedCategories = Array.from(document.querySelectorAll('.category-filter input[type="checkbox"]:checked'))
+            .map(cb => cb.value);
+        const sort = document.querySelector('.sort-filter input[type="radio"]:checked')?.value || '';
 
+        fetch('/user/product/filter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ selectedCategories, sort })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Filtered products:', data.products); 
+            const container = document.getElementById('productsContainer');
+            if (container) {
+                container.innerHTML = ''; // Clear current products
+                if (data.products.length > 0) {
+                    data.products.forEach(product => {
 
-        const socket = io();
+                        const stockInfo = product.stockStatus === 'In Stock' 
+                ? `<p style="color: green;">${product.stock} left</p>` 
+                : `<p class="out-of-stock" style="color: #dc3545;">Out of stock</p>`;
 
-const userId = 'user-id-from-session'; 
+               
+                const priceDisplay = (product.discountedPrice && product.discountedPrice > 0)
+                    ? `<span style="text-decoration: line-through; color: #999;">₹${product.price}</span>
+                    <h5 style="display: inline; color: #3b940f; font-weight: 700;">₹${product.discountedPrice}</h5>`
+                    : `<h5 style="color: #3b940f; font-weight: 700;">₹${product.price}</h5>`;
 
-socket.emit('joinRoom', userId);
+            container.innerHTML += `
+                <div class="product-card">
+                    <a href="/user/product/${product._id}?source=productList">
+                        <div class="product-image">
+                            <img src="/${product.images[0] || 'placeholder.jpg'}" alt="${product.name}">
+                        </div>
+                        <div class="product-info">
+                            <h5 class="product-title">${product.name}</h5>
+                            <p class="product-description">${product.description}</p>
+                            ${stockInfo} <!-- Insert stock info here -->
+                            <div class="product-footer">
+                                <div class="product-price">
+                                    ${priceDisplay}
+                                </div>
+                                <a href="#" class="wishlist-button" data-product-id="${product._id}" onclick="handleWishlist('${product._id}', this, ${isAuthenticated})">
+                                    ${wishlist.includes(product._id.toString()) ? '❤️' : '🤍'}
+                                </a>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            `;
+        });
+    } 
+    else {
+        container.innerHTML = '<div class="no-products">No products found</div>';
+    }                
+            }
+})
+    .catch(error => console.error('Fetch error:', error)); // Add error handling
+}
+    // Attach event listeners to filter checkboxes
+    document.querySelectorAll('.category-filter input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', filterProducts);
+    });
 
-socket.on('userBlocked', (data) => {
-    alert(data.message);
-    window.location.href = '/user/user_login'; 
+    document.querySelectorAll('.sort-filter input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', filterProducts);
+    });
 });
+   
+   
+   </script>
+<% if (user) { %>
+    <script>
+        const isAuthenticated = true; // User is logged in
+        const wishlist = <%= JSON.stringify(user.wishlist || []) %>; // Assuming user has a wishlist property
     </script>
+<% } else { %>
+    <script>
+        const isAuthenticated = false; // User is not logged in
+        const wishlist = []; // No wishlist for unauthenticated users
+    </script>
+<% } %>
+
+        
+        
 </body>
 </html>

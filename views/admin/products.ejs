@@ -7,6 +7,8 @@
     
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     
     <style>
         .action-buttons {
@@ -165,11 +167,38 @@
                                 <option value="Out of Stock">Out of Stock</option>
                             </select>
                         </div>
+
                         <div class="form-group">
-                            <label for="images">Product Images</label>
-                            <input type="file" name="images" id="images" accept="image/*" multiple required>
-                            <small class="text-muted">Note: You must upload at least 3 images.</small>
+                            <label for="image1">Product Image 1</label>
+                            <input type="file" name="images" id="image1" accept="image/*" onchange="loadImage(this, 1)" required>
+                            <div class="image-preview">
+                                <img id="croppedImage1" class="img-thumbnail" style="width: 100px; height: 100px;" alt="Preview Image 1">
+                            </div>
+                            <button type="button" onclick="cropImage(1)">Crop Image 1</button>
                         </div>
+                        
+                        <div class="form-group">
+                            <label for="image2">Product Image 2</label>
+                            <input type="file" name="images" id="image2" accept="image/*" onchange="loadImage(this, 2)" required>
+                            <div class="image-preview">
+                                <img id="croppedImage2" class="img-thumbnail" style="width: 100px; height: 100px;" alt="Preview Image 2">
+                            </div>
+                            <button type="button" onclick="cropImage(2)">Crop Image 2</button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="image3">Product Image 3</label>
+                            <input type="file" name="images" id="image3" accept="image/*" onchange="loadImage(this, 3)" required>
+                            <div class="image-preview">
+                                <img id="croppedImage3" class="img-thumbnail" style="width: 100px; height: 100px;" alt="Preview Image 3">
+                            </div>
+                            <button type="button" onclick="cropImage(3)">Crop Image 3</button>
+                        </div>
+                        
+                        <!-- Hidden fields to hold cropped image data -->
+                        <input type="hidden" id="croppedData1" name="croppedData1">
+                        <input type="hidden" id="croppedData2" name="croppedData2">
+                        <input type="hidden" id="croppedData3" name="croppedData3">
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -277,6 +306,11 @@
                             <label for="specifications">Specifications</label>
                             <textarea name="specifications" class="form-control" required><%= product.specifications || '' %></textarea>
                         </div>
+                        <div class="form-group">
+                            <label for="deliveryDays">Estimated Delivery (Days)</label>
+                            <input type="number" name="deliveryDays" class="form-control" min="1" value="<%= product.deliveryDays || 7 %>" required>
+                            <small class="form-text text-muted">Enter the number of days after the order date for estimated delivery.</small>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -292,7 +326,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -304,6 +337,63 @@
                 }
             });
         });
+
+
+        let cropper1, cropper2, cropper3;
+
+function loadImage(input, imageNumber) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    const previewId = `croppedImage${imageNumber}`;
+    const cropperId = `cropper${imageNumber}`;
+
+    reader.onload = function (e) {
+        document.getElementById(previewId).src = e.target.result;
+
+        // Initialize Cropper.js
+        if (imageNumber === 1) {
+            if (cropper1) cropper1.destroy();
+            cropper1 = new Cropper(document.getElementById(previewId), {
+                aspectRatio: 1, // Square aspect ratio
+                viewMode: 1
+            });
+        } else if (imageNumber === 2) {
+            if (cropper2) cropper2.destroy();
+            cropper2 = new Cropper(document.getElementById(previewId), {
+                aspectRatio: 1,
+                viewMode: 1
+            });
+        } else if (imageNumber === 3) {
+            if (cropper3) cropper3.destroy();
+            cropper3 = new Cropper(document.getElementById(previewId), {
+                aspectRatio: 1,
+                viewMode: 1
+            });
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function cropImage(imageNumber) {
+    let croppedCanvas, croppedData;
+    if (imageNumber === 1 && cropper1) {
+        croppedCanvas = cropper1.getCroppedCanvas();
+        croppedData = croppedCanvas.toDataURL();
+        document.getElementById('croppedData1').value = croppedData;
+        document.getElementById('croppedImage1').src = croppedData;
+    } else if (imageNumber === 2 && cropper2) {
+        croppedCanvas = cropper2.getCroppedCanvas();
+        croppedData = croppedCanvas.toDataURL();
+        document.getElementById('croppedData2').value = croppedData;
+        document.getElementById('croppedImage2').src = croppedData;
+    } else if (imageNumber === 3 && cropper3) {
+        croppedCanvas = cropper3.getCroppedCanvas();
+        croppedData = croppedCanvas.toDataURL();
+        document.getElementById('croppedData3').value = croppedData;
+        document.getElementById('croppedImage3').src = croppedData;
+    }
+}
+
     </script>
 </body>
 </html>

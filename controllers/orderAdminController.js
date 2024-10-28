@@ -14,9 +14,7 @@ const getOrders = async (req, res) => {
 
 // Admin controller function to update order status
 const updateOrderStatus = async (req, res) => {
-    const { orderId } = req.body;
-    const newStatus = req.body.newStatus;
-
+    const { orderId,newStatus } = req.body;
     try {
         const order = await Order.findById(orderId);
         if (!order) {
@@ -25,11 +23,12 @@ const updateOrderStatus = async (req, res) => {
 
         order.status = newStatus;
 
-        if (newStatus === 'Cancelled') {
-            order.cartItems.forEach(item => {
-                item.status = 'Cancelled';
-            });
+
+        if (newStatus === 'Delivered') {
+            order.deliveredDate = new Date();
+            console.log("Delivered Date Set To:", order.deliveredDate); 
         }
+
 
         await order.save();
 

@@ -1,0 +1,51 @@
+<!-- views/paymentConfirmation.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmation</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
+</head>
+<body>
+
+    <%- include('../partials/user_navbar.ejs') %>
+
+    <div class="container mt-5">
+        <h2 style="color: green;">Thank You for Your Payment!</h2>
+        <p>Your payment has been successfully processed.</p>
+
+        <h4>Payment Details:</h4>
+        <ul>
+            <li><strong>Payment ID:</strong> <%= razorpayPaymentId %></li>
+            <li><strong>Order ID:</strong> <%= order._id %></li>
+        </ul>
+
+        <h4>Order Details:</h4>
+        <ul>
+            <li><strong>Payment Method:</strong> <%= order.paymentMethod %></li>
+            <li><strong>Shipping Address:</strong></li>
+            <li><%= order.address.name %></li>
+            <li><%= order.address.mobileNumber %></li>
+            <li><%= order.address.city %>, <%= order.address.state %>, <%= order.address.pinCode %></li>
+        </ul>
+
+        <h4>Items Ordered:</h4>
+        <ul>
+            <% order.cartItems.forEach(item => { %>
+                <li>
+                    <img src="/<%= item.image %>" alt="<%= item.name %>" style="width: 50px; height: auto;">
+                    <%= item.name %> - Quantity: <%= item.quantity %> - Price: ₹<%= (item.price * item.quantity).toFixed(2) %>
+                </li>
+            <% }); %>
+        </ul>
+
+        <h4>Total Price: ₹<%= order.totalPrice.toFixed(2) %></h4>
+
+        <a href="/user/home" class="btn btn-primary">Continue Shopping</a>
+    </div>
+
+    <%- include('../partials/footer.ejs') %>
+
+</body>
+</html>

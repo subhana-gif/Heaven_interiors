@@ -6,71 +6,41 @@
     <title>Heaven Interior</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
 
     <style>
+
+.main-image-container {
+    position: relative;
+    width: 500px; /* Adjust the size according to your layout */
+}
+
+.main-image {
+    width: 100%;
+}
+
+#zoom-result {
+    position: absolute;
+    top: 0;
+    left: 110%; /* Positioned next to the main image */
+    width: 400px; /* Adjust as necessary */
+    height: 400px; /* Adjust as necessary */
+    border: 1px solid #d4d4d4;
+    background-repeat: no-repeat;
+    background-size: 200%; /* Make the background larger for zooming effect */
+    display: none; /* Hidden by default, shown on hover */
+}
+
     body {
         font-family: Arial, Helvetica, sans-serif;
         margin: 0;
         padding: 0;
         background-color: #f9f9f9;
     }
-        .zoom {
-                width: 400px; /* Adjust width as needed */
-                height: 400px; /* Adjust height as needed */
-                border: 1px solid #ddd; /* Optional border */
-                margin: 20px 0; /* Optional margin */
-            }
     
-            .specifications {
-        background-color: #ffffff; /* White background for specifications */
-        border: 1px solid #ddd;
-        border-radius: 3px;
-        padding: 10px;
-        overflow-x: auto; /* Enable horizontal scrolling for long text */
-        white-space: pre-wrap; /* Preserve formatting */
-        max-height: 300px; /* Limit height for better presentation */
-        overflow-y: auto; /* Enable vertical scrolling */
-        }
-    
-        .specs-reviews {
-        margin-top: 20px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 20px;
-        background-color: #f8f9fa; /* Light background for contrast */
-    }
-    
-        /* Breadcrumb styling for inline view */
-        .breadcrumb {
-            display: flex;
-            padding: 10px 0;
-            list-style: none;
-            background: none;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #ddd;
-        }
-    
-        .breadcrumb-item {
-            display: inline;
-            margin-right: 10px;
-        }
-    
-        .breadcrumb-item a {
-            color: #007bff;
-            text-decoration: none;
-        }
-    
-        .breadcrumb-item + .breadcrumb-item::before {
-            content: '/';
-            margin: 0 5px;
-            color: #6c757d;
-        }
-    
-        .breadcrumb-item.active {
-            color: #6c757d;
-        }
-    
-        /* Layout container for image and details */
         .product-container {
             display: flex;
             flex-direction: row;
@@ -157,60 +127,6 @@
             margin-right: 10px;
         }
     
-        /* Highlights Section */
-    .highlights, .specifications {
-        background-color: #f5f5f5; /* Light background */
-        border: 1px solid #ddd; /* Border for separation */
-        border-radius: 8px; /* Rounded corners */
-        padding: 15px;
-        margin-bottom: 20px;
-        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-        font-family: 'Arial', sans-serif; /* Use consistent font */
-        line-height: 1.6; /* Better readability */
-    }
-    
-    .highlights h4, .specifications h4 {
-        font-size: 18px;
-        margin-bottom: 10px;
-        color: #333;
-        font-weight: bold;
-        text-transform: uppercase;
-        border-bottom: 2px solid #ddd;
-        padding-bottom: 5px;
-    }
-    
-    /* Highlight Content */
-    .highlights pre, .specifications pre {
-        white-space: pre-wrap; /* Preserve formatting */
-        word-wrap: break-word; /* Break long words */
-        background-color: #fff;
-        border-radius: 5px;
-        padding: 10px;
-        margin: 0;
-        font-size: 14px;
-        color: #555;
-    }
-    
-    /* Add icons for Highlights */
-    .highlights li::before, .specifications li::before {
-        content: "\2713"; /* Checkmark symbol */
-        color: #28a745; /* Green checkmark */
-        margin-right: 8px;
-        font-weight: bold;
-    }
-    
-    
-        .specs-reviews {
-            margin-top: 20px;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-    
-        .specs-reviews h4 {
-            font-family: Arial, Helvetica, sans-serif;
-            margin-top: 20px;
-        }
-    
-    
         .related-products-slider {
         position: relative;
         width: 100%;
@@ -231,7 +147,7 @@
         display: flex;
         flex-direction: column;
         height: 75%;
-        margin: 1em; /* Margin around each card */
+        margin: 1em;
     }
     
     .card-content {
@@ -240,7 +156,7 @@
     }
     
     .product-image {
-        width: 70%; /* Adjust image width */
+        width: 70%;
     }
     
     .product-image img {
@@ -249,7 +165,7 @@
     }
     
     .product-details {
-        width: 60%; /* Adjust details width */
+        width: 60%; 
         padding-left: 15px;
     }
     
@@ -291,7 +207,49 @@
         }
     }
     
-    
+    .specs-reviews {
+        padding: 20px;
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    h4 {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 5px;
+    }
+
+    .specs-reviews  {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    pre {
+        font-size: 14px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        color: #555;
+    }
+
+    .review {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .review strong {
+        color: #007bff;
+    }
+
     </style>
     
 
@@ -316,126 +274,171 @@
         <div class="image-section">
             <div class="thumbnail-container">
                 <% product.images.forEach((image, index) => { %>
-                    <% if (image) { %> <!-- Check if the image exists -->
+                    <% if (image) { %>
                         <img src="/<%= image.split('\\').pop().split('/').pop() %>" alt="<%= product.name %>" class="thumbnail" id="thumb-<%= index %>" onclick="changeMainImage('/<%= image.split('\\').pop().split('/').pop() %>')">
                         <% } %>
                 <% }); %>
             </div>
         
             <!-- Main image -->
-            <img id="mainImage" src="/<%= product.images[0] ? product.images[0].split('\\').pop().split('/').pop() : 'placeholder.jpg' %>" alt="<%= product.name %>" class="zoom">
+            <div class="main-image-container">
+                <img id="main-image" src="/<%= product.images[0].split('\\').pop().split('/').pop() %>" class="main-image">
+                <div id="zoom-result"></div>
+            </div>
         </div>
         
         <!-- Product Details Section -->
         <div class="product-details">
-            <h3 class="product-price">₹<%= product.price %></h3>
+          <div class="product-price">
+                <% if (discountedPrice) { %>
+                    <h3 style="display: inline; color: #3b940f; font-weight: 700;">₹<%= discountedPrice %></h3>
+                    <span style="text-decoration: line-through; color: #999;">₹<%= originalPrice %></span>
+                <% } else { %>
+                    <h3>₹<%= originalPrice %></h3>
+                <% } %>
+            </div>
             <p class="product-rating">Rating: <%= product.rating %> / 5</p>
             <p class="product-description"><%= product.description %></p>
             <p class="product-category">Category: <strong><%= product.category ? product.category.name : 'Uncategorized' %></strong></p>
             <% if (product.stockStatus === 'In Stock') { %>
                 <p style="color: green;"><%= product.stock %> left</p>
                 <% } else { %>
-                <p class="out-of-stock" style="color: #dc3545;">Out of stock</p>
+                <p class="out-of-stock" style="color: #dc3545; font-weight: bold;">Out of stock</p>
             <% } %>
             
                        
-            <!-- Offers Section -->
+         <!-- Offers Section -->
             <div class="offers">
-                <h5>Available Offers</h5>
-           
+                <h6>Available Offers</h6><br>
+                <div class="offer-list">
+                    <% offers.forEach(offer => { %>
+                        <div style="display: flex; align-items: center;">
+                            <i class="fas fa-tags" style="margin-right: 5px; color: #1db811;"></i> <!-- Font Awesome icon for offer -->
+                            <h6 style="margin: 0; font-weight: bold;"><%= offer.title %></h6>
+                            <span style="margin-left: 10px;">Discount: 
+                                <%= offer.discountType === 'percentage' ? offer.discountValue + '%' : '₹' + offer.discountValue %>
+                            </span>
+                        </div>
+                        
+                    <% }); %>
+                </div>
             </div>
+
 
             <!-- Action Buttons -->
             <div class="btn-inline">
                 <% if (product.stockStatus === 'In Stock') { %>
                     <form action="/user/add-to-cart/<%= product._id %>" method="POST">
-                        <button type="submit" class="btn btn-success" <%= product.stock === 0 ? 'disabled' : '' %>>Add to Cart</button>
+                        <button class="btn btn-success d-flex align-items-center">
+                            <i class="fas fa-cart-plus me-2"></i> Add to Cart
+                        </button>
                     </form>                
                 <% } else { %> 
-                    <button class="btn btn-primary" style="cursor: not-allowed;">Add to Cart</button>
+                  
                 <% } %>
               
             
                 <% if (product.stockStatus === 'In Stock') { %>
                     <form action="/user/add-to-cart/<%= product._id %>" method="POST">
-                        <button type="submit" class="btn btn-success" <%= product.stock === 0 ? 'disabled' : '' %>>Buy Now</button>
-                    </form>                
+                        <button class="btn btn-warning d-flex align-items-center">
+                            <i class="fas fa-bolt me-2"></i> Buy Now
+                        </button>
+                        </form>                
                 <% } else { %> 
-                    <button class="btn btn-primary" style="cursor: not-allowed;">Buy Now</button>
+                  
                 <% } %>
             </div>
             
         </div>
     </div>
 
-    <!-- Highlights / Specs -->
-    <div class="specs-reviews">
-        <h4>Highlights</h4>
-<div>
-    <% if (Array.isArray(product.highlights) && product.highlights.length > 0) { %>
-        <pre><%= product.highlights.join('\n') %></pre>
-    <% } else if (typeof product.highlights === 'string' && product.highlights.trim() !== '') { %>
-        <pre><%= product.highlights %></pre>
-    <% } else { %>
-        <p>No highlights available.</p>
-    <% } %>
-</div>
-
-<h4>Specifications</h4>
-<div>
-    <% if (typeof product.specifications === 'string' && product.specifications.trim() !== '') { %>
-        <pre><%= product.specifications %></pre>
-    <% } else { %>
-        <p>No specifications available.</p>
-    <% } %>
-</div>
-
-        
-        
-
-        <!-- Reviews -->
-        <h4>Reviews</h4>
-        <div>
-            <% if (product.reviews && Array.isArray(product.reviews) && product.reviews.length > 0) { %>
-                <% product.reviews.forEach(review => { %>
-                    <div class="review">
-                        <strong><%= review.userName %></strong>: <%= review.comment %>
-                        <p>Rating: <%= review.rating %> / 5</p>
-                    </div>
-                <% }) %>
-            <% } else { %>
-                <p>No reviews available</p>
-            <% } %>
+    <div class="container" style="margin-top: 2%;">
+        <!-- Highlights Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4>Highlights</h4>
+                <div>
+                    <% if (Array.isArray(product.highlights) && product.highlights.length > 0) { %>
+                        <pre><%= product.highlights.join('\n') %></pre>
+                    <% } else if (typeof product.highlights === 'string' && product.highlights.trim() !== '') { %>
+                        <pre><%= product.highlights %></pre>
+                    <% } else { %>
+                        <p>No highlights available.</p>
+                    <% } %>
+                </div>
+            </div>
         </div>
-        <!-- Related Products -->
-        <h4>Related Products</h4>
-        <div class="related-products-slider">
-            <div class="slider-container">
-                <% relatedProducts.forEach(relatedProduct => { %>
-                    <div class="related-product-card"> 
-                        <div class="card-content">
-                            <div class="product-image">
-                                <img src="/<%= relatedProduct.images[0] ? relatedProduct.images[0].split('\\').pop().split('/').pop() : 'placeholder.jpg' %>" alt="<%= relatedProduct.name %>" class="main-image">
+    
+        <!-- Specifications Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4>Specifications</h4>
+                <div>
+                    <% if (typeof product.specifications === 'string' && product.specifications.trim() !== '') { %>
+                        <pre><%= product.specifications %></pre>
+                    <% } else { %>
+                        <p>No specifications available.</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Reviews Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4>Reviews</h4>
+                <div>
+                    <% if (product.reviews && Array.isArray(product.reviews) && product.reviews.length > 0) { %>
+                        <% product.reviews.forEach(review => { %>
+                            <div class="review mb-2">
+                                <strong><%= review.userName %></strong>: <%= review.comment %>
+                                <p>Rating: <%= review.rating %> / 5</p>
                             </div>
-                            <div class="product-details">
-                                <h5><a href="/user/shop/<%= relatedProduct._id %>"><%= relatedProduct.name %></a></h5>
-                                <p><%= relatedProduct.description %></p>
-                                <p>Price: ₹<%= relatedProduct.price %></p>
+                        <% }) %>
+                    <% } else { %>
+                        <p>No reviews available</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Related Products Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4>Related Products</h4>
+                <div class="row">
+                    <% relatedProducts.forEach(relatedProduct => { %>
+                        <div class="col-md-3 mb-3">
+                            <div class="card h-100 text-center">
+                                <img src="/<%= relatedProduct.images[0] ? relatedProduct.images[0].split('\\').pop().split('/').pop() : 'placeholder.jpg' %>" 
+                                     class="card-img-top img-fluid" alt="<%= relatedProduct.name %>">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="/user/shop/<%= relatedProduct._id %>" class="text-dark text-decoration-none">
+                                            <%= relatedProduct.name %>
+                                        </a>
+                                    </h5>
+                                    <p class="card-text"><%= relatedProduct.description %></p>
+                                    <p class="text-primary">Price: ₹<%= relatedProduct.price %></p>
+                                </div>
+                                <div class="card-footer">
+                                    <a href="/user/shop/<%= relatedProduct._id %>" class="btn btn-primary">View Details</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                <% }); %>
+                    <% }); %>
+                </div>
             </div>
         </div>
     </div>
-</div>
+    </div>
 
     <%- include('../partials/footer') %>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
         function toggleProfileMenu() {
             const dropdown = document.querySelector('.profile-dropdown');
@@ -443,27 +446,41 @@
             dropdown.classList.toggle('hidden');
         }
 
+        function changeMainImage(imageSrc) {
+    const mainImage = $('#main-image'); // Use jQuery for consistency
 
-        function changeMainImage(newImageSrc) {
-        // Select the main image element
-        const mainImage = document.getElementById('mainImage');
-        
-        // Change the src of the main image
-        mainImage.src = newImageSrc;
-    }
+    mainImage.attr('src', imageSrc);
+    mainImage.attr('data-zoom-image', imageSrc);
 
+}
 
+const mainImage = document.getElementById("main-image");
+const zoomResult = document.getElementById("zoom-result");
 
-        const socket = io();
-
-const userId = 'user-id-from-session'; 
-
-socket.emit('joinRoom', userId);
-
-socket.on('userBlocked', (data) => {
-    alert(data.message);
-    window.location.href = '/user/user_login'; 
+// When mouse enters the image, show the zoom result area
+mainImage.addEventListener('mousemove', function(e) {
+    zoomResult.style.display = "block";
+    zoom(e);
 });
+
+mainImage.addEventListener('mouseleave', function() {
+    zoomResult.style.display = "none";
+});
+
+function zoom(e) {
+    const posX = e.offsetX;
+    const posY = e.offsetY;
+    const width = mainImage.offsetWidth;
+    const height = mainImage.offsetHeight;
+
+    const zoomX = (posX / width) * 100;
+    const zoomY = (posY / height) * 100;
+
+    // Set the background of zoomResult to be the same image but zoomed
+    zoomResult.style.backgroundImage = `url('${mainImage.src}')`;
+    zoomResult.style.backgroundPosition = `${zoomX}% ${zoomY}%`;
+}
+
     </script>
 </body>
 </html>

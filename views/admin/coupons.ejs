@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Coupons</title>
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container my-5">
+        <h2 class="text-center">Manage Coupons</h2>
+
+
+        <!-- Search Bar -->
+        <form method="GET" action="/adminPanel/coupons" class="form-inline mb-3">
+            <div class="form-group mr-2">
+                <input type="text" name="search" class="form-control" placeholder="Search by name" value="<%= search %>">
+            </div>
+            <button type="submit" class="btn btn-success">Search</button>
+        </form>
+
+
+
+        <!-- Add Coupon Button -->
+            <button type="button"  class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCouponModal">Add New Coupon</button>
+
+        <!-- Coupons Table -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Coupon Code</th>
+                    <th>Discount Type</th>
+                    <th>Discount Amount</th>
+                    <th>Expiration Date</th>
+                    <th>Usage Limit</th>
+                    <th>Minimum Purchase</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% coupons.forEach(function(coupon) { %>
+                    <tr>
+                        <td><%= coupon.code %></td>
+                        <td><%= coupon.discountType %></td>
+                        <td><%= coupon.discountValue %> <% if (coupon.discountType === 'percentage') { %> % <% } %></td>                        
+                        <td><%= coupon.expirationDate.toDateString() %></td>
+                        <td><%= coupon.usageLimit %></td>
+                        <td>₹<%= coupon.minimumPurchase %></td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editCouponModal-<%= coupon._id %>">Edit</button>
+                            <form action="/adminPanel/coupons/delete/<%= coupon._id %>" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    <!-- Edit Coupon Modal -->
+                    <div class="modal fade" id="editCouponModal-<%= coupon._id %>" tabindex="-1" aria-labelledby="editCouponModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="editCouponModalLabel">Edit Coupon</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="/adminPanel/coupons/edit/<%= coupon._id %>" method="POST">
+                                        <div class="mb-3">
+                                            <label for="editCode" class="form-label">Coupon Code</label>
+                                            <input type="text" class="form-control" id="editCode" name="code" value="<%= coupon.code %>" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editDescription" class="form-label">Short Description</label>
+                                            <input type="text" class="form-control" id="editDescription" name="description" value="<%= coupon.description %>">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editDiscountType" class="form-label">Discount Type</label>
+                                            <select class="form-select" id="editDiscountType" name="discountType" required>
+                                                <option value="percentage" <%= coupon.discountType === 'percentage' ? 'selected' : '' %>>Percentage</option>
+                                                <option value="flat" <%= coupon.discountType === 'flat' ? 'selected' : '' %>>Flat</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editDiscountAmount" class="form-label">Discount Amount</label>
+                                            <input type="number" class="form-control" id="editDiscountAmount" name="discountValue" value="<%= coupon.discountValue %>" required min="0">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editExpirationDate" class="form-label">Expiration Date</label>
+                                            <input type="date" class="form-control" id="editExpirationDate" name="expirationDate" value="<%= coupon.expirationDate.toISOString().split('T')[0] %>" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editUsageLimit" class="form-label">Usage Limit</label>
+                                            <input type="number" class="form-control" id="editUsageLimit" name="usageLimit" value="<%= coupon.usageLimit %>" required min="1">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="editMinimumPurchase" class="form-label">Minimum Purchase</label>
+                                            <input type="number" class="form-control" id="editMinimumPurchase" name="minimumPurchase" value="<%= coupon.minimumPurchase %>" required min="0">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="addActive" class="form-label">Active</label>
+                                            <select class="form-select" id="addActive" name="active" required>
+                                                <option value="true">Yes</option>
+                                                <option value="false">No</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-success">Save Changes</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Coupon Modal -->
+    <div class="modal fade" id="addCouponModal" tabindex="-1" aria-labelledby="addCouponModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCouponModalLabel">Add New Coupon</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/adminPanel/coupons/add" method="POST">
+                        <div class="mb-3">
+                            <label for="addCode" class="form-label">Coupon Code</label>
+                            <input type="text" class="form-control" id="addCode" name="code" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addDescription" class="form-label">Short Description</label>
+                            <input type="text" class="form-control" id="addDescription" name="description">
+                        </div>
+                        <div class="mb-3">
+                            <label for="addDiscountType" class="form-label">Discount Type</label>
+                            <select class="form-select" id="addDiscountType" name="discountType" required>
+                                <option value="percentage">Percentage</option>
+                                <option value="flat">Flat</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addDiscountAmount" class="form-label">Discount Amount</label>
+                            <input type="number" class="form-control" id="addDiscountAmount" name="discountValue" required min="0">
+                        </div>
+                        <div class="mb-3">
+                            <label for="addExpirationDate" class="form-label">Expiration Date</label>
+                            <input type="date" class="form-control" id="addExpirationDate" name="expirationDate" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addUsageLimit" class="form-label">Usage Limit</label>
+                            <input type="number" class="form-control" id="addUsageLimit" name="usageLimit" required min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="addMinimumPurchase" class="form-label">Minimum Purchase</label>
+                            <input type="number" class="form-control" id="addMinimumPurchase" name="minimumPurchase" required min="0">
+                        </div>
+                        <div class="mb-3">
+                            <label for="addActive" class="form-label">Active</label>
+                            <select class="form-select" id="addActive" name="active" required>
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success">Add Coupon</button>
+                    </form>
+                </div>
+            </div>
+        </div>  
+    </div>
+    
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+</body>
+</html>

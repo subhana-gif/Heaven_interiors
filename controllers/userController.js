@@ -38,6 +38,7 @@ const handleUserLogin = async (req, res) => {
                 successMessage:null
              });
           }
+
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.render('userSide/login', {
@@ -54,7 +55,6 @@ const handleUserLogin = async (req, res) => {
 
         const cart = await Cart.findOne({ userId: user._id });
         req.session.cart = cart ? cart.items : [];
-        console.log(req.session.user)
         return res.redirect('/user/home');
     } catch (error) {
         console.error('Error during login:', error);
@@ -121,6 +121,7 @@ const handleUserLogout = (req, res) => {
 
 
 const renderForgotPassword = (req, res) => {
+    
     res.render('userSide/forgetPassword', { errorMessage: null, successMessage: null });
 };
 
@@ -144,9 +145,6 @@ const handleForgotPassword = async (req, res) => {
         await user.save();
         
         
-        console.log('Reset Token:', user.resetPasswordToken);
-        console.log('Reset Token Expiry:', user.resetPasswordExpires);
-
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             port: 587,
@@ -229,9 +227,10 @@ const handleResetPassword = async (req, res) => {
     }
 
     try {
+
         const user = await User.findOne({
             resetPasswordToken: token,
-            resetPasswordExpires: { $gt: Date.now() } 
+            resetPasswordExpires: { $gt: Date.now() }
         });
 
         if (!user) {
@@ -243,12 +242,16 @@ const handleResetPassword = async (req, res) => {
         }
 
 
-        user.password = await bcrypt.hash(password, 10);
+        // Hash and set the new password
+        user.password = password;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;
         await user.save();
 
-        return res.render('userSide/user_login', {
+
+
+        
+        return res.render('userSide/login', {
             errorMessage: null,
             successMessage: 'Password has been successfully reset. Please log in.'
         });
@@ -261,6 +264,7 @@ const handleResetPassword = async (req, res) => {
         });
     }
 };
+
 
 
 module.exports = {

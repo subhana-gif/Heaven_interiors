@@ -1,6 +1,7 @@
 const Product = require('../models/productModal');
 const Address=require('../models/Address')
 const Cart=require('../models/cart')
+const Offer = require('../models/offer')
 
 exports.addToCart = async (req, res) => {
     try {
@@ -48,7 +49,6 @@ exports.addToCart = async (req, res) => {
             { items: cart }, 
         );
 
-        console.log("Cart after adding product:", req.session.cart);
         res.redirect('/user/cart');
     } catch (error) {
         console.error('Error adding to cart:', error);
@@ -113,15 +113,31 @@ exports.renderCart =async (req, res) => {
     const cart = req.session.cart || [];
     const detailedCart =await Promise.all( cart.map(async (item) => {
         const product = await Product.findById(item.productId); 
+        const offer = await Offer.findOne({
+            $or: [
+                { offerType: 'product', relatedId: product._id },
+                { offerType: 'category', relatedId: product.category._id }
+            ],
+            startDate: { $lte: new Date() },
+            endDate: { $gte: new Date() }
+        });
         const productImagePath = product.images.length > 0 ? `/uploads/${product.images[0].split('\\').pop().split('/').pop()}` : '/uploads/placeholder.jpg';
+        let discountedPrice = product.price;
+            if (offer) {
+                discountedPrice = offer.discountType === 'percentage'
+                    ? product.price * (1 - offer.discountValue / 100)
+                    : product.price - offer.discountValue;
+
+                discountedPrice = parseFloat(discountedPrice.toFixed(2)); // Format to two decimal places
+            }
         return {
             ...item,
             name: product.name,
             price: product.price,
+            discountedPrice,
             image:productImagePath
         };
     }));
-    console.log("Detailed Cart:", detailedCart);
     const addresses = await Address.find({ userId: req.user._id });
     res.render('userSide/cart', { cart: detailedCart, user: req.session.user,addresses ,errorMessage:''});
     }catch(error){

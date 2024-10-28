@@ -1,9 +1,13 @@
+// routes/offerRoutes.js
+
 const express = require('express');
 const router = express.Router();
-const authMiddleware=require('../middleware/authMiddleware')
-const noCache=require('../middleware/noCacheMiddleware')
+const { isAdminAuthenticated } = require('../middleware/authMiddleware');
+const offerController = require('../controllers/offerController');
 
-router.get('/offers', authMiddleware.isAdminAuthenticated,noCache, (req, res) => {
-    res.render('adminPanel', { body: 'admin/offers' });
-});
+router.get('/offers', isAdminAuthenticated, offerController.getOffers);
+router.post('/offers/add', isAdminAuthenticated, offerController.addOffer);
+router.post('/offers/edit/:id', isAdminAuthenticated, offerController.editOffer);
+router.post('/offers/delete/:id', isAdminAuthenticated, offerController.deleteOffer);
+
 module.exports = router;

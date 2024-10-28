@@ -6,7 +6,6 @@ const { isAuthenticated, checkUserBlocked } = require('../middleware/authUserMid
 router.get('/profile',isAuthenticated,checkUserBlocked, profileController.getProfilePage);
 router.get('/personal-information', isAuthenticated,checkUserBlocked,profileController.getPersonalInformation);
 router.post('/update-profile', isAuthenticated,checkUserBlocked,profileController.updateProfile);
-router.post('/update-password', isAuthenticated,checkUserBlocked,profileController.updatePassword);
 router.get('/addresses',isAuthenticated,checkUserBlocked, profileController.getUserAddresses);
 router.post('/add-address',isAuthenticated,checkUserBlocked, profileController.addNewAddress);
 router.get('/addresses/:id/edit', isAuthenticated,checkUserBlocked,profileController.getEditAddress);

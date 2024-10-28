@@ -1,11 +1,14 @@
-<!-- views/orderConfirmation.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Confirmation</title>
+    <title>Heaven Interior</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+   
 </head>
 <body>
 
@@ -14,33 +17,48 @@
     <div class="container mt-5">
         <h2 style="color: green;">Thank You for Your Order!</h2>
         <p>Your order has been placed successfully.</p>
-
+    
         <h4>Order Details:</h4>
         <ul>
-            <li><strong>Order ID:</strong> <%= order._id %></li>
+            <li><strong>Order ID:</strong> <%= order.orderNumber %></li>
             <li><strong>Payment Method:</strong> <%= order.paymentMethod %></li>
             <li><strong>Shipping Address:</strong></li>
             <li><%= order.address.name %></li>
             <li><%= order.address.mobileNumber %></li>
             <li><%= order.address.city %>, <%= order.address.state %>, <%= order.address.pinCode %></li>
         </ul>
-
+    
         <h4>Items Ordered:</h4>
         <ul>
-            <% order.cartItems.forEach(item => { %>
-                <li>
+            <% detailedCart.forEach(item => { %>
                     <img src="/<%= item.image %>" alt="<%= item.name %>" style="width: 50px; height: auto;">
-                    <%= item.name %> - Quantity: <%= item.quantity %> - Price: $<%= (item.price * item.quantity).toFixed(2) %>
-                </li>
-            <% }); %>
+                    <%= item.name %> - Quantity: <%= item.quantity %>
+                    <br>
+                    <strong>Original Price:</strong> ₹<%= (item.price * item.quantity).toFixed(2) %>
+                    <br>
+                    <strong>Discounted Price:</strong> ₹<%= item.itemTotalDiscountedPrice %><br>            
+                <% }); %>
         </ul>
-
-        <h4>Total Price: $<%= order.totalPrice.toFixed(2) %></h4>
-
+    
+        <!-- Display total prices -->
+        <h4>Order Summary:</h4>
+        <ul>
+            <li><strong>Total Original Price:</strong> ₹<%= totalOriginalPrice.toFixed(2) %></li>
+            <li><strong>Total Discount from Offers:</strong> -₹<%= totalDiscountFromOffers.toFixed(2) %></li>
+            <li><strong>Coupon Discount:</strong> -₹<%= discountAmount.toFixed(2) %></li> <!-- Display coupon discount -->            <li><strong>Total Price:</strong> ₹<%= finalTotalPrice.toFixed(2) %></li>
+        </ul>
+        
+    
         <a href="/user/home" class="btn btn-primary">Continue Shopping</a>
     </div>
-
-    <%- include('../partials/footer.ejs') %>
+     
+ 
+    <%- include('../partials/footer') %>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
 </body>
 </html>

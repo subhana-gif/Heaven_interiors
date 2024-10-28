@@ -1,4 +1,7 @@
 <style>
+
+
+
     .header {
         display: flex;
         flex-direction: column;
@@ -31,19 +34,6 @@
         display: block;
         color: #2d4739;
         margin-top: 0.2em;
-    }
-
-    .search-bar {
-        flex: 1;
-        max-width: 37.5em;
-        margin: 0 3.125em;
-    }
-
-    .search-bar input {
-        width: 100%;
-        padding: 0.625em;
-        border-radius: 0.3125em;
-        border: 0.0625em solid #ccc;
     }
 
     .cart-icon {
@@ -104,123 +94,215 @@
         margin-right: 0;
     }
 
-    .suggestions-container {
-    position: absolute;
-    background: rgb(226, 228, 223);
+    .search-bar {
+    display: flex; /* Align items in a row */
+    align-items: center; /* Center items vertically */
+    position: relative; /* Position relative for absolute suggestions */
+    flex: 1;
+    max-width: 37.5em;
+    margin: 0 3.125em;
+}
+
+.search-form {
+    display: flex; /* Use flexbox for alignment */
+    align-items: center; /* Center items vertically */
+    flex: 1; /* Take up remaining space */
+    position: relative; /* Allows absolute positioning for suggestions */
+}
+
+.search-form input[type="text"] {
+    padding: 10px 40px 10px 40px; /* Add padding for the input */
+    border: 1px solid #ccc; /* Border for input */
+    border-radius: 4px; /* Rounded corners for the input */
+    flex: 1; /* Take up remaining space */
+    margin-right: 0; /* Remove margin to avoid extra space */
+}
+
+/* Style for search button */
+.search-btn {
+    position: absolute; /* Position inside the input */
+    right: 10px; /* Position the icon inside the input */
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%); /* Adjust for vertical centering */
+    background: none; /* No background for button */
+    border: none; /* No border */
+    cursor: pointer; /* Pointer cursor */
+    color: #aaa; /* Color for the icon */
+}
+
+
+/* Style for suggestions list */
+.suggestions-list {
     border: 1px solid #ccc;
-    z-index: 1000;
-    width: 51%; /* Match the width of the search bar */
+    background-color: white;
+    position: absolute; /* Position it below the input field */
+    z-index: 1000; /* Ensure it appears above other content */
+    width: 100%; /* Match the input width */
+    max-height: 200px; /* Limit height */
+    overflow-y: auto; /* Enable scrolling */
 }
 
 .suggestion-item {
-    padding: 10px;
-    cursor: pointer;
+    padding: 10px; /* Add padding for spacing */
+    cursor: pointer; /* Change cursor to pointer on hover */
 }
 
 .suggestion-item:hover {
-    background-color: #f0f0f0; /* Highlight effect on hover */
+    background-color: #f0f0f0; /* Change background on hover */
 }
 
 </style>
 
 <!-- Header -->
-<div class="header">
-    <div class="header-top">
-        <a href="/user/home" class="logo">
-            HEAVEN
-            <span class="interior">INTERIOR</span>
-        </a>
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="What are you looking for?">
-            <div id="suggestions" class="suggestions-container"></div>         </div>
+                    <div class="header">
+                        <div class="header-top">
+                            <a href="/user/home" class="logo">
+                                HEAVEN
+                                <span class="interior">INTERIOR</span>
+                            </a>
+                            <div class="search-bar">
+                                <form action="/user/search" method="GET" class="search-form">
+                                    <input type="text" name="q" placeholder="Search for products or categories..." required>
+                                    <button type="submit" class="search-btn">
+                                        <i class="fas fa-search"></i> <!-- Font Awesome search icon -->
+                                    </button>
+                                </form>
+                                <div id="suggestions" class="suggestions-list" style="display: none;"></div> <!-- Suggestions Container -->
+                            </div>
+                            
+                            <!-- Profile Menu -->
+                            <div class="profile-menu">
+                                <div class="profile-icon" onclick="toggleProfileMenu()">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <ul class="profile-dropdown hidden">
+                                    <% if (user) { %>
+                                        <li><a href="/user/profile">Profile</a></li>
+                                        <li><a href="/user/logout">Logout</a></li>
+                                    <% } else { %>
+                                        <li><a href="/user/user_login">Login</a></li>
+                                    <% } %>
+                                </ul>
+                            </div>
 
-        <!-- Profile Menu -->
-        <div class="profile-menu">
-            <div class="profile-icon" onclick="toggleProfileMenu()">
-                <i class="fas fa-user-circle"></i>
-            </div>
-            <ul class="profile-dropdown hidden">
-                <% if (user) { %>
-                    <li><a href="/user/profile">Profile</a></li>
-                    <li><a href="/user/logout">Logout</a></li>
-                <% } else { %>
-                    <li><a href="/user/user_login">Login</a></li>
-                <% } %>
-            </ul>
-        </div>
+                            <div class="cart-icon" onclick="toggleCartMenu()">
+                                <i class="fas fa-shopping-cart"></i> 
+                            </div>
+                        </div>
 
-        <div class="cart-icon" onclick="toggleCartMenu()">
-            <i class="fas fa-shopping-cart"></i> 
-        </div>
-    </div>
+                        <div class="nav-links">
+                            <a href="/user/home">HOME</a>
+                            <a href="/user/shop">SHOP</a>
+                            <a href="#">CONTACT</a>
+                            <a href="/user/wishlist">WISHLIST</a>
+                            <a href="/user/orders">ORDERS</a>
+                        </div>
+                    </div>
 
-    <div class="nav-links">
-        <a href="/user/home">HOME</a>
-        <a href="/user/shop">SHOP</a>
-        <a href="#">CONTACT</a>
-        <a href="#">WISHLIST</a>
-        <a href="/user/orders">ORDERS</a>
-    </div>
-</div>
+                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+                    <script>
+                        function toggleProfileMenu() {
+                            const dropdown = document.querySelector('.profile-dropdown');
+                            dropdown.classList.toggle('visible');
+                            dropdown.classList.toggle('hidden');
+                        }
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-<script>
-    function toggleProfileMenu() {
-        const dropdown = document.querySelector('.profile-dropdown');
-        dropdown.classList.toggle('visible');
-        dropdown.classList.toggle('hidden');
-    }
+                        function toggleCartMenu() {
+                            window.location.href = '/user/cart'; 
+                        }
 
-    // Toggle cart dropdown (future implementation)
-    function toggleCartMenu() {
-        window.location.href = '/user/cart'; 
-    }
 
-const searchInput = document.getElementById('searchInput');
-const suggestionsContainer = document.getElementById('suggestions');
+                        // search search search search
+                        document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.querySelector('input[name="q"]');
+    const suggestionsContainer = document.getElementById('suggestions');
 
-searchInput.addEventListener('input', async () => {
-    const query = searchInput.value.trim();
+    // Add event listener for input changes to fetch suggestions
+    searchInput.addEventListener('input', async function () {
+        const query = searchInput.value.trim();
 
-    if (query) {
-        // Fetch suggestions from the backend
-        const response = await fetch(`/user/search/suggestions?q=${query}`);
-        const suggestions = await response.json();
-
-        // Display suggestions
-        displaySuggestions(suggestions);
-    } else {
+        // Clear previous suggestions
         suggestionsContainer.innerHTML = '';
-    }
-});
+        suggestionsContainer.style.display = 'none'; // Hide suggestions if input is empty
 
-function displaySuggestions(suggestions) {
-    suggestionsContainer.innerHTML = '';
+        if (query === '') {
+            return; // Do nothing if input is empty
+        }
 
-    suggestions.forEach(item => {
-        const suggestionItem = document.createElement('div');
-        suggestionItem.classList.add('suggestion-item');
-        suggestionItem.textContent = item.name; // Adjust this based on your data structure
+        // Fetch suggestions
+        const suggestions = await getSearchSuggestions(query);
 
-        suggestionItem.addEventListener('click', () => {
-            searchInput.value = item.name; // Fill the input with the selected suggestion
-            suggestionsContainer.innerHTML = ''; // Clear suggestions
-            window.location.href = `/user/search?q=${item.name}`;
-        });
+        // If suggestions exist, display them
+        if (suggestions.length > 0) {
+            suggestions.forEach(suggestion => {
+                const suggestionElement = document.createElement('div');
+                suggestionElement.textContent = suggestion.name;
+                suggestionElement.classList.add('suggestion-item');
+                suggestionElement.dataset.type = suggestion.type;
 
-        suggestionsContainer.appendChild(suggestionItem);
+                // Add click event to suggestion
+                suggestionElement.addEventListener('click', function () {
+                    searchInput.value = suggestion.name; // Set the input value to the suggestion
+                    suggestionsContainer.innerHTML = ''; // Clear suggestions
+                    suggestionsContainer.style.display = 'none'; // Hide suggestions
+                    document.querySelector('.search-form').submit(); // Submit the form
+                });
+
+                suggestionsContainer.appendChild(suggestionElement);
+            });
+            suggestionsContainer.style.display = 'block'; // Show suggestions
+        }
     });
-}
 
-// Hide suggestions and clear the search input when clicking outside
-document.addEventListener('click', (event) => {
-    const isClickInside = searchInput.contains(event.target) || suggestionsContainer.contains(event.target);
-    if (!isClickInside) {
-        suggestionsContainer.innerHTML = ''; // Clear suggestions
-        searchInput.value = ''; // Clear the search input
+    // Function to fetch search suggestions
+    async function getSearchSuggestions(query) {
+        const response = await fetch(`/user/search/suggestions?q=${encodeURIComponent(query)}`);
+        
+        if (!response.ok) {
+            console.error('Failed to fetch suggestions');
+            return [];
+        }
+        
+        const suggestions = await response.json();
+        return suggestions;
     }
 });
 
-</script>
+        document.querySelector('.search-form').addEventListener('submit', async function (e) {
+        e.preventDefault(); // Prevent default form submission
+
+        const query = document.querySelector('input[name="q"]').value.trim(); // Trim whitespace
+
+        // If query is empty, redirect to the shop page
+        if (query === '') {
+            window.location.href = '/user/shop'; // Redirect to the shop page
+            return;
+        }
+
+        // Check for search suggestions
+        const suggestions = await getSearchSuggestions(query);
+        
+        // If there are no suggestions or the user submits a misspelling, redirect to results page
+        if (suggestions.length === 0) {
+            // Proceed to search results
+            window.location.href = `/user/search?q=${encodeURIComponent(query)}`;
+        } else {
+            // If suggestions are available, you can display them or handle as needed
+            console.log(suggestions); // Example handling (you may want to display these)
+        }
+    });
+
+    // Function to fetch search suggestions
+    async function getSearchSuggestions(query) {
+        const response = await fetch(`/user/search/suggestions?q=${encodeURIComponent(query)}`);
+        
+        if (!response.ok) {
+            console.error('Failed to fetch suggestions');
+            return [];
+        }
+
+        const suggestions = await response.json();
+        return suggestions;
+    }                    </script>

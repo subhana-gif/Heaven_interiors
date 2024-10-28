@@ -1,9 +1,15 @@
 const Product = require('../models/productModal'); 
 const Category = require('../models/category'); 
+const Offer = require ('../models/offer')
 
-// Function to get search suggestions
+
 exports.getSearchSuggestions = async (req, res) => {
     const query = req.query.q;
+
+    // Check for empty query
+    if (!query) {
+        return res.json([]); // Return an empty array if no query
+    }
 
     try {
         const products = await Product.find({ name: { $regex: query, $options: 'i' } }).limit(5);
@@ -21,70 +27,110 @@ exports.getSearchSuggestions = async (req, res) => {
     }
 };
 
+
 exports.getSearchResults = async (req, res) => {
-    const query = req.query.q;
+    const query = req.query.q.trim(); // Trim whitespace from the query
     const sort = req.query.sort;
 
     try {
-        const searchRegex = new RegExp(query, 'i');
-        const categories = await Category.find({ name: { $regex: searchRegex } });
-        const categoryIds = categories.map(category => category._id);
-        let results = await Product.find({
-            $or: [
-                { name: { $regex: searchRegex } },        
-                { category: { $in: categoryIds } }       
-            ]
-        }).populate('category'); 
+        let results = [];
 
+        // If the query is empty or only spaces, retrieve all products
+        if (query === '') {
+            results = await Product.find({}).populate('category'); // Get all products
+        } else {
+            const searchRegex = new RegExp(query, 'i'); // Case-insensitive regex
+            const categories = await Category.find({ name: { $regex: searchRegex } });
+            const categoryIds = categories.map(category => category._id);
+
+            // Search products based on name or category
+            results = await Product.find({
+                $or: [
+                    { name: { $regex: searchRegex } },
+                    { category: { $in: categoryIds } }
+                ]
+            }).populate('category');
+        }
+
+        for (const product of results) {
+            const offer = await Offer.findOne({
+                $or: [
+                    { offerType: 'product', relatedId: product._id },
+                    { offerType: 'category', relatedId: product.category._id }
+                ],
+                startDate: { $lte: new Date() },
+                endDate: { $gte: new Date() }
+            });
+
+            if (offer) {
+                // Calculate the discounted price
+                product.discountedPrice = offer.discountType === 'percentage'
+                    ? product.price * (1 - offer.discountValue / 100)
+                    : product.price - offer.discountValue;
+
+                // Format to two decimal places
+                product.discountedPrice = parseFloat(product.discountedPrice.toFixed(2));
+            } else {
+                product.discountedPrice = null; // No discount available
+            }
+        }
+
+        // Process images
         results = results.map(product => {
             const productImagePath = product.images && product.images.length > 0
                 ? `/uploads/${product.images[0].split('\\').pop().split('/').pop()}`
-                : '/uploads/placeholder.jpg'; 
+                : '/uploads/placeholder.jpg';
 
             return {
                 ...product._doc,
-                image: productImagePath
+                image: productImagePath,
+                discountedPrice: product.discountedPrice 
             };
         });
-        
-        switch (sort) {
-            case 'popularity':
-                results = results.sort((a, b) => b.popularity - a.popularity);
-                break;
-            case 'priceLowToHigh':
-                results = results.sort((a, b) => a.price - b.price);
-                break;
-            case 'priceHighToLow':
-                results = results.sort((a, b) => b.price - a.price);
-                break;
-            case 'averageRatings':
-                results = results.sort((a, b) => b.averageRating - a.averageRating);
-                break;
-            case 'featured':
-                results = results.filter(item => item.featured === true);
-                break;
-            case 'newArrivals':
-                results = results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                break;
-            case 'aToZ':
-                results = results.sort((a, b) => a.name.localeCompare(b.name));
-                break;
-            case 'zToA':
-                results = results.sort((a, b) => b.name.localeCompare(a.name));
-                break;
-            case 'stockManagement':
-                results = results.sort((a, b) => b.stock - a.stock);
-                break;
-            default:
-                break;
+
+        // Sort results if necessary
+        if (results.length > 0 && sort) {
+            switch (sort) {
+                case 'popularity':
+                    results.sort((a, b) => b.popularity - a.popularity);
+                    break;
+                case 'priceLowToHigh':
+                    results.sort((a, b) => a.price - b.price);
+                    break;
+                case 'priceHighToLow':
+                    results.sort((a, b) => b.price - a.price);
+                    break;
+                case 'averageRatings':
+                    results.sort((a, b) => b.averageRating - a.averageRating);
+                    break;
+                case 'featured':
+                    results = results.filter(item => item.featured === true);
+                    break;
+                case 'newArrivals':
+                    results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                    break;
+                case 'aToZ':
+                    results.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                case 'zToA':
+                    results.sort((a, b) => b.name.localeCompare(a.name));
+                    break;
+                case 'stockManagement':
+                    results.sort((a, b) => b.stock - a.stock);
+                    break;
+                default:
+                    break;
+            }
         }
 
+        // Render the results page with the query and results
         res.render('userSide/searchResult', { query, results });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server error');
     }
 };
+
 
 
 

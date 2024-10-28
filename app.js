@@ -6,8 +6,6 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const routes=require('./routes/routes')
-//  const path=require('path')
-// const morgan=require('morgan')
 
 require('./config/passport_setup');
 
@@ -48,7 +46,7 @@ app.use(passport.session());
 
 
 app.use((req, res, next) => {
-  res.locals.user = req.session.user || null;  // user will be available globally in views
+  res.locals.user = req.session.user || null; 
   next();
 });
 

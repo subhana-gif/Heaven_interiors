@@ -6,6 +6,9 @@
     <title>Heaven Interior</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
  <style>
         .checkout-section {
             width: 98%;
@@ -97,6 +100,17 @@
     border-radius: 10px;
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
 }
+
+.qty-container {
+    display: flex;
+    align-items: center;
+    width: 30px;
+}
+
+.qty-container form {
+    margin-left: 62%;
+}
+
     </style>
 </head>
 <body>
@@ -106,107 +120,172 @@
         <h2>Checkout</h2>
         <div class="checkout-section">
             <h3>Your Cart</h3>
-            <% if (cart && cart.length > 0) { %> 
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Quantity</th>
-                            <th>Price</th>
-                            <th>Total</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% cart.forEach(item => { %>
-                            <tr>
-                                <td>
-                                    <img src="<%= item.image %>" alt="<%= item.name %>" style="width: 50px; height: auto;">
-                                    <p><%= item.name %></p>
-                                </td>
-                                <td>
-                                    <form action="/user/update-cart/<%= item.productId %>" method="POST" class="qty-form" style="display: inline;">
-                                        <input type="hidden" name="action" value="decrease">
-                                        <button type="submit" <%= item.quantity === 1 ? 'disabled' : '' %>>-</button>
-                                    </form>
-                                    <span><%= item.quantity %></span>
-                                    <form action="/user/update-cart/<%= item.productId %>" method="POST" class="qty-form" style="display: inline;">
-                                        <input type="hidden" name="action" value="increase">
-                                        <button type="submit" <%= item.quantity >= item.stock ? 'disabled' : '' %>>+</button>
-                                    </form>
-                                </td>
-                                <td>₹<%= item.price.toFixed(2) %></td>
-                                <td>₹<%= (item.price * item.quantity).toFixed(2) %></td>
-                                <td>
-                                    <form action="/user/remove-from-cart/<%= item.productId %>" method="POST">
-                                        <button type="submit" class="btn-remove">Remove</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <% }); %>
-                    </tbody>
-                </table>
-    
+            <% if (cart && cart.length > 0) { %>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% cart.forEach(item => { %>
+                    <tr>
+                        <!-- Product image and name -->
+                        <td>
+                            <img src="<%= item.image %>" alt="<%= item.name %>" style="width: 50px; height: auto;">
+                            <p><%= item.name %></p>
+                        </td>
+            
+                        <!-- Quantity controls -->
+                        <td>
+                            <div class="qty-container">
+                                <form action="/user/update-cart/<%= item.productId %>" method="POST" class="qty-form">
+                                    <input type="hidden" name="action" value="decrease">
+                                    <button type="submit" <%= item.quantity === 1 ? 'disabled' : '' %>>-</button>
+                                </form>
+                                <span style="margin-left: 73%;"><%= item.quantity %></span> <!-- Display quantity inline -->
+                                <form action="/user/update-cart/<%= item.productId %>" method="POST" class="qty-form">
+                                    <input type="hidden" name="action" value="increase">
+                                    <button type="submit" <%= item.quantity >= item.stock ? 'disabled' : '' %>>+</button>
+                                </form>
+                            </div>
+                        </td>
+                                    
+                        <!-- Product price -->
+                        <td>
+                            <% if (item.discountedPrice) { %>
+                                <p style="display: inline; color: #000000;">₹<%= item.discountedPrice %></p> <!-- Discounted price -->
+                            <% } else { %>
+                                ₹<%= item.price %> <!-- Original price if no discount -->
+                            <% } %>
+                        </td>            
+                        <!-- Product total (quantity * discounted price) -->
+                        <td>
+                            <% 
+                                const unitPrice = item.discountedPrice ? item.discountedPrice : item.price; 
+                                const totalPrice = unitPrice * item.quantity; 
+                            %>
+                            ₹<%= totalPrice.toFixed(2) %>
+                        </td>
+                        <!-- Remove button -->
+                        <td>
+                            <form action="/user/remove-from-cart/<%= item.productId %>" method="POST">
+                                <button type="submit" class="btn-remove">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+            
+        </table>    
                 <!-- Total price calculation -->
-                <h2 style="font-weight: bolder; color: #14482a;">Total Price: ₹<%= cart.reduce((total, item) => total + (item.price * item.quantity), 0) %></h2>
-            </div>
+                <h2 style="font-weight: bolder; color: #14482a;">
+                    Total Price: ₹<%= totalPrice.toFixed(2) %>
+                </h2>
+            <% } else { %>
+                <p>Your cart is empty. Please add items to your cart before checking out.</p>
+            <% } %>
+        </div>
     
-            <div class="checkout-section">
-                <h3>Select Payment Method</h3>
-                <form action="/user/checkout/placeOrder" method="POST">
-                    <h4>Payment Options:</h4>
+        <div class="checkout-section">
+            <h3>Your Addresses</h3>
+            <button type="button" class="btn btn-success" onclick="openAddAddressModal()">Add New Address</button>
+    
+            <div id="addressList">
+                <% addresses.forEach(address => { %>
                     <div>
-                        <label>
-                            <input type="radio" name="paymentMethod" value="COD" required > Cash on Delivery
-                        </label>
+                        <!-- <input  name="selectedAddress" value="<%= address._id %>" required> -->
+                        <span style="margin-left: 8px;">
+                            <%= address.name %><br>
+                            <%= address.mobileNumber %><br>
+                            <%= address.city %><br>
+                            <%= address.state %><br>
+                            <%= address.pinCode %><br>
+                        </span>
+                        <button type="button" class="btn-edit" onclick="editAddress('<%= address._id %>', '<%= address.name %>', '<%= address.mobileNumber %>', '<%= address.city %>', '<%= address.state %>', '<%= address.pinCode %>')">Edit</button>
+                        <button type="button" class="btn-delete" onclick="deleteAddress('<%= address._id %>')">Delete</button>
                     </div>
-                    <div>
-                        <label>
-                            <input type="radio" name="paymentMethod" value="Credit Card" required  style="cursor: not-allowed"> Credit Card
-                        </label>
-                    </div>
-                    <div>
-                        <label>
-                            <input type="radio" name="paymentMethod" value="PayPal" required  style="cursor: not-allowed"> PayPal
-                        </label>
-                    </div>
+                <% }) %>
                 </div>
-                
-                <div class="checkout-section">
-                    <h3>Your Addresses</h3>
-                    <button type="button" class="btn btn-success" onclick="openAddAddressModal()">Add New Address</button>
+        </div>
+    
+        <div class="checkout-section">
+            <div id="couponSection">
+                <h3>Apply Coupon</h3>
+                <select id="couponDropdown">
+                    <option value="">Select a coupon</option>
+                    <% coupons.forEach(function(coupon) { %>
+                        <option value="<%= coupon.code %>"><%= coupon.code %> - <%= coupon.discountValue %> <%= coupon.discountType %></option>
+                    <% }); %>
+                </select>
+                <button id="applyCouponBtn">Apply</button>
+                <button id="removeCouponBtn">Remove Coupon</button>
+                <div id="couponMessage"></div>
+            </div>
+        </div> 
 
-                    <ul id="addressList">
-                        <% addresses.forEach(address => { %>
-                            <li>
-                                <input type="radio" name="selectedAddress" value="<%= address._id %>" required>
-                                <span style="margin-left: 8px;">
-                                    <%= address.name %><br>
-                                    <%= address.mobileNumber %><br>
-                                    <%= address.city %><br>
-                                    <%= address.state %><br>
-                                    <%= address.pinCode %><br>
-                                </span>
-                                <button type="button" class="btn-edit" onclick="editAddress('<%= address._id %>', '<%= address.name %>', '<%= address.mobileNumber %>', '<%= address.city %>', '<%= address.state %>', '<%= address.pinCode %>')">Edit</button>
-                                <button type="button" class="btn-delete" onclick="deleteAddress('<%= address._id %>')">Delete</button>
-                            </li>
-                        <% }) %>
-                    </ul>
+        
 
-                <% } else { %>
-                    <p>Your cart is empty. Please add items to your cart before checking out.</p>
-                <% } %>
-                </div>
-                
+        <div class="checkout-section">
+            <div id="walletSection">
+                <h4>Wallet Balance: ₹<span id="walletBalance"><%= walletBalance.toFixed(2) %></span></h4>
+                <!-- <input type="checkbox" id="useWallet" onchange="toggleWalletUsage()"> Use Wallet Balance -->
             </div>
         </div>
 
-        <button type="submit" class="btn" style="background-color: #28a745; border-color: #28a745; color: white; font-size: 1.2rem; padding: 10px 20px; transition: background-color 0.3s, transform 0.3s; margin-top: 2%;" 
-        onmouseover="this.style.backgroundColor='#218838'; this.style.transform='scale(1.05)';" 
-        onmouseout="this.style.backgroundColor='#28a745'; this.style.transform='scale(1)';">
-        Place Order
-    </button>
-        </form>
+            <div id="newTotalPriceContainer" style="display: none;">
+                <h2 id="newTotalPrice" style="font-size: 2rem; color: green; font-weight: bold;">
+                    New Total Price: ₹<span id="totalPriceDisplay"></span>
+                </h2>
+            </div>
+
+
+        <div class="checkout-section">
+            <form id="paymentForm" action="/user/checkout/placeOrder" method="POST">
+
+                <h4>Select Your Address:</h4>
+                <select name="selectedAddress" required>
+                    <% addresses.forEach(address => { %>
+                        <option value="<%= address._id %>"><%= address.name %>, <%= address.city %>, <%= address.state %> - <%= address.pinCode %></option>
+                    <% }) %>
+                </select>
+            <div class="checkout-section">
+                <h4>Payment Options:</h4>
+                <div>
+                    <label>
+                        <input type="radio" name="paymentMethod" value="Wallet" required id="useWallet" onchange="toggleWalletUsage()"> Wallet
+                    </label>
+                    <div id="walletMessage"></div>
+                </div>
+                <div>
+                    <label>
+                        <input type="radio" name="paymentMethod" value="COD" required> Cash on Delivery
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type="radio" name="paymentMethod" value="Razorpay" required> Credit Card (Razorpay)
+                    </label>
+                </div>
+                
+
+                <input type="hidden" name="razorpayPaymentId" id="razorpayPaymentId">
+                <input type="hidden" name="razorpayOrderId" id="razorpayOrderId">
+                <input type="hidden" name="razorpaySignature" id="razorpaySignature">
+                <% if (totalPrice > 0) { %>
+                    <button type="submit" id="rzp-button">Proceed</button>
+                <% } else { %>
+                    <button type="button" id="proceedButton" onclick="location.href='/user/checkout/orderConfirmation'">Proceed</button>
+                <% } %>
+            </div>
+            </form>
+        </div>
+    </div>
+    
 
     <!-- Add Address Modal -->
     <div class="modal" id="addAddressModal">
@@ -245,6 +324,12 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+    <!-- checkout.ejs -->
+<script>
+    const totalPrice = <%= totalPrice %>;
+    const walletBalance = <%= walletBalance %>;
+</script>
+
     <script>
 
         function openAddAddressModal() {
@@ -262,7 +347,7 @@
             }
         }
         
-        function editAddress(id, name, mobileNumber, city, state, pinCode) {
+    function editAddress(id, name, mobileNumber, city, state, pinCode) {
     document.getElementById('editAddressId').value = id;
     document.getElementById('editName').value = name;
     document.getElementById('editMobileNumber').value = mobileNumber;
@@ -271,7 +356,7 @@
     document.getElementById('editPinCode').value = pinCode;
 
     // Dynamically update the form action URL with the address ID
-    document.getElementById('editAddressForm').action = `/user/checkout/addresses/edit/₹{id}`;
+    document.getElementById('editAddressForm').action = `/user/checkout/addresses/edit/${id}`;
     
     document.getElementById('editAddressModal').style.display = 'block';
 }
@@ -289,14 +374,14 @@ window.onclick = function(event) {
 
 function deleteAddress(id) {
     if (confirm("Are you sure you want to delete this address?")) {
-        fetch(`/user/checkout/addresses/delete/₹{id}`, {
+        fetch(`/user/checkout/addresses/delete/${id}`, {
             method: 'POST'
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
                 // Remove the deleted address from the DOM
-                const addressElement = document.querySelector(`li[data-address-id="₹{id}"]`);
+                const addressElement = document.querySelector(`li[data-address-id="${id}"]`);
                 if (addressElement) {
                     addressElement.remove();
                 }
@@ -306,6 +391,221 @@ function deleteAddress(id) {
         })
     }
 }
+
+
+document.getElementById('rzp-button').onclick = async function (e) {
+    e.preventDefault();
+
+    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+
+    if (paymentMethod === 'Razorpay') {  // Change this line
+        // Fetch order details from backend
+        const response = await fetch('/user/checkout/createOrder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ totalPrice: 1000 })  // replace with actual total
+        });
+        const data = await response.json();
+
+        const options = {
+            "key": data.key,
+            "amount": data.amount,
+            "currency": data.currency,
+            "name": "Heaven_interior",
+            "description": "Test Transaction",
+            "image": "/images/Screenshot%202024-10-23%20075333.png",
+            "order_id": data.orderId,
+            "handler": function (response) {
+                // Log the response to check for properties
+                console.log("Payment Response:", response);
+                document.getElementById('razorpayPaymentId').value = response.razorpay_payment_id;
+                document.getElementById('razorpayOrderId').value = response.razorpay_order_id;
+                document.getElementById('razorpaySignature').value = response.razorpay_signature;
+
+                // Submit the form to the backend
+                document.getElementById('paymentForm').submit();
+            },
+            "prefill": {
+                "name": "Customer Name",
+                "email": "customer@example.com",
+                "contact": "9999999999"
+            },
+            "theme": {
+                "color": "#3399cc"
+            }
+        };
+
+        const rzp1 = new Razorpay(options);
+        rzp1.open();
+    } else {
+        // If COD or other payment methods are selected
+        document.getElementById('paymentForm').submit();
+    }
+}
+
+
+document.getElementById('applyCouponBtn').addEventListener('click', async function() {
+    const couponCode = document.getElementById('couponDropdown').value;
+    const response = await fetch('/user/checkout/applyCoupon', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ couponCode })
+    });
+    
+    const data = await response.json();
+    document.getElementById('couponMessage').innerText = data.message;
+
+    if (data.success) {
+        // Update the displayed total price with the new total
+        document.getElementById('totalPriceDisplay').innerText = data.newTotalPrice.toFixed(2);
+        document.getElementById('newTotalPriceContainer').style.display = 'block'; // Show the new price container
+    }
+  });
+
+document.getElementById('removeCouponBtn').addEventListener('click', async function() {
+    const response = await fetch('/user/checkout/removeCoupon', {
+        method: 'POST'
+    });
+
+    const data = await response.json();
+    document.getElementById('couponMessage').innerText = data.message;
+
+    if (data.success) {
+        // Update the displayed total price with the new total
+        const newTotalPrice = data.newTotalPrice.toFixed(2);
+        document.getElementById('totalPriceDisplay').innerText = `₹${newTotalPrice}`; // Ensure currency format
+        document.getElementById('discountAmountDisplay').innerText = `Discount Amount: ₹${data.discountAmount.toFixed(2)}`; // Update discount amount
+        document.getElementById('newTotalPriceContainer').style.display = 'block'; // Show the new price container
+    }
+});
+
+
+document.getElementById('applyCouponBtn').addEventListener('click', async function() {
+            const couponCode = document.getElementById('couponDropdown').value;
+            const response = await fetch('/user/checkout/applyCoupon', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ couponCode })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            // Display the new total after applying the coupon
+            updateTotalPrice(result.newTotalPrice);
+            document.getElementById('couponMessage').innerHTML = `
+        <div class="coupon-message-box success">
+            <h3 style="color:green">Coupon Applied Successfully!</h3>
+            <p><strong>Coupon:</strong> ${result.message}</p>
+            <p><strong>New Total:</strong> <span class="new-total">₹${result.newTotalPrice}</span></p>
+        </div>
+    `;   
+     } else {
+            document.getElementById('couponMessage').innerHTML = result.message;
+        }
+    });
+
+    // Remove coupon
+    document.getElementById('removeCouponBtn').addEventListener('click', async function() {
+        const response = await fetch('/user/checkout/removeCoupon', { method: 'POST' });
+
+        const result = await response.json();
+        if (result.success) {
+            // Reset to original total price
+            updateTotalPrice(result.originalPrice);
+            document.getElementById('couponMessage').innerHTML = 'Coupon removed successfully!';
+        }
+    });
+
+    async function fetchWalletBalance() {
+    const response = await fetch('/user/wallet/balance'); // Adjust this endpoint to your actual API
+    if (response.ok) {
+        const data = await response.json();
+        return data.balance; // Return the balance from the response
+    }
+    return 0; // Default to 0 if there's an error
+}
+
+
+async function toggleWalletUsage() {
+    const walletMessage = document.getElementById('walletMessage');
+    const walletOption = document.getElementById('useWallet');
+
+    // Clear previous message
+    walletMessage.innerHTML = '';
+
+    if (walletOption.checked) {
+        console.log('Wallet Balance:', walletBalance); // Debugging line
+        console.log('Total Price:', totalPrice); // Debugging line
+
+        if (walletBalance < totalPrice) {
+            walletMessage.innerHTML = '<span style="color: red;">Insufficient wallet balance for this purchase.</span>';
+        } else {
+            walletMessage.innerHTML = '<span style="color: green;">Wallet balance is sufficient.</span>';
+        }
+    }
+}
+
+
+// Update the displayed total price
+    function updateTotalPrice(newTotalPrice) {
+        document.getElementById('totalPriceDisplay').innerText = newTotalPrice.toFixed(2);
+        document.getElementById('newTotalPriceContainer').style.display = 'block'; // Show updated total price section
+    }
+
+
+    document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/adminPanel/coupons');
+        const coupons = await response.json();
+        
+        const existingCouponsDropdown = document.getElementById('existingCoupons');
+        
+        // Populate dropdown with coupons
+        coupons.forEach(coupon => {
+            const option = document.createElement('option');
+            option.value = coupon.code; // Assuming your coupon model has a `code` field
+            option.textContent = `${coupon.code} - ${coupon.discount}% off`; // Adjust based on your model
+            existingCouponsDropdown.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error fetching coupons:', error);
+    }
+});
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/adminPanel/coupons'); // Adjust the endpoint
+        const coupons = await response.json();
+        
+        const existingCouponsDropdown = document.getElementById('existingCoupons');
+        
+        // Populate dropdown with coupon names
+        coupons.forEach(coupon => {
+            const option = document.createElement('option');
+            option.value = coupon.name; // Assuming your coupon model has a `name` field
+            option.textContent = `${coupon.name} - ${coupon.discount}% off`; // Adjust as needed
+            existingCouponsDropdown.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error fetching coupons:', error);
+    }
+});
+
+// Handle the Apply button click
+document.getElementById('applyCouponBtn').addEventListener('click', function() {
+    const selectedCoupon = document.getElementById('existingCoupons').value;
+    const couponMessage = document.getElementById('couponMessage');
+    
+});
+
+window.history.replaceState(null, null, '/user/shop');
 </script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </body>
 </html>
+ 

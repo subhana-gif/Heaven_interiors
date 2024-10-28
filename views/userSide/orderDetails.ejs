@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <style>
+        /* body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        } */
+
+        .container {
+            /* width: 90%;
+            max-width: 600px; */
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2, h3 {
+            color: green;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            margin: 0.5rem 0;
+        }
+
+        .order-info, .address-info, .items-info {
+            padding: 1rem 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .address-info p {
+            margin: 0.2rem 0;
+        }
+
+        .order-info strong {
+            color: green;
+        }
+
+        .items-info ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .items-info li {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .items-info img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-right: 1rem;
+            border: 1px solid #ddd;
+        }
+
+        .items-info .item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .btn-primary {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.8rem 1.2rem;
+            background-color:green;
+            color: #fff;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Order Details</h1>
+        
+        <div class="order-info">
+            <h2>Order ID: <%= order.orderNumber %></h2>
+            <p><strong>Payment Method:</strong> <%= order.paymentMethod %></p>
+            <p><strong>Total Price:</strong> ₹<%= order.totalPrice.toFixed(2) %></p>
+        </div>
+        
+        <div class="address-info">
+            <h3>Shipping Address</h3>
+            <p><strong>Name:</strong> <%= order.address.name %></p>
+            <p><strong>Phone:</strong> <%= order.address.mobileNumber %></p>
+            <p><%= order.address.city %>, <%= order.address.state %> - <%= order.address.pinCode %></p>
+        </div>
+        <div class="info">
+            <h3 style="color: green;">Order Summary:</h3>
+            <ul>
+                <li><strong>Total Original Price:</strong> ₹<%= totalOriginalPrice.toFixed(2) %></li>
+                <li><strong>Total Discount from Offers:</strong> -₹<%= totalDiscountFromOffers.toFixed(2) %></li>
+                <li><strong>Coupon Discount:</strong> -₹<%= discountAmount.toFixed(2) %></li> <br><!-- Display coupon discount --> 
+                <li><strong>Total Price:</strong> ₹<%= finalTotalPrice.toFixed(2) %></li>
+            </ul>
+        </div>
+        <div class="items-info">
+            <h3>Items</h3>
+            <ul>
+                <% order.cartItems.forEach(item => { %>
+                    <li>
+                        <img src="/<%= item.image %>" alt="<%= item.name %>">
+                        <div class="item-details">
+                            <strong><%= item.name %></strong>
+                            <span>₹<%= item.price.toFixed(2) %> x <%= item.quantity %></span>
+                        </div>
+                        <% if (order.status === 'Ordered') { %>
+                            <div style="margin-left: 5em;">
+                                <form action="/user/orders/cancellationForm/<%= order._id %>/<%= item.productId %>" method="GET" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger" style="color: red;">Cancel This Product</button>
+                                </form>
+                            </div>
+                        <% } else { %> 
+                            <div style="margin-left: 5em;">
+                                <form action="/user/orders/returnForm/<%= order._id %>/<%= item.productId %>" method="GET" style="display:inline;">
+                                    <button type="submit" class="btn btn-warning" style="background-color: orange;">Return This Product</button>
+                                </form>
+                            </div>
+                       <% } %>                     
+                    </li>
+                <% }); %>
+            </ul>
+
+        </div>
+
+        <a href="/user/orders" class="btn-primary">Back to Orders</a>
+    </div>
+</body>
+</html>

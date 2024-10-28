@@ -1,5 +1,10 @@
 const Product = require('../models/productModal');
 const Category = require('../models/category');
+const multer = require('multer');
+const sharp = require('sharp');
+const path = require('path');
+const fs = require('fs');
+const upload = multer().none();
 
 exports.renderProductPage = async (req, res) => {
     try {
@@ -34,7 +39,6 @@ exports.renderProductPage = async (req, res) => {
     }
 };
 
-
 // Edit Product Page
 exports.renderEditProductPage = async (req, res) => {
     try {
@@ -45,7 +49,6 @@ exports.renderEditProductPage = async (req, res) => {
         res.status(404).send('Product not found');
     }
 };
-
 
 // Add Product
 exports.addProduct = async (req, res) => {
@@ -84,8 +87,6 @@ exports.addProduct = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
-
-
 
 //Product Edit
 exports.editProduct = async (req, res) => {
@@ -143,14 +144,37 @@ exports.editProduct = async (req, res) => {
     }
 };
 
-exports.uploadImage = (req, res) => {
-    if (!req.file) {
-        return res.status(400).send('No file uploaded.');
+exports.uploadImage = async(req, res) => {
+    try {
+        const croppedImages = [req.body.croppedData1, req.body.croppedData2, req.body.croppedData3];
+
+        const uploadedImages = [];
+
+        for (let i = 0; i < croppedImages.length; i++) {
+            if (croppedImages[i]) {
+                const base64Data = croppedImages[i].replace(/^data:image\/\w+;base64,/, "");
+                const buffer = Buffer.from(base64Data, 'base64');
+
+                // Resize the image using sharp (e.g., to 500x500)
+                const resizedBuffer = await sharp(buffer)
+                    .resize(500, 500) // Resize to 500x500 or any size you prefer
+                    .toBuffer();
+
+                // Save the resized image to the uploads folder
+                const fileName = `product_${Date.now()}_${i}.png`;
+                const filePath = path.join(__dirname, 'uploads', fileName);
+                await sharp(resizedBuffer).toFile(filePath);
+
+                uploadedImages.push(fileName); 
+            }
+        }
+
+        res.status(200).send('Images uploaded and processed successfully');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error processing images');
     }
-    res.send('File uploaded successfully!');
 };
-
-
 
 // View Product Details
 exports.viewProduct = async (req, res) => {
@@ -189,14 +213,21 @@ exports.deleteProduct = async (req, res) => {
     }
 };
 
+const addDays = (date, days) => {
+    let result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+};
 exports.updateSpecifications = async (req, res) => {
     const productId = req.params.id;
-    const { highlights, specifications } = req.body;
-
+    const { highlights, specifications, deliveryDays } = req.body;
+    const orderDate = new Date(); // Use the actual order date in your case
+    const estimatedDelivery = addDays(orderDate,  parseInt(deliveryDays, 10)); 
     try {
         await Product.findByIdAndUpdate(productId, {
             highlights,
             specifications,
+            estimatedDelivery
         });
 
         res.redirect('/adminPanel/products'); 
