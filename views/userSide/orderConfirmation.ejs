@@ -22,10 +22,10 @@
         <ul>
             <li><strong>Order ID:</strong> <%= order.orderNumber %></li>
             <li><strong>Payment Method:</strong> <%= order.paymentMethod %></li>
-            <li><strong>Shipping Address:</strong></li>
-            <li><%= order.address.name %></li>
-            <li><%= order.address.mobileNumber %></li>
-            <li><%= order.address.city %>, <%= order.address.state %>, <%= order.address.pinCode %></li>
+            <li><strong>Shipping Address:</strong>
+            <%= order.address.name %>,
+            <%= order.address.mobileNumber %>,
+            <%= order.address.city %>, <%= order.address.state %>, <%= order.address.pinCode %></li>
         </ul>
     
         <h4>Items Ordered:</h4>
@@ -36,20 +36,21 @@
                     <br>
                     <strong>Original Price:</strong> ₹<%= (item.price * item.quantity).toFixed(2) %>
                     <br>
-                    <strong>Discounted Price:</strong> ₹<%= item.itemTotalDiscountedPrice %><br>            
                 <% }); %>
         </ul>
     
         <!-- Display total prices -->
-        <h4>Order Summary:</h4>
+        <h4>Order Summary:</h4>     
         <ul>
             <li><strong>Total Original Price:</strong> ₹<%= totalOriginalPrice.toFixed(2) %></li>
             <li><strong>Total Discount from Offers:</strong> -₹<%= totalDiscountFromOffers.toFixed(2) %></li>
-            <li><strong>Coupon Discount:</strong> -₹<%= discountAmount.toFixed(2) %></li> <!-- Display coupon discount -->            <li><strong>Total Price:</strong> ₹<%= finalTotalPrice.toFixed(2) %></li>
+            <li><strong>Coupon Discount:</strong> ₹<%= discountAmount.toFixed(2) %></li> 
+            <li><strong>Delivery charge:</strong> ₹<%= deliveryCharge.toFixed(2) %>
+            <li><strong>Total Price:</strong> ₹<%= finalTotalPrice.toFixed(2) %></li>
         </ul>
         
-    
-        <a href="/user/home" class="btn btn-primary">Continue Shopping</a>
+        <a href="/user/orders/download-invoice/<%= order._id %>" class="btn btn-warning">Download Invoice (PDF)</a>
+        <a href="/user/home" class="btn btn-success">Continue Shopping</a>
     </div>
      
  

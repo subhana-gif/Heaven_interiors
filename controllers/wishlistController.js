@@ -1,5 +1,5 @@
 const Wishlist = require('../models/wishlist'); 
-const User = require('../models/User')
+const Offer = require('../models/offer')
 
 // Add to Wishlist
 exports.addToWishlist = async (req, res) => {
@@ -52,21 +52,67 @@ exports.removeFromWishlist = async (req, res) => {
 
 // Get Wishlist
 exports.getWishlist = async (req, res) => {
-    const userId = req.user._id; 
+    const page = parseInt(req.query.page) || 1; // Current page
+    const limit = 4; // Number of items per page
+    const skip = (page - 1) * limit;
 
     try {
-        const wishlist = await Wishlist.findOne({ userId }).populate('products');
-        if (!wishlist) {
-            return res.render('userSide/wishlist', { wishlist: [] });
-        }
+        const userId = req.session.user._id;
 
-        res.render('userSide/wishlist', { wishlist: wishlist.products });    
+        // Find the wishlist without pagination first to get the total count
+        const wishlist = await Wishlist.findOne({ userId }).lean();
+        const totalItems = wishlist.products.length; // Total products in wishlist
+        const totalPages = Math.ceil(totalItems / limit);
+
+        // Fetch paginated products with skip and limit
+        const paginatedWishlist = await Wishlist.findOne({ userId })
+            .populate({
+                path: 'products',
+                options: { skip, limit },
+            })
+            .lean();
+
+        // Calculate discounted prices for each product
+        const wishlistWithPrices = await Promise.all(paginatedWishlist.products.map(async (product) => {
+            const offer = await Offer.findOne({
+                $and: [
+                    { isDeleted: false },
+                    {
+                        $or: [
+                            { offerType: 'product', relatedId: product._id },
+                            { offerType: 'category', relatedId: product.category }
+                        ]
+                    },
+                    { startDate: { $lte: new Date() } },
+                    { endDate: { $gte: new Date() } }
+                ]
+            });
+
+            let discountedPrice = null;
+            if (offer) {
+                discountedPrice = offer.discountType === 'percentage'
+                    ? product.price * (1 - offer.discountValue / 100)
+                    : Math.max(0, product.price - offer.discountValue);
+            }
+
+            return {
+                ...product,
+                originalPrice: product.price,
+                discountedPrice: discountedPrice ? discountedPrice.toFixed(2) : null
+            };
+        }));
+
+        // Render the wishlist page with the updated wishlist items
+        res.render('userSide/wishlist', { 
+            wishlist: wishlistWithPrices, // Paginated products with prices
+            totalPages, 
+            currentPage: page 
+        });
     } catch (error) {
         console.error('Error fetching wishlist:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).send('Server Error');
     }
 };
-
 
 exports.toggleWishlist = async (req, res) => {
     const productId = req.params.productId; 

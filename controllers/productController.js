@@ -3,14 +3,12 @@ const Category = require('../models/category');
 const multer = require('multer');
 const sharp = require('sharp');
 const path = require('path');
-const fs = require('fs');
-const upload = multer().none();
 
 exports.renderProductPage = async (req, res) => {
     try {
         const search = req.query.search || '';
         const currentPage = parseInt(req.query.page) || 1;
-        const limit = 10;
+        const limit = 5;
         const skip = (currentPage - 1) * limit;
 
         const products = await Product.find({
@@ -39,14 +37,18 @@ exports.renderProductPage = async (req, res) => {
     }
 };
 
-// Edit Product Page
 exports.renderEditProductPage = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
-        res.render('editProduct', { product });
+        if (!product) {
+            return res.status(404).send('Product not found');
+        }
+        
+        const categories = await Category.find(); // Fetch categories here
+        res.render('editProduct', { product, categories }); // Pass categories to the view
     } catch (err) {
         console.error('Error fetching product:', err);
-        res.status(404).send('Product not found');
+        res.status(500).send('Server error');
     }
 };
 
@@ -93,12 +95,17 @@ exports.editProduct = async (req, res) => {
     try {
         const productId = req.params.id;
         const { name, description, price, category, stockQuantity, stockStatus } = req.body;
-
-        const product = await Product.findById(productId);
+        const product = await Product.findById(productId).populate('category');
         if (!product) {
             return res.status(404).send('Product not found');
         }
 
+        product.name = name;
+        product.description = description;
+        product.price = price >= 0 ? price : product.price;
+        product.category = category || product.category;    
+        product.stock = stockQuantity >= 0 ? stockQuantity : product.stock;
+        product.stockStatus = stockStatus;
         let imagesToDelete = req.body.deleteImages || []; 
         if (!Array.isArray(imagesToDelete)) {
             imagesToDelete = [imagesToDelete]; 
@@ -128,15 +135,7 @@ exports.editProduct = async (req, res) => {
             return res.status(400).send('Product must have at least 3 images.');
         }
 
-        product.name = name;
-        product.description = description;
-        product.price = price;
-        product.category = category;
-        product.stock = stockQuantity;
-        product.stockStatus = stockStatus;
-
         await product.save();
-
         res.redirect('/adminPanel/products');
     } catch (err) {
         console.error(err);

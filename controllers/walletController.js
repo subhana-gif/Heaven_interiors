@@ -6,8 +6,6 @@ exports.renderWalletPage = async (req, res) => {
     const userId = req.user._id;
 
     try {
-        // Fetch user's wallet balance
-        const user = await User.findById(userId);
         const wallet = await Wallet.findOne({ userId });
 
         if (!wallet) {
@@ -18,7 +16,7 @@ exports.renderWalletPage = async (req, res) => {
 
         // Fetch wallet transactions
         const transactions = wallet.transactions || [];
-
+        transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         // Render the wallet page with balance and transaction data
         res.render('userSide/wallet', { walletBalance, transactions });
     } catch (error) {
@@ -41,19 +39,22 @@ exports.getWalletBalance = async (req, res) => {
     }
 };
 
-// Get wallet transactions (optional API for dynamic loading)
 exports.getWalletTransactions = async (req, res) => {
     const userId = req.user._id;
 
     try {
         const wallet = await Wallet.findOne({ userId });
-        const transactions = wallet ? wallet.transactions : [];
+        if (!wallet) {
+            return res.status(404).json({ message: "Wallet not found" });
+        }
+        const transactions = wallet.transactions || [];
         res.status(200).json({ transactions });
     } catch (error) {
         console.error('Error fetching wallet transactions:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
+
 
 
 exports.applyWallet = async (req, res) => {

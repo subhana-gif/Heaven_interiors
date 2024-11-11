@@ -2,21 +2,32 @@ const Coupon = require('../models/coupon');
 
 // Get all coupons
 exports.getAllCoupons = async (req, res) => {
-    const search = req.query.search || ''; 
-    let coupons = [];
+    const search = req.query.search ? req.query.search.trim() : '';
 
     try {
-        if (search) {
-            coupons = await Coupon.find({ name: { $regex: search, $options: 'i' } }) .sort({ createdAt: -1 });;
-        } else {
-            coupons = await Coupon.find();
-        }
+        const currentpage = parseInt(req.query.page) || 1;
+        const limit = 5;
+        const skip = (currentpage - 1) * limit;
 
-
+        const searchQuery = search
+        ? { code: { $regex: search, $options: 'i' } }  
+        : {};
+    
+        const coupons = await Coupon.find(searchQuery)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+        
+        const totalCoupons = await Coupon.countDocuments(searchQuery);
+        const totalPages = Math.ceil(totalCoupons / limit);
+        let errorMessage=''
         res.render('adminPanel', { 
             body: 'admin/coupons', 
             coupons,
-            search, 
+            search,
+            totalPages,
+            currentpage,
+            errorMessage 
         });
     } catch (error) {
         console.error('Error fetching coupons:', error);
@@ -24,11 +35,50 @@ exports.getAllCoupons = async (req, res) => {
     }
 };
 
-
 // Add a new coupon
 exports.addCoupon = async (req, res) => {
-    const { code, discountType, discountValue, expirationDate, usageLimit, minimumPurchase, description, active } = req.body;
+    const { code, discountType, discountValue, expirationDate, usageLimit, minimumPurchase, description, active, search } = req.body;
+    const today = new Date();
+    const expDate = new Date(expirationDate);
+
+    // Fetch all coupons for rendering in case of errors
+    const coupons = await Coupon.find({});
+    const currentpage = parseInt(req.query.page) || 1;
+    const limit = 5;
+    const skip = (currentpage - 1) * limit;
+
+    const searchQuery = search ? { name: { $regex: search, $options: 'i' } } : {};
+    const totalCoupons = await Coupon.countDocuments(searchQuery);
+    const totalPages = Math.ceil(totalCoupons / limit);
+
+    // Check if expiration date is in the future
+    if (expDate <= today) {
+        return res.render('adminPanel', {
+            body: 'admin/coupons',
+            coupons,
+            search,
+            totalPages,
+            currentpage,
+            errorMessage: 'Expiration date must be a future date',
+            code, discountType, discountValue, expirationDate, usageLimit, minimumPurchase, description, active,
+        });
+    }
+
     try {
+        // Check if a coupon with the same code already exists
+        const existingCoupon = await Coupon.findOne({ code });
+        if (existingCoupon) {
+            return res.render('adminPanel', {
+                body: 'admin/coupons',
+                coupons,
+                search,
+                totalPages,
+                currentpage,
+                errorMessage: 'Coupon code already exists. Please use a different code.',
+                code, discountType, discountValue, expirationDate, usageLimit, minimumPurchase, description, active,
+            });
+        }
+
         const newCoupon = new Coupon({
             code,
             discountType,
@@ -36,8 +86,8 @@ exports.addCoupon = async (req, res) => {
             expirationDate,
             usageLimit,
             minimumPurchase,
-            description, 
-            isActive: active 
+            description,
+            isActive: active
         });
 
         await newCoupon.save();
@@ -51,15 +101,54 @@ exports.addCoupon = async (req, res) => {
 // Edit an existing coupon
 exports.editCoupon = async (req, res) => {
     const { id } = req.params;
-    const { code, discountType, discountValue, expirationDate, usageLimit, minimumPurchase, description, active } = req.body;
-    
+    const { code, discountType, discountValue, expirationDate, usageLimit, minimumPurchase, description, active, search } = req.body;
+    const today = new Date();
+    const expDate = new Date(expirationDate);
+
+    // Fetch all coupons for rendering in case of errors
+    const coupons = await Coupon.find({});
+    const currentpage = parseInt(req.query.page) || 1;
+    const limit = 5;
+    const skip = (currentpage - 1) * limit;
+
+    const searchQuery = search ? { name: { $regex: search, $options: 'i' } } : {};
+    const totalCoupons = await Coupon.countDocuments(searchQuery);
+    const totalPages = Math.ceil(totalCoupons / limit);
+
+    // Check if expiration date is in the future
+    if (expDate <= today) {
+        return res.render('adminPanel', {
+            body: 'admin/coupons',
+            coupons,
+            search,
+            totalPages,
+            currentpage,
+            errorMessage: 'Expiration date must be a future date',
+            code, discountType, discountValue, expirationDate, usageLimit, minimumPurchase, description, active,
+        });
+    }
+
     try {
         const coupon = await Coupon.findById(id);
-
         if (!coupon) {
             return res.status(404).send('Coupon not found');
         }
 
+        // Check if another coupon with the same code exists
+        const existingCoupon = await Coupon.findOne({ code, _id: { $ne: id } });
+        if (existingCoupon) {
+            return res.render('adminPanel', {
+                body: 'admin/coupons',
+                coupons,
+                search,
+                totalPages,
+                currentpage,
+                errorMessage: 'Coupon code already exists. Please use a different code.',
+                code, discountType, discountValue, expirationDate, usageLimit, minimumPurchase, description, active,
+            });
+        }
+
+        // Update coupon fields
         coupon.code = code;
         coupon.discountType = discountType;
         coupon.discountValue = discountValue;
@@ -67,7 +156,7 @@ exports.editCoupon = async (req, res) => {
         coupon.usageLimit = usageLimit;
         coupon.minimumPurchase = minimumPurchase;
         coupon.description = description;
-        coupon.isActive = active; 
+        coupon.isActive = active;
 
         await coupon.save();
         res.redirect('/adminPanel/coupons');
@@ -77,34 +166,14 @@ exports.editCoupon = async (req, res) => {
     }
 };
 
-
-// Delete a coupon
-exports.deleteCoupon = async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const coupon = await Coupon.findById(id);
-
-        if (!coupon) {
-            return res.status(404).send('Coupon not found');
-        }
-
-        // Use the deleteOne method to remove the coupon
-        await Coupon.deleteOne({ _id: id });
-
-        res.redirect('/adminPanel/coupons');
-    } catch (error) {
-        console.error('Error deleting coupon:', error);
-        res.status(500).send('Server Error');
-    }
-};
-
 // Apply coupon
 exports.applyCoupon = async (req, res) => {
     const { couponCode } = req.body;
     const totalPrice = req.session.totalPrice; 
+    
     try {
         const coupon = await Coupon.findOne({ 
+            isDeleted:false,
             code: couponCode, 
             isActive: true, 
             expirationDate: { $gte: Date.now() } 
@@ -133,9 +202,10 @@ exports.applyCoupon = async (req, res) => {
             discountAmount = coupon.discountValue;
         }
     
-        const newTotalPrice = totalPrice - discountAmount;
+        const newTotalPrice = totalPrice - discountAmount;        
+        
         req.session.totalPrice = newTotalPrice; // Update session
-        req.session.discountAmount = discountAmount; // Store discount amount in session
+        req.session.discountAmount = discountAmount; 
         req.session.couponCode = couponCode; // Store coupon code in session
 
         if (coupon.usageLimit) {
@@ -150,10 +220,33 @@ exports.applyCoupon = async (req, res) => {
     }
 };
 
-
 // Remove coupon
 exports.removeCoupon = (req, res) => {
     const originalTotalPrice = req.session.originalTotalPrice; // Store the original price in session when applying coupon
     req.session.totalPrice = originalTotalPrice; // Reset total price
     return res.json({ success: true, message: 'Coupon removed successfully', newTotalPrice: originalTotalPrice });
 };
+
+exports.softDeleteCoupon = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await Coupon.findByIdAndUpdate(id, { isDeleted: true });
+        res.redirect('/adminPanel/coupons');
+    } catch (error) {
+        console.error('Error soft deleting coupon:', error);
+        res.status(500).send('Server Error');
+    }
+};
+
+
+exports.restoreCoupon = async (req, res) => {
+    const { id } = req.params;
+    try {
+        await Coupon.findByIdAndUpdate(id, { isDeleted: false });
+        res.redirect('/adminPanel/coupons');
+    } catch (error) {
+        console.error('Error restoring coupon:', error);
+        res.status(500).send('Server Error');
+    }
+};
+

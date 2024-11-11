@@ -157,79 +157,60 @@ exports.updateProfile = async (req, res) => {
     }
 };
 
-// exports.updatePassword = async (req, res) => {
-//     if (!req.isAuthenticated()) {
-//         return res.status(401).send('Unauthorized');
-//     }
-
-//     const { password } = req.body;
-
-//     try {
-//         const user = await User.findById(req.user._id);
-
-//         user.password = await bcrypt.hash(password, 10);
-//         await user.save();
-
-        
-//         req.session.destroy(err => {
-//             if (err) {
-//                 console.error('Error destroying session:', err);
-//                 return res.status(500).send('Internal Server Error');
-//             }
-//         });
-//         } catch (error) {
-//         console.error('Error updating password:', error);
-//         res.status(500).send('Internal Server Error');
-//     }
-// };
-
 exports.getUserAddresses = async (req, res) => {
     if (!req.isAuthenticated()) {
         return res.status(401).send('Unauthorized');
     }
 
     try {
-        const userId = req.user._id; 
+        const userId = req.user._id;
         const addresses = await Address.find({ userId });
 
-        let addressesHtml = '<h3 style="color:green">Your Addresses</h3>';
+        // HTML for "Add New Address" form at the top
+        let addressesHtml = `
+            <h4 style="color:green">Add New Address</h4>
+            <form id="new-address-form" onsubmit="return validateNewAddress()">
+                <input type="text" name="name" placeholder="Name" required>
+                <input type="text" name="mobileNumber" placeholder="Mobile Number" pattern="\\d{10}" title="Mobile number must be 10 digits" required>
+                <input type="text" name="city" placeholder="City" required>
+                <input type="text" name="state" placeholder="State" required>
+                <input type="text" name="pinCode" placeholder="PIN Code" pattern="\\d{6}" title="PIN Code must be 6 digits" required>
+                <button type="submit" style="color:white;border:none;background:green">Add Address</button>
+            </form>            
+            <hr/>
+            <h3 style="color:green">Your Addresses</h3>
+        `;
+
+        // HTML for address list with rectangle styling
         addresses.forEach(address => {
             addressesHtml += `
-                <div class="address" data-id="${address._id}">
-                    <p><strong>Name:</strong> <span class="address-name">${address.name}</span></p>
-                    <p><strong>Mobile Number:</strong> <span class="address-mobileNumber">${address.mobileNumber}</span></p>
-                    <p><strong>City:</strong> <span class="address-city">${address.city}</span></p>
-                    <p><strong>State:</strong> <span class="address-state">${address.state}</span></p>
-                    <p><strong>Pincode:</strong> <span class="address-pinCode">${address.pinCode}</span></p>
-                    
-                    <button onclick="editAddress('${address._id}')" style="color:blue">Edit</button>
-                    <button onclick="deleteAddress('${address._id}')" style="color:red">Delete</button>
-
-                    <form id="edit-address-form-${address._id}" style="display:none;" onsubmit="updateAddress(event, '${address._id}')">
-                        <input type="text" name="name" value="${address.name}" required>
-                        <input type="text" name="mobileNumber" value="${address.mobileNumber}" required>
-                        <input type="text" name="city" value="${address.city}" required>
-                        <input type="text" name="state" value="${address.state}" required>
-                        <input type="text" name="pinCode" value="${address.pinCode}" required>
-                        <button type="submit" style="color:green">Save</button>
-                        <button type="button" onclick="cancelEdit('${address._id}')" style="color:red">Cancel</button>
-                    </form>
-                </div>
-                <hr/>
+                <div class="address" data-id="${address._id}" style="border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                        <p><span class="address-name">${address.name}</span></p>
+                        <p><span class="address-mobileNumber">${address.mobileNumber}</span></p>
+                        <p><span class="address-city">${address.city}</span></p>
+                        <p><span class="address-state">${address.state}</span></p>
+                        <p><span class="address-pinCode">${address.pinCode}</span></p>
+                    </div>
+                    <div style="margin-top: 5px;">
+                        <button onclick="editAddress('${address._id}')" style="color:black; background:#FFC107;border:none; ">Edit</button>
+                        <button onclick="deleteAddress('${address._id}')" style="color:white;background:red;border:none">Delete</button>
+                    </div>
+                        <form id="edit-address-form-${address._id}" style="display:none;" onsubmit="return updateAddress(event, '${address._id}')">
+                            <input type="text" name="name" value="${address.name}" required>
+                            <input type="text" name="mobileNumber" value="${address.mobileNumber}" pattern="\\d{10}" title="Mobile number must be 10 digits" required>
+                            <input type="text" name="city" value="${address.city}" required>
+                            <input type="text" name="state" value="${address.state}" required>
+                            <input type="text" name="pinCode" value="${address.pinCode}" pattern="\\d{6}" title="PIN Code must be 6 digits" required>
+                            <button type="submit" style="color:white;border:none;background:green">Save</button>
+                            <button type="button" onclick="cancelEdit('${address._id}')" style="color:white;background:red;border:none">Cancel</button>
+                        </form>
+                    </div>
             `;
         });
 
+        // Include JavaScript for edit and delete functionality
         addressesHtml += `
-            <form id="new-address-form">
-                <h4 style="color:green">Add New Address</h4>
-                <input type="text" name="name" placeholder="Name" required>
-                <input type="text" name="mobileNumber" placeholder="Mobile Number" required>
-                <input type="text" name="city" placeholder="City" required>
-                <input type="text" name="state" placeholder="State" required>
-                <input type="text" name="pinCode" placeholder="PIN Code" required>
-                <button type="submit" style="color:green">Add Address</button>
-            </form>
-
             <script>
                 function editAddress(addressId) {
                     document.getElementById('edit-address-form-' + addressId).style.display = 'block';
@@ -244,49 +225,52 @@ exports.getUserAddresses = async (req, res) => {
                 }
 
                 function updateAddress(event, addressId) {
-                    event.preventDefault(); 
+                    event.preventDefault();
                     const form = document.getElementById('edit-address-form-' + addressId);
                     const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
 
                     fetch('/user/addresses/' + addressId + '/edit', {
                         method: 'POST',
-                        body: formData
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
                     })
-                    .then(response => {
-                        if (response.ok) {
-                            window.location.reload(); 
+                    .then(response => response.json())
+                    .then(updatedAddress => {
+                        if (updatedAddress) {
+                            const addressDiv = document.querySelector('.address[data-id="' + addressId + '"]');
+                            addressDiv.querySelector('.address-name').textContent = updatedAddress.name;
+                            addressDiv.querySelector('.address-mobileNumber').textContent = updatedAddress.mobileNumber;
+                            addressDiv.querySelector('.address-city').textContent = updatedAddress.city;
+                            addressDiv.querySelector('.address-state').textContent = updatedAddress.state;
+                            addressDiv.querySelector('.address-pinCode').textContent = updatedAddress.pinCode;
+
+                            cancelEdit(addressId);
                         } else {
                             alert('Error updating address');
                         }
-                    })
-                          .then(updatedAddressesHtml => {
-                        // Replace the current addresses list with the updated HTML
-                        document.getElementById('addresses-container').innerHTML = updatedAddressesHtml;
                     })
                     .catch(error => console.error('Error updating address:', error));
                 }
 
                 function deleteAddress(addressId) {
-                    if (confirm('Are you sure you want to delete this address?')) {
-                        fetch('/user/addresses/' + addressId, {
-                            method: 'DELETE',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        })
-                        .then(response => {
-                            if (response.ok) {
-                                window.location.reload(); 
-                            } else {
-                                alert('Error deleting address');
-                            }
-                        })
-                             .then(updatedAddressesHtml => {
-                                // Replace the current addresses list with the updated HTML
-                                document.getElementById('addresses-container').innerHTML = updatedAddressesHtml;
-                            })
-                        .catch(error => console.error('Error deleting address:', error));
-                    }
+                    fetch('/user/addresses/' + addressId, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            const addressDiv = document.querySelector('.address[data-id="' + addressId + '"]');
+                            addressDiv.remove();
+                        } else {
+                            console.error('Error deleting address');
+                        }
+                    })
+                    .catch(error => console.error('Error deleting address:', error));
                 }
             </script>
         `;
@@ -313,14 +297,15 @@ exports.getEditAddress = async (req, res) => {
 
         const editAddressHtml = `
             <h3 style="color:green">Edit Address</h3>
-            <form id="edit-address-form" method="POST" action="/user/addresses/${addressId}/edit">
-                <input type="text" name="name" value="${address.name}" required>
-                <input type="text" name="mobileNumber" value="${address.mobileNumber}" required>
-                <input type="text" name="city" value="${address.city}" required>
-                <input type="text" name="state" value="${address.state}" required>
-                <input type="text" name="pinCode" value="${address.pinCode}" required>
-                <button type="submit" style="color:green">Update Address</button>
-            </form>
+<form id="edit-address-form-${address._id}" style="display:none;" onsubmit="updateAddress(event, '${address._id}')">
+    <input type="text" name="name" value="${address.name}" required>
+    <input type="text" name="mobileNumber" value="${address.mobileNumber}" pattern="\\d{6}" title="Mobile number must be 10 digits" required>
+    <input type="text" name="city" value="${address.city}" required>
+    <input type="text" name="state" value="${address.state}" required>
+    <input type="text" name="pinCode" value="${address.pinCode}" pattern="\\d{6}" title="PIN Code must be 6 digits" required>
+    <button type="submit" style="color:green">Save</button>
+    <button type="button" onclick="cancelEdit('${address._id}')" style="color:red">Cancel</button>
+</form>
         `;
 
         res.send(editAddressHtml);
@@ -336,25 +321,27 @@ exports.updateAddress = async (req, res) => {
     }
 
     const addressId = req.params.id;
-    const { name, mobileNumber, address, city, state, pinCode } = req.body; 
+    const { name, mobileNumber, city, state, pinCode } = req.body;  // make sure to extract the correct fields
 
     try {
         const updatedAddress = await Address.findByIdAndUpdate(
             addressId,
-            { name, mobileNumber, address, city, state, pinCode },
-            { new: true, runValidators: true } 
+            { name, mobileNumber, city, state, pinCode },  // Make sure these fields match your schema
+            { new: true, runValidators: true }
         );
 
         if (!updatedAddress) {
             return res.status(404).send('Address not found');
         }
 
-        res.send('Address updated successfully');
+        // Send back the updated address as a JSON object
+        res.json(updatedAddress);  // Send the updated address as JSON, not as HTML
     } catch (error) {
         console.error('Error updating address:', error);
         res.status(500).send('Internal Server Error');
     }
 };
+
 
 exports.deleteAddress = async (req, res) => {
     if (!req.isAuthenticated()) {

@@ -237,8 +237,12 @@
                             <div class="form-group">
                                 <label for="productCategory">Category</label>
                                 <select name="category" class="form-control" required>
+                                    <% console.log('Product Category:', product.category); %>
                                     <% categories.forEach(function(category) { %>
-                                        <option value="<%= category._id %>" <%= product.category && product.category._id === category._id ? 'selected' : '' %>><%= category.name %></option>
+                                        <option value="<%= category._id %>" 
+                                            <%= product.category && product.category._id.toString() === category._id.toString() ? 'selected' : '' %> >
+                                            <%= category.name %>                                        
+                                        </option>
                                     <% }); %>
                                 </select>
                             </div>
@@ -264,7 +268,6 @@
                                             <div class="image-container">
                                                 <img src="/<%= imagePath %>" alt="Product Image" class="img-thumbnail" style="width: 100px; height: 100px;">
                                                 <input type="checkbox" name="deleteImages" value="<%= image %>"> Delete
-                                                <input type="file" name="images[<%= product.images.indexOf(image) %>]" accept="image/*">
                                             </div>
                                         <% }); %>
                                     <% } else { %>

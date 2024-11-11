@@ -8,6 +8,7 @@ const couponSchema = new mongoose.Schema({
         uppercase: true,
         trim: true,
     },
+    isDeleted: { type: Boolean, default: false },
     discountType: {
         type: String,
         enum: ['percentage', 'flat'],
@@ -52,7 +53,7 @@ const couponSchema = new mongoose.Schema({
         default: 0 },
     isActive: {
         type: Boolean,
-        default: true, // Coupon is active and can be used
+        default: true, 
     },
     createdAt: {
         type: Date,

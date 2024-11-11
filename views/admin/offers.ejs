@@ -12,7 +12,7 @@
 <body>
   
 <div class="container mt-5">
-    <h2>Offers Management</h2>
+    <h2>Offer Management</h2>
 
     <!-- Search Form -->
     <form method="GET" action="/adminPanel/offers" class="form-inline mb-3">
@@ -24,6 +24,11 @@
 
     <!-- Button to trigger Add Offer modal -->
     <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#addOfferModal">Add Offer</button>
+    <% if (errorMessage) { %>
+        <div class="alert alert-danger">
+            <%= errorMessage %>
+        </div>
+    <% } %>
 
     <!-- Table of Existing Offers -->
     <table class="table table-striped">
@@ -34,9 +39,6 @@
                 <th>Related Item</th>
                 <th>Discount Type</th>
                 <th>Discount Value</th>
-                <th>Referral Code</th>
-                <th>Referrer Reward</th>
-                <th>Referee Reward</th>
                 <th>Validity</th>
                 <th>Actions</th>
             </tr>
@@ -66,19 +68,23 @@
                         <% } %>
                     </td>
                     
-                    <td><%= offer.discountType || 'N/A' %></td>
-                    <td><%= offer.discountValue || 'N/A' %></td>
-                    <td><%= offer.offerType === 'referral' ? (offer.referralCode || 'N/A') : 'N/A' %></td>
-                    <td><%= offer.offerType === 'referral' ? (offer.referrerReward !== undefined ? offer.referrerReward : 'N/A') : 'N/A' %></td>
-                    <td><%= offer.offerType === 'referral' ? (offer.refereeReward !== undefined ? offer.refereeReward : 'N/A') : 'N/A' %></td>                                        <td><%= offer.startDate.toDateString() %> - <%= offer.endDate.toDateString() %></td>
+                    <td><%= offer.discountType || 'N/A' %> </td>
+                    <td><%= offer.discountValue || 'N/A' %><% if (offer.discountType === 'percentage') { %> % <% } %></td>
+                    <td><%= offer.startDate.toDateString() %> - <%= offer.endDate.toDateString() %></td>
                     <td>
                         <!-- Edit Offer Button -->
                         <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#editOfferModal<%= offer._id %>">Edit</button>
                         
                         <!-- Delete Offer Form -->
-                        <form action="/adminPanel/offers/delete/<%= offer._id %>" method="POST" style="display:inline;">
-                            <button type="submit" class="btn btn-danger">Delete</button>
-                        </form>
+                        <% if (!offer.isDeleted) { %>
+                            <form action="/adminPanel/offers/delete/<%= offer._id %>" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        <% } else { %>
+                            <form action="/adminPanel/offers/restore/<%= offer._id %>" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-success">Restore</button>
+                            </form>
+                        <% } %>
                     </td>
                 </tr>
                 
@@ -100,16 +106,15 @@
                                     </div>
                                     <div class="form-group">
                                         <label>Offer Type</label>
-                                        <select class="form-control" name="offerType" required>
+                                        <select class="form-control" name="offerType" required id="offereditselect">
                                             <option value="product" <%= offer.offerType === 'product' ? 'selected' : '' %>>Product</option>
                                             <option value="category" <%= offer.offerType === 'category' ? 'selected' : '' %>>Category</option>
-                                            <option value="referral" <%= offer.offerType === 'referral' ? 'selected' : '' %>>Referral</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
                                         <label>Related Item</label>
-                                        <select class="form-control" name="relatedId" required>
-                                            <% if (offer && offer.type === 'category') { %>
+                                        <select class="form-control" name="relatedId" id="relatededitselect" required onchange="editRelatedItems()">
+                                            <% if (offer && offer.offerType === 'category') { %>
                                                 <% categories.forEach(category => { %>
                                                     <option value="<%= category._id %>" 
                                                         <%= offer.relatedId && offer.relatedId.toString() === category._id.toString() ? 'selected' : '' %>>
@@ -119,7 +124,7 @@
                                             <% } else { %>
                                                 <% products.forEach(product => { %>
                                                     <option value="<%= product._id %>" 
-                                                        <%= offer && offer.relatedId && offer.relatedId.toString() === product._id.toString() ? 'selected' : '' %>>
+                                                        <%= offer.relatedId && offer.relatedId.toString() === product._id.toString() ? 'selected' : '' %>>
                                                         <%= product.name %>
                                                     </option>
                                                 <% }) %>
@@ -127,15 +132,15 @@
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label>Discount Type</label>
-                                        <select class="form-control" name="discountType">
-                                            <option value="percentage" <%= offer.discountType === 'percentage' ? 'selected' : '' %>>Percentage</option>
+                                    <label for="editDiscountType" class="form-label">Discount Type</label>
+                                    <select class="form-select" id="editDiscountType" name="discountType" required>
+                                        <option value="percentage" <%= offer.discountType === 'percentage' ? 'selected' : '' %>>Percentage</option>
                                             <option value="fixed" <%= offer.discountType === 'fixed' ? 'selected' : '' %>>Fixed</option>
                                         </select>
                                     </div>
-                                    <div class="form-group">
-                                        <label>Discount Value</label>
-                                        <input type="number" class="form-control" name="discountValue" value="<%= offer.discountValue %>" required>
+                                    <div class="mb-3">
+                                        <label for="editDiscountAmount" class="form-label">Discount Amount</label>
+                                        <input type="number" class="form-control" id="editDiscountAmount" name="discountValue" value="<%= offer.discountValue %>" required min="1">
                                     </div>
                                     <div class="form-group">
                                         <label>Start Date</label>
@@ -144,18 +149,6 @@
                                     <div class="form-group">
                                         <label>End Date</label>
                                         <input type="date" class="form-control" name="endDate" value="<%= offer.endDate.toISOString().split('T')[0] %>" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Referral Code</label>
-                                        <input type="text" class="form-control" name="referralCode" value="<%= offer.referralCode %>">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Referrer Reward</label>
-                                        <input type="number" class="form-control" name="referrerReward" value="<%= offer.referrerReward %>">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Referee Reward</label>
-                                        <input type="number" class="form-control" name="refereeReward" value="<%= offer.refereeReward %>">
                                     </div>
                                     <button type="submit" class="btn btn-primary">Update Offer</button>
                                 </form>
@@ -171,17 +164,17 @@
     <nav aria-label="Page navigation">
         <ul class="pagination justify-content-center">
             <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                <a class="page-link" href="/adminPanel/products?page=<%= currentPage - 1 %>&search=<%= search %>" aria-label="Previous">
+                <a class="page-link" href="/adminPanel/offers?page=<%= currentPage - 1 %>&search=<%= search %>" aria-label="Previous">
                     <span aria-hidden="true">&laquo;</span>
                 </a>
             </li>
             <% for (let i = 1; i <= totalPages; i++) { %>
                 <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                    <a class="page-link" href="/adminPanel/products?page=<%= i %>&search=<%= search %>"><%= i %></a>
+                    <a class="page-link" href="/adminPanel/offers?page=<%= i %>&search=<%= search %>"><%= i %></a>
                 </li>
             <% } %>
             <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                <a class="page-link" href="/adminPanel/products?page=<%= currentPage + 1 %>&search=<%= search %>" aria-label="Next">
+                <a class="page-link" href="/adminPanel/offers?page=<%= currentPage + 1 %>&search=<%= search %>" aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
                 </a>
             </li>
@@ -210,7 +203,6 @@
                             <option disabled selected>Select an offer type</option>
                             <option value="product">Product</option>
                             <option value="category">Category</option>
-                            <option value="referral">Referral</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -219,16 +211,19 @@
                             <option disabled selected>Select an offer type first</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Discount Type</label>
-                        <select class="form-control" name="discountType">
+                    <div class="mb-3">
+                        <label for="discountType" class="form-label">Discount Type</label>
+                        <select class="form-select" id="discountType" name="discountType" required>
                             <option value="percentage">Percentage</option>
-                            <option value="fixed">Fixed</option>
+                            <option value="fixed">Fixed Amount</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Discount Value</label>
-                        <input type="number" class="form-control" name="discountValue" required>
+                        <input type="number" class="form-control" name="discountValue" required min="1" id="discountValue">
+                        <div id="discountValueError" style="color: red; display: none;">
+                            Please enter a percentage between 0 and 100.
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Start Date</label>
@@ -238,30 +233,81 @@
                         <label>End Date</label>
                         <input type="date" class="form-control" name="endDate" required>
                     </div>
-                    <div class="form-group">
-                        <label>Referral Code</label>
-                        <input type="text" class="form-control" name="referralCode">
-                    </div>
-                    <div class="form-group">
-                        <label>Referrer Reward</label>
-                        <input type="number" class="form-control" name="referrerReward">
-                    </div>
-                    <div class="form-group">
-                        <label>Referee Reward</label>
-                        <input type="number" class="form-control" name="refereeReward">
-                    </div>
                     <button type="submit" class="btn btn-primary">Add Offer</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
-
-
-
 </div>
 <script>
-    const offerTypeSelect = document.getElementById('offerTypeSelect');
+
+document.addEventListener('DOMContentLoaded', function() {
+    const discountTypeSelect = document.getElementById('editDiscountType');
+    const discountAmountInput = document.getElementById('editDiscountAmount');
+
+    function updateDiscountValidation() {
+        const discountType = discountTypeSelect.value;
+
+        if (discountType === 'percentage') {
+            discountAmountInput.max = 100;
+            discountAmountInput.min = 0;
+            discountAmountInput.placeholder = 'Enter a value between 0 and 100';
+        } else if (discountType === 'flat') {
+            discountAmountInput.removeAttribute('max'); 
+            discountAmountInput.min = 1;
+            discountAmountInput.placeholder = 'Enter a positive amount';
+        }
+    }
+
+    // Run the validation update when the page loads to set correct limits
+    updateDiscountValidation();
+
+    // Add event listener to update validation when discount type changes
+    discountTypeSelect.addEventListener('change', updateDiscountValidation);
+});
+
+
+// add
+document.addEventListener('DOMContentLoaded', function() {
+    const discountTypeSelect = document.getElementById('discountType');
+    const discountValueInput = document.getElementById('discountValue');
+    const discountValueError = document.getElementById('discountValueError');
+
+    // Function to update validation based on discount type
+    function updateAddDiscountValidation() {
+        const discountType = discountTypeSelect.value;
+        discountValueInput.setCustomValidity(""); // Reset custom validation
+        discountValueError.style.display = 'none'; // Hide error message
+
+        if (discountType === 'percentage') {
+            discountValueInput.setAttribute('min', 0);  // Set min to 0 for percentage
+            discountValueInput.setAttribute('max', 100); // Set max to 100 for percentage
+        } else {
+            discountValueInput.removeAttribute('max'); // Remove max for flat discount
+            discountValueInput.setAttribute('min', 1);   // Set min to 1 for flat amount
+        }
+    }
+
+    // Validate discount value input when the user changes the value
+    discountValueInput.addEventListener('input', function() {
+        if (discountTypeSelect.value === 'percentage' && (discountValueInput.value < 0 || discountValueInput.value > 100)) {
+            discountValueError.style.display = 'inline';  // Show error message if out of range
+            discountValueInput.setCustomValidity("Please enter a percentage between 0 and 100."); // Set custom validation message
+        } else {
+            discountValueError.style.display = 'none';    // Hide error if within range
+            discountValueInput.setCustomValidity("");     // Clear custom validation
+        }
+    });
+
+    // Initial validation update on page load
+    updateAddDiscountValidation();
+
+    // Update validation whenever the discount type changes
+    discountTypeSelect.addEventListener('change', updateAddDiscountValidation);
+});
+
+const offerTypeSelect = document.getElementById('offerTypeSelect');
     const relatedItemSelect = document.getElementById('relatedItemsSelect');
 
     offerTypeSelect.addEventListener('change', function () {
@@ -279,6 +325,27 @@
             <% }); %>
         }
     });
+
+
+    const offereditselect = document.getElementById('offereditselect');
+    const relatededitselect = document.getElementById('relatededitselect');
+
+    offereditselect.addEventListener('change', function () {
+        const selectedType = this.value;
+        relatededitselect.innerHTML = ''; // Clear previous options
+        relatededitselect.innerHTML += '<option disabled selected>Select related item</option>'; // Reset selection
+
+        if (selectedType === 'category') {
+            <% categories.forEach(category => { %>
+                relatededitselect.innerHTML += `<option value="<%= category._id %>"><%= category.name %></option>`;
+            <% }); %>
+        } else if (selectedType === 'product') {
+            <% products.forEach(product => { %>
+                relatededitselect.innerHTML += `<option value="<%= product._id %>"><%= product.name %></option>`;
+            <% }); %>
+        }
+    });
+
 </script>
 <!-- Bootstrap JS, Popper.js, and jQuery -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>

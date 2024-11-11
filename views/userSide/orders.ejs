@@ -62,219 +62,416 @@
 }
 
 
+.product-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.pagination a {
+    padding: 8px 12px;
+    text-decoration: none;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.pagination a.active {
+    background-color: #3b940f;
+    color: white;
+}
+
+
+
     </style>
 </head>
 <body>
 
     <%- include('../partials/user_navbar.ejs') %>
     
-    <div class="containe-fluid">
+    <div class="container-fluid">
         <div style="display: flex; justify-content: center; align-items: center; margin: 3%; color: green; font-family: Georgia, 'Times New Roman', Times, serif;">
-            <h1>Your  Orders</h1>
+            <h1>Your Orders</h1>
         </div>
-        
+    
         <ul class="nav nav-pills mb-3 justify-content-center" id="orderTabs" role="tablist">
-                <a class="nav-link active" id="ordered-tab" data-bs-toggle="tab" href="#ordered" role="tab" aria-controls="ordered" aria-selected="false">
-                    Ordered
-                </a>
-                <a class="nav-link" id="shipped-tab" data-bs-toggle="tab" href="#shipped" role="tab" aria-controls="shipped" aria-selected="false">
-                    Shipped
-                </a>
-                <a class="nav-link" id="delivered-tab" data-bs-toggle="tab" href="#delivered" role="tab" aria-controls="delivered" aria-selected="false">
-                    Delivered
-                </a>
-                <a class="nav-link" id="delivered-tab" data-bs-toggle="tab" href="#cancelled" role="tab" aria-controls="cancelled" aria-selected="false">
-                    Cancelled
-                </a>
-                <a class="nav-link" id="delivered-tab" data-bs-toggle="tab" href="#returned" role="tab" aria-controls="returned" aria-selected="false">
-                    Returned
-                </a>
-                
+            <a class="nav-link active" id="ordered-tab" data-bs-toggle="tab" href="#ordered" role="tab" aria-controls="ordered" aria-selected="true">
+                Ordered
+            </a>
+            <a class="nav-link" id="shipped-tab" data-bs-toggle="tab" href="#shipped" role="tab" aria-controls="shipped" aria-selected="false">
+                Shipped
+            </a>
+            <a class="nav-link" id="delivered-tab" data-bs-toggle="tab" href="#delivered" role="tab" aria-controls="delivered" aria-selected="false">
+                Delivered
+            </a>
+            <a class="nav-link" id="cancelled-tab" data-bs-toggle="tab" href="#cancelled" role="tab" aria-controls="cancelled" aria-selected="false">
+                Cancelled
+            </a>
+            <a class="nav-link" id="returned-tab" data-bs-toggle="tab" href="#returned" role="tab" aria-controls="returned" aria-selected="false">
+                Returned
+            </a>
+            <a class="nav-link" id="failed-tab" data-bs-toggle="tab" href="#failed" role="tab" aria-controls="failed" aria-selected="false">
+                Pending
+            </a>            
         </ul>
-                <div class="container flex-grow-1">
-            
-            <!-- <div class="search-bar mb-12" style="margin-left: 15em;">
-                <input type="text" id="commonSearch" placeholder="Search for products across all orders..." style="width: 80em;height: 2em;border-color: green;">
-            </div> -->
-
+    
+        <div class="container flex-grow-1">
             <div class="tab-content">
-                <!-- Ordered Tab -->
-                <div class="tab-pane fade show active" id="ordered" role="tabpanel">
-                    <h2>Ordered</h2>
-                    <% let orderedOrders = orders.filter(order => order.status === 'Ordered'); %>
-                    <% if (orderedOrders.length > 0) { %>
-                        <% orderedOrders.forEach(order => { %>
-                            <div>
-                                <% order.cartItems.forEach(item => { %>
-                                    <div class="mb-2">
-                                        <div class="product-container">
-                                            <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
-                                            <div>
-                                                <h6>
-                                                    <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
-                                                        Order ID: <%= order.orderNumber %>
-                                                    </a>
-                                                </h6> 
-                                                <p>Estimated delivery date: <%= new Date(order.createdAt).toDateString() %></p>
-                                                <form action="/user/orders/cancellationForm/<%= order._id %>/<%= item.productId %>" method="GET" style="display:inline;">
-                                                    <button type="submit" class="btn btn-danger">Cancel This Product</button>
-                                                </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            <% }) %>
-                        </div>
-                    <% }) %>
 
-                    <% } else { %>
-                        <p>No Ordered items to display.</p>
-                    <% } %>
-                </div>
-            
-                <!-- Shipped Tab -->
-                <div class="tab-pane fade" id="shipped" role="tabpanel">
-                    <h2>Shipped</h2>
-                    <% if (shippedOrders.length > 0) { %>
-                        <% shippedOrders.forEach(order => { %>
-                            <div>
-                                <% order.cartItems.forEach(item => { %>
-                                    <div class="mb-2">
-                                        <div class="product-container">
-                                            <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
-                                            <div>
-                                                <h6>
-                                                    <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
-                                                        Order ID: <%= order.orderNumber %>
-                                                    </a>
-                                                </h6> 
-                                                <p>Estimated delivery date: <%= new Date(order.createdAt).toDateString() %></p>
-                                    </div>
-                                 </div>
-                                </div>
-                            <% }) %>
-                        </div>
-                    <% }) %>
-
-                    <% } else { %>
-                        <p>No Shipped items to display.</p>
-                    <% } %>
-                </div>
-            
-                <!-- Delivered Tab -->
-                <div class="tab-pane fade" id="delivered" role="tabpanel">
-                    <h2>Delivered</h2>
-                    <% if (deliveredOrders.length > 0) { %>
-                        <% deliveredOrders.forEach(order => { %>                           
-                            <div>
-                                <% order.cartItems.forEach(item => { %>
-                                    <div class="mb-2">
-                                        <div class="product-container">
-                                            <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
-                                            <div>
-                                                <h6>
-                                                    <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
-                                                        Order ID: <%= order.orderNumber %>
-                                                    </a>
-                                                </h6>                                            
-                                                <% if (item.status === 'Returned') { %>
-                                                <span class="text-success">Returned</span>
-                                            <% } else { %>
-                                                <form action="/user/orders/returnForm/<%= order._id %>/<%= item.productId %>" method="GET" style="display:inline;">
-                                                    <button type="submit" class="btn btn-warning">Return This Product</button>
-                                                </form>
-                                            <% } %>                                    
-                                        </div>
-                                </div>
-                                </div>
-                            <% }) %>
-                        </div>
-                    <% }) %>
-
-                    <% } else { %>
-                        <p>No Delivered items to display.</p>
-                    <% } %>
-                </div>
-            
-                <!-- Cancelled Tab -->
-                <div class="tab-pane fade" id="cancelled" role="tabpanel">
-                    <h2>Cancelled</h2>
-                    <% if (cancelledOrders.length > 0) { %>
-                        <% cancelledOrders.forEach(order => { %>
-                            <div class="product-container">
-                                <% order.cartItems.forEach(item => { %>
-                                    <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
-                                    <div>
-                                        <h6>
-                                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
-                                                Order ID: <%= order.orderNumber %>
-                                            </a>
-                                        </h6> 
-                                        <h4>Cancelled</h4>
-                                    </div>
-                                <% }) %>
-                            </div>
-                        <% }) %>
-                    <% } else { %>
-                        <p>No Cancelled items to display.</p>
-                    <% } %>                
-                    <!-- Pagination for Cancelled Orders -->
-                    <nav aria-label="Cancelled Orders Pagination">
-                        <ul class="pagination justify-content-center">
-                            <% for (let i = 1; i <= totalCancelledPages; i++) { %>
-                                <li class="page-item <%= cancelledPage === i ? 'active' : '' %>">
-                                    <a class="page-link" href="?cancelledPage=<%= i %>"><%= i %></a>
-                                </li>
-                            <% } %>
-                        </ul>
-                    </nav>
-                </div>
-
-
-                <!-- returned tab -->
-                <div class="tab-pane fade" id="returned" role="tabpanel">
-                    <h2>Returned</h2>
-                    <% if (returnedOrders.length > 0) { %>
-                        <% returnedOrders.forEach(order => { %>
-                            <div class="product-container">
-                                <% order.cartItems.forEach(item => { %>
-                                    <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
-                                    <div>
-                                        <h6>
-                                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
-                                                Order ID: <%= order.orderNumber %>
-                                            </a>
-                                        </h6> 
-                                        <h4>Returned</h4>
-                                    </div>
-                                <% }) %>
-                            </div>
-                        <% }) %>
-                    <% } else { %>
-                        <p>No Returned items to display.</p>
-                    <% } %>                
-                    <!-- Pagination for Cancelled Orders -->
-                    <nav aria-label="Cancelled Orders Pagination">
-                        <ul class="pagination justify-content-center">
-                            <% for (let i = 1; i <= totalCancelledPages; i++) { %>
-                                <li class="page-item <%= cancelledPage === i ? 'active' : '' %>">
-                                    <a class="page-link" href="?cancelledPage=<%= i %>"><%= i %></a>
-                                </li>
-                            <% } %>
-                        </ul>
-                    </nav>
+<!-- Ordered Tab -->
+<div class="tab-pane fade show active" id="ordered" role="tabpanel" aria-labelledby="ordered-tab">
+    <h2>Ordered</h2>
+    <% let orderedItemsExist = false; %>
+    <% orders.forEach(order => { %>
+        <% order.cartItems
+            .filter(item => item.status === 'Ordered')
+            .forEach(item => { %>
+            <% orderedItemsExist = true; %>
+            <div class="mb-2">
+                <div class="product-container">
+                    <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
+                    <div>
+                        <h6>
+                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
+                                Order ID: <%= order.orderNumber %>
+                            </a>
+                        </h6>
+                        <p><strong>Product:</strong> <%= item.name %></p>
+                        <p><strong>Quantity:</strong> <%= item.quantity %></p>
+                        <p>Estimated delivery date: <%= new Date(order.createdAt.getTime() + 7 * 24 * 60 * 60 * 1000).toDateString() %></p>
+                        <form action="/user/orders/cancellationForm/<%= order._id %>/<%= item.productId %>" method="GET" style="display:inline;">
+                            <button type="submit" class="btn btn-danger">Cancel This Product</button>
+                        </form>
+                    </div>
                 </div>
             </div>
+        <% }) %>
+    <% }) %>
+    <% if (!orderedItemsExist) { %>
+        <p>No Ordered items to display.</p>
+    <% } %>
+    <div class="pagination">
+        <% if (orderedPage > 1) { %>
+            <a href="?orderedPage=<%= orderedPage - 1 %>">&laquo; Previous</a>
+        <% } %>
+        <% for (let i = 1; i <= totalOrderedPages; i++) { %>
+            <a href="?orderedPage=<%= i %>" class="<%= orderedPage === i ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+        <% if (orderedPage < totalOrderedPages) { %>
+            <a href="?orderedPage=<%= orderedPage + 1 %>">Next &raquo;</a>
+        <% } %>
     </div>
- 
+</div>
+
+<!-- Cancelled Tab -->
+<div class="tab-pane fade" id="cancelled" role="tabpanel" aria-labelledby="cancelled-tab">
+    <h2>Cancelled</h2>
+    <% let cancelledItemsExist = false; %>
+    <% cancelledOrders.forEach(order => { %>
+        <% order.cartItems
+            .filter(item => item.status === 'Cancelled')
+            .forEach(item => { %>
+            <% cancelledItemsExist = true; %>
+            <div class="mb-2">
+                <div class="product-container">
+                    <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
+                    <div>
+                        <h6>
+                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
+                                Order ID: <%= order.orderNumber %>
+                            </a>
+                        </h6>
+                        <p><strong>Product:</strong> <%= item.name %></p>
+                        <p><strong>Quantity:</strong> <%= item.quantity %></p>
+                        <p style="color: red;">Cancelled</p>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    <% }) %>
+    <% if (!cancelledItemsExist) { %>
+        <p>No Cancelled items to display.</p>
+    <% } %>
+    <div class="pagination">
+        <% if (cancelledPage > 1) { %>
+            <a href="?cancelledPage=<%= cancelledPage - 1 %>">&laquo; Previous</a>
+        <% } %>
+        <% for (let i = 1; i <= totalCancelledPages; i++) { %>
+            <a href="?cancelledPage=<%= i %>" class="<%= cancelledPage === i ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+        <% if (cancelledPage < totalCancelledPages) { %>
+            <a href="?cancelledPage=<%= cancelledPage + 1 %>">Next &raquo;</a>
+        <% } %>
+    </div>
+</div>
+
+<!-- returned tab -->
+<div class="tab-pane fade" id="returned" role="tabpanel" aria-labelledby="returned-tab">
+    <h2>Returned</h2>
+    <% let returnedItemsExist = false; %>
+    <% returnedOrders.forEach(order => { %>
+        <% order.cartItems.filter(item => item.status === 'Returned').forEach(item => { %>
+            <% returnedItemsExist = true; %>
+            <div class="mb-2">
+                <div class="product-container">
+                    <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
+                    <div>
+                        <h6>
+                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
+                                Order ID: <%= order.orderNumber %>
+                            </a>
+                        </h6>
+                        <p><strong>Product:</strong> <%= item.name %></p>
+                        <p style="color: orange;">Returned</p>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    <% }) %>
+    <% if (!returnedItemsExist) { %>
+        <p>No Returned items to display.</p>
+    <% } %>
+    <div class="pagination">
+        <% if (returnedPage > 1) { %>
+            <a href="?returnedPage=<%= returnedPage - 1 %>">&laquo; Previous</a>
+        <% } %>
+        <% for (let i = 1; i <= totalReturnedPages; i++) { %>
+            <a href="?returnedPage=<%= i %>" class="<%= returnedPage === i ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+        <% if (returnedPage < totalReturnedPages) { %>
+            <a href="?returnedPage=<%= returnedPage + 1 %>">Next &raquo;</a>
+        <% } %>
+    </div>
+</div>
+
+<!-- pending tab -->
+<div class="tab-pane fade" id="failed" role="tabpanel" aria-labelledby="failed-tab">
+    <h2>Pending</h2>
+    <% let pendingItemsExist = false; %>
+    <% pendingOrders.forEach(order => { %>
+        <% order.cartItems.filter(item => item.status === 'Payment Pending').forEach(item => { %>
+            <% pendingItemsExist = true; %>
+            <div class="mb-2">
+                <div class="product-container">
+                    <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
+                    <div>
+                        <h6>
+                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
+                                Order ID: <%= order.orderNumber %>
+                            </a>
+                        </h6>
+                        <form onsubmit="event.preventDefault(); retryPayment('<%= order._id %>');" action="/user/orders/confirmation/<%= order._id %>">
+                            <button type="submit" class="btn btn-warning">Retry Payment</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    <% }) %>
+    <% if (!pendingItemsExist) { %>
+        <p>No Pending items to display.</p>
+    <% } %>
+    <div class="pagination">
+        <% if (pendingPage > 1) { %>
+            <a href="?pendingPage=<%= pendingPage - 1 %>">&laquo; Previous</a>
+        <% } %>
+        <% for (let i = 1; i <= totalPendingPages; i++) { %>
+            <a href="?pendingPage=<%= i %>" class="<%= pendingPage === i ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+        <% if (pendingPage < totalPendingPages) { %>
+            <a href="?pendingPage=<%= pendingPage + 1 %>">Next &raquo;</a>
+        <% } %>
+    </div>
+</div>
+
+<!-- Shipped Tab -->
+<div class="tab-pane fade" id="shipped" role="tabpanel" aria-labelledby="shipped-tab">
+    <h2>Shipped</h2>
+    <% let shippedItemsExist = false; %>
+    <% shippedOrders.forEach(order => { %>
+        <% order.cartItems
+            .filter(item => item.status === 'Shipped')
+            .forEach(item => { %>
+            <% shippedItemsExist = true; %>
+            <div class="mb-2">
+                <div class="product-container">
+                    <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
+                    <div>
+                        <h6>
+                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
+                                Order ID: <%= order.orderNumber %>
+                            </a>
+                        </h6>
+                        <p><strong>Product:</strong> <%= item.name %></p>
+                        <p><strong>Quantity:</strong> <%= item.quantity %></p>
+                        <p>Estimated delivery date: <%= new Date(order.createdAt.getTime() + 3 * 24 * 60 * 60 * 1000).toDateString() %></p>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    <% }) %>
+    <% if (!shippedItemsExist) { %>
+        <p>No Shipped items to display.</p>
+    <% } %>
+    <div class="pagination">
+        <% if (shippedPage > 1) { %>
+            <a href="?shippedPage=<%= shippedPage - 1 %>">&laquo; Previous</a>
+        <% } %>
+        <% for (let i = 1; i <= totalShippedPages; i++) { %>
+            <a href="?shippedPage=<%= i %>" class="<%= shippedPage === i ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+        <% if (shippedPage < totalShippedPages) { %>
+            <a href="?shippedPage=<%= shippedPage + 1 %>">Next &raquo;</a>
+        <% } %>
+    </div>
+</div>
+
+
+<!-- Delivered Tab -->
+<div class="tab-pane fade" id="delivered" role="tabpanel" aria-labelledby="delivered-tab">
+    <h2>Delivered</h2>
+    <% let deliveredItemsExist = false; %>
+    <% deliveredOrders.forEach(order => { %>
+        <% order.cartItems
+            .filter(item => item.status === 'Delivered')
+            .forEach(item => { %>
+            <% deliveredItemsExist = true; %>
+            <div class="mb-2">
+                <div class="product-container">
+                    <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
+                    <div>
+                        <h6>
+                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
+                                Order ID: <%= order.orderNumber %>
+                            </a>
+                        </h6>
+                        <p><strong>Product:</strong> <%= item.name %></p>
+                        <p><strong>Quantity:</strong> <%= item.quantity %></p>
+                        <% if (item.status === 'Returned') { %>
+                            <span class="text-success">Returned</span>
+                        <% } else { %>
+                            <form action="/user/orders/returnForm/<%= order._id %>/<%= item.productId %>" method="GET" style="display:inline;">
+                                <button type="submit" class="btn btn-warning">Return This Product</button>
+                            </form>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    <% }) %>
+    <% if (!deliveredItemsExist) { %>
+        <p>No Delivered items to display.</p>
+    <% } %>
+    <div class="pagination">
+        <% if (deliveredPage > 1) { %>
+            <a href="?deliveredPage=<%= deliveredPage - 1 %>">&laquo; Previous</a>
+        <% } %>
+        <% for (let i = 1; i <= totalOrderedPages; i++) { %>
+            <a href="?deliveredPage=<%= i %>" class="<%= deliveredPage === i ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+        <% if (deliveredPage < totalDeliveredPages) { %>
+            <a href="?deliveredPage=<%= deliveredPage + 1 %>">Next &raquo;</a>
+        <% } %>
+    </div>
+    </div>
+    </div>
+    </div>
+</div>
+          
  
     <%- include('../partials/footer') %>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
-        // Common Search Functionality
+         async function retryPayment(orderId) {
+        try {
+            // Fetch the Razorpay order details
+            const response = await fetch(`/user/orders/retryPayment/${orderId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch Razorpay order details');
+            }
+
+            const data = await response.json();
+
+            if (!data.success) {
+                alert(data.message || 'Could not initiate retry payment');
+                return;
+            }
+
+            // Verify that necessary data is present before proceeding
+            if (!data.key || !data.orderId || !data.amount || !data.currency) {
+                alert('Incomplete payment details received.');
+                return;
+            }
+
+            // Configure Razorpay payment options
+            const options = {
+                "key": data.key,
+                "amount": data.amount, // Amount should be in paise, e.g., 955000 for ₹9550.00
+                "currency": data.currency,
+                "name": "Heaven Interior",
+                "description": "Order Payment",
+                "image": "/images/Screenshot%202024-10-23%20075333.png",
+                "order_id": data.orderId,
+                "handler": function (response) {
+                    // Handle successful payment response
+                    fetch(`/user/orders/retryPayment/${orderId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(response),
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('hii');
+                            window.location.href = `/user/orders/confirmation/${orderId}`;
+                        } else {
+                            alert('Payment was not completed successfully.');
+                        }
+                    });
+                },
+                "modal": {
+                    "ondismiss": function () {
+                        alert("Payment was not completed. You may try again.");
+                    }
+                },
+                "prefill": {
+                    "name": "<%= user.name %>", // Use the user’s name
+                    "email": "<%= user.email %>",
+                    "contact": "<%= user.phone %>",
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+
+            // Open the Razorpay payment modal
+            const rzp = new Razorpay(options);
+            rzp.open();
+        } catch (error) {
+            console.error('Error retrying payment:', error);
+            alert('Failed to retry payment. Please try again later.');
+        }
+    }
+       
+    // Common Search Functionality
         document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('orderSearch');
     const orderTabs = document.querySelectorAll('.tab-pane');

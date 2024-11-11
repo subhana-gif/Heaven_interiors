@@ -339,15 +339,15 @@
               
             
                 <% if (product.stockStatus === 'In Stock') { %>
-                    <form action="/user/add-to-cart/<%= product._id %>" method="POST">
+                    <!-- <form  method="POST"> -->
                         <button class="btn btn-warning d-flex align-items-center">
                             <i class="fas fa-bolt me-2"></i> Buy Now
                         </button>
-                        </form>                
+                        <!-- </form>                 -->
                 <% } else { %> 
                   
                 <% } %>
-            </div>
+            </div> 
             
         </div>
     </div>
@@ -411,7 +411,7 @@
                         <div class="col-md-3 mb-3">
                             <div class="card h-100 text-center">
                                 <img src="/<%= relatedProduct.images[0] ? relatedProduct.images[0].split('\\').pop().split('/').pop() : 'placeholder.jpg' %>" 
-                                     class="card-img-top img-fluid" alt="<%= relatedProduct.name %>">
+                                     class="card-img-top img-fluid" alt="<%= relatedProduct.name %>" style="height: 100%;width: 100%;">
                                 <div class="card-body">
                                     <h5 class="card-title">
                                         <a href="/user/shop/<%= relatedProduct._id %>" class="text-dark text-decoration-none">
@@ -419,10 +419,17 @@
                                         </a>
                                     </h5>
                                     <p class="card-text"><%= relatedProduct.description %></p>
-                                    <p class="text-primary">Price: ₹<%= relatedProduct.price %></p>
+                                    <div class="product-price">
+                                        <% if (discountedPrice) { %>
+                                            <h3 style="display: inline; color: #70b44e; font-weight: 700;">₹<%= discountedPrice %></h3>
+                                            <span style="text-decoration: line-through; color: #999;">₹<%= originalPrice %></span>
+                                        <% } else { %>
+                                            <h3>₹<%= originalPrice %></h3>
+                                        <% } %>
+                                    </div>
                                 </div>
                                 <div class="card-footer">
-                                    <a href="/user/shop/<%= relatedProduct._id %>" class="btn btn-primary">View Details</a>
+                                    <a href="/user/shop/<%= relatedProduct._id %>" class="btn btn-success">View Details</a>
                                 </div>
                             </div>
                         </div>

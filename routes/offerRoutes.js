@@ -8,6 +8,7 @@ const offerController = require('../controllers/offerController');
 router.get('/offers', isAdminAuthenticated, offerController.getOffers);
 router.post('/offers/add', isAdminAuthenticated, offerController.addOffer);
 router.post('/offers/edit/:id', isAdminAuthenticated, offerController.editOffer);
-router.post('/offers/delete/:id', isAdminAuthenticated, offerController.deleteOffer);
+router.post('/offers/delete/:id', isAdminAuthenticated,offerController.softDeleteOffer);
+router.post('/offers/restore/:id', isAdminAuthenticated,offerController.restoreOffer);
 
 module.exports = router;

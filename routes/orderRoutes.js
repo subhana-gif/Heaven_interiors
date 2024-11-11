@@ -9,5 +9,8 @@ router.get('/orders/cancellationForm/:orderId/:productId', isAuthenticated, chec
 router.get('/orders/returnForm/:orderId/:productId', isAuthenticated, checkUserBlocked, orderController.showReturnForm);
 router.post('/orders/return/:orderId/:productId', isAuthenticated, checkUserBlocked, orderController.returnOrder);
 router.get('/orders/:id', isAuthenticated,checkUserBlocked,orderController.getOrderDetails);
+router.get('/orders/download-invoice/:orderId',isAuthenticated,checkUserBlocked,orderController.getInvoice);
+router.post('/orders/retryPayment/:orderId', orderController.retryPayment);
+router.get('/orders/confirmation/:orderId', orderController.confirmPayment);
 
 module.exports = router;

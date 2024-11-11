@@ -24,53 +24,99 @@
                     <tr>
                         <th>Order ID</th>
                         <th>Customer</th>
-                        <th>Products</th>
                         <th>Payment Method</th>
                         <th>Total Price</th>
+                        <th>Products</th>
+                        <th>price</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <% orders.forEach(order => { %>
-                        <tr>
-                            <td><%= order.orderNumber %></td>
-                            <td>
-                               <%= order.address.name %><br>
-                              <%= order.address.mobileNumber %><br>
-                               <%= order.address.city %>, <%= order.address.state %>, <%= order.address.pinCode %>
-                            </td>
-                            <td>
-                                <ul>
-                                    <% order.cartItems.forEach(item => { %>
-                                        <li><%= item.name %><br>(Qty: <%= item.quantity %>)<br>₹<%= item.price %></li>
-                                    <% }) %>
-                                </ul>
-                            </td>
-                            <td><%= order.paymentMethod %></td>
-                            <td>₹<%= order.totalPrice %></td>
-                            <td>
-                                <%= order.status %>
-                            </td>
-                            <td>
-                                <!-- Update Status Dropdown -->
-                                <form action="/adminPanel/orders/<%= order._id %>/status" method="POST">
-                                    <input type="hidden" name="orderId" value="<%= order._id %>">
-                                    <select name="newStatus" class="form-select mb-2" onchange="this.form.submit()" style="background-color: rgb(213, 235, 213); color: green;">
-                                        <option value="Ordered" <%= order.status === 'Ordered' ? 'selected' : '' %>>Ordered</option>
-                                        <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                                        <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                        <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-                                    </select>
-                                </form>
-    
-                            </td>
-                        </tr>
+                        <% order.cartItems.forEach((item, index) => { %>
+                            <tr>
+                                <!-- Display Order details only once per order -->
+                                <% if (index === 0) { %>
+                                    <td rowspan="<%= order.cartItems.length %>"><%= order.orderNumber %></td>
+                                    <td rowspan="<%= order.cartItems.length %>">
+                                        <%= order.address.name %><br>
+                                        <%= order.address.mobileNumber %><br>
+                                        <%= order.address.city %>, <%= order.address.state %>, <%= order.address.pinCode %>
+                                    </td>
+                                    <td rowspan="<%= order.cartItems.length %>"><%= order.paymentMethod %></td>
+                                    <td rowspan="<%= order.cartItems.length %>">₹<%= order.totalPrice %></td>
+                                <% } %>
+                
+                                <!-- Display Product details in separate rows for each item -->
+                                <td><%= item.name %></td>
+                                <td>(Qty: <%= item.quantity %>) - ₹<%= item.price %></td>
+                                <td>
+                                    <!-- Individual Product status -->
+                                    <%= item.status %>
+                                </td>
+                                <td>
+                                    <!-- Status Update Dropdown for each product -->
+                                    <form id="statusForm" action="/adminPanel/orders/<%= order._id %>/status" method="POST">
+                                        <input type="hidden" name="orderId" value="<%= order._id %>">
+                                        <input type="hidden" name="productId" value="<%= item._id %>">
+                                        <select id="statusSelect" name="newStatus" class="form-select mb-2" style="background-color: rgb(213, 235, 213); color: green;" onchange="confirmStatusChange(this)">
+                                            <option value="Ordered" <%= item.status === 'Ordered' ? 'selected' : '' %>>Ordered</option>
+                                            <option value="Shipped" <%= item.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                            <option value="Delivered" <%= item.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                            <option value="Cancelled" <%= item.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                            <option value="Returned" <%= item.status === 'Returned' ? 'selected' : '' %>>Returned</option>
+                                            <option value="Payment Pending" <%= item.status === 'Payment Pending' ? 'selected' : '' %>>Pending</option>
+                                        </select>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }) %>
                     <% }) %>
                 </tbody>
-            </table>
+        </table>
+    </div>
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirm Status Change</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to change the status?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmStatusChange">Confirm</button>
+            </div>
         </div>
-    
+    </div>
+</div>
+
+        <nav aria-label="Page navigation example">
+            <div class="d-flex justify-content-center">
+                <ul class="pagination">
+                    <li class="page-item <%= currentpage === 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="/adminPanel/orders?page=<%= currentpage - 1 %>&search=<%= search %>" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <li class="page-item <%= currentpage === i ? 'active' : '' %>">
+                            <a class="page-link" href="/adminPanel/orders?page=<%= i %>&search=<%= search %>"><%= i %></a>
+                        </li>
+                    <% } %>
+                    <li class="page-item <%= currentpage === totalPages ? 'disabled' : '' %>">
+                        <a class="page-link" href="/adminPanel/orders?page=<%= currentpage + 1 %>&search=<%= search %>" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
         <!-- Bootstrap JS (for optional components) -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -84,7 +130,25 @@
                     row.style.display = orderText.includes(searchTerm) ? '' : 'none';
                 });
             });
-        </script>
+
+            let selectedForm = null;
+
+function confirmStatusChange(selectElement) {
+    // Get the form associated with the selected dropdown
+    selectedForm = selectElement.closest("form");
+
+    // Show the confirmation modal
+    const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+    modal.show();
+}
+
+document.getElementById("confirmStatusChange").addEventListener("click", function () {
+    // If the user confirms, submit the form
+    if (selectedForm) {
+        selectedForm.submit();
+    }
+});    
+    </script>
         
     </body>
     </html>

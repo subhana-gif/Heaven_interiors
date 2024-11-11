@@ -24,6 +24,55 @@
     align-items: center;
 }
 
+.confirmation-modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 15px 20px;
+    border-radius: 6px;
+    text-align: center;
+    width: 250px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content p {
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.modal-content .btn-confirm,
+.modal-content .btn-cancel {
+    padding: 6px 12px;
+    font-size: 13px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0 5px;
+}
+
+.modal-content .btn-confirm {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.modal-content .btn-cancel {
+    background-color: #dc3545;
+    color: #fff;
+}
+
 .product-card {
     display: flex;
     width: 100%;
@@ -66,6 +115,25 @@
     align-items: flex-start;
 }
 
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.pagination a {
+    padding: 8px 12px;
+    text-decoration: none;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.pagination a.active {
+    background-color: #3b940f;
+    color: white;
+}
 </style>
 
 
@@ -83,9 +151,16 @@
                         <div class="product-info" style="flex: 1;">
                             <h5 class="product-title"><%= product.name %></h5>
                             <p class="product-description"><%= product.description %></p>
-                            <p class="product-price">₹<%= product.price %></p>
+                            <div>
+                                <% if (product.discountedPrice) { %>
+                                    <span style="text-decoration: line-through; color: #999;">₹<%= product.price %></span>
+                                    <h5 style="display: inline; color: green; font-weight: 700;">₹<%= product.discountedPrice %></h5>
+                                <% } else { %>
+                                    <h5 style="color: green; font-weight: 700;">₹<%= product.price %></h5>
+                                <% } %>
+                            </div>
                             <% if (product.stockStatus === 'In Stock') { %>
-                                <p class="stock-status" style="color: green;"><%= product.stock %> left</p>
+                                <p class="stock-status" style="color: rgb(0, 0, 0);"><%= product.stock %> left</p>
                             <% } else { %>
                                 <p class="out-of-stock" style="color: #dc3545;">Out of stock</p>
                             <% } %>
@@ -93,16 +168,41 @@
                     </a>
                     <div class="product-actions">
                         <button class="remove-button btn btn-danger" onclick="removeFromWishlist('<%= product._id %>')">Remove</button>
-                        <form action="/user/add-to-cart/<%= product._id %>" method="POST">
-                            <button class="btn btn-success d-flex align-items-center">
-                                <i class="fas fa-cart-plus me-2"></i> Add to Cart
-                            </button>
-                        </form> 
+                        <% if (product.stockStatus === 'In Stock') { %>
+                            <form action="/user/add-to-cart/<%= product._id %>" method="POST" onsubmit="console.log('Form submitted');">
+                                <button class="btn btn-success d-flex align-items-center">
+                                    <i class="fas fa-cart-plus me-2"></i> Add to Cart
+                                </button>
+                            </form>
+                            <% } else { %>
+                            <% } %>
                     </div>
                 </div>
             </li>
         <% }) %>
     </ul>
+    <div class="pagination">
+        <% if (currentPage > 1) { %>
+            <a href="?page=<%= currentPage - 1 %>">&laquo; Previous</a>
+        <% } %>
+        
+        <% for (let i = 1; i <= totalPages; i++) { %>
+            <a href="?page=<%= i %>" class="<%= i === currentPage ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+        
+        <% if (currentPage < totalPages) { %>
+            <a href="?page=<%= currentPage + 1 %>">Next &raquo;</a>
+        <% } %>
+    </div>
+
+    <div id="confirmation-modal" class="confirmation-modal">
+        <div class="modal-content">
+            <p>Are you sure you want to remove this item from your wishlist?</p>
+            <button id="confirm-remove" class="btn-confirm">OK</button>
+            <button id="cancel-remove" class="btn-cancel">Cancel</button>
+        </div>
+    </div>
+    
     
     <%- include('../partials/footer') %>
 
@@ -111,27 +211,48 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script>
-        async function removeFromWishlist(productId) {
-            try {
-                const response = await fetch(`/user/wishlist/remove/${productId}`, {
-                    method: 'DELETE', // Assuming you use DELETE method to remove items
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-    
-                const data = await response.json();
-                if (data.success) {
-                    // Optionally, you can remove the item from the DOM or refresh the page
-                    location.reload(); // Reload the page to reflect changes
-                } else {
-                    alert('Failed to remove product from wishlist.');
+
+function removeFromWishlist(productId) {
+    // Get modal elements
+    const confirmationModal = document.getElementById('confirmation-modal');
+    const confirmButton = document.getElementById('confirm-remove');
+    const cancelButton = document.getElementById('cancel-remove');
+
+    // Display the modal
+    confirmationModal.style.display = 'block';
+
+    // Attach click handler for confirm button
+    confirmButton.onclick = async function () {
+        // Hide the modal
+        confirmationModal.style.display = 'none';
+
+        try {
+            const response = await fetch(`/user/wishlist/remove/${productId}`, {
+                method: 'DELETE', // Assuming you use DELETE method to remove items
+                headers: {
+                    'Content-Type': 'application/json',
                 }
-            } catch (error) {
-                console.error('Error removing product from wishlist:', error);
-                alert('An error occurred while removing the product.');
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                // Optionally, you can remove the item from the DOM or refresh the page
+                location.reload(); // Reload the page to reflect changes
+            } else {
+                alert('Failed to remove product from wishlist.');
             }
+        } catch (error) {
+            console.error('Error removing product from wishlist:', error);
+            alert('An error occurred while removing the product.');
         }
-        </script>        
+    };
+
+    // Cancel button to hide the modal
+    cancelButton.onclick = function () {
+        confirmationModal.style.display = 'none';
+    };
+}
+
+</script>        
 </body>
 </html>

@@ -8,63 +8,270 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .report-section {
-            margin-top: 20px;
-        }
+        .card { margin-bottom: 20px; }
+        #generate-report { background-color: #28a745; color: white; }
+        #generate-report:hover { background-color: #218838; }
+        #report-results p { font-weight: bold; margin-bottom: 0; }
+        h1, h2 { text-align: center; margin-top: 20px; }
     </style>
 </head>
-<body style="margin-top: 5%;">
-    <h1>Generate Sales Report</h1>
-    
-    <div>
-        <input type="radio" id="daily" name="reporting-period" value="daily" checked>
-        <label for="daily">Daily</label>
-        
-        <input type="radio" id="weekly" name="reporting-period" value="weekly">
-        <label for="weekly">Weekly</label>
-        
-        <input type="radio" id="monthly" name="reporting-period" value="monthly">
-        <label for="monthly">Monthly</label>
-        
-        <input type="radio" id="custom" name="reporting-period" value="custom">
-        <label for="custom">Custom Date Range</label>
-    </div>
-    
-    <div id="custom-date-range" style="display: none;">
-        <label for="start-date">Start Date:</label>
-        <input type="date" id="start-date" required>
-        
-        <label for="end-date">End Date:</label>
-        <input type="date" id="end-date" required>
+<body>
+
+<div class="container mt-5">
+    <!-- Generate Sales Report Section -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h1 class="card-title">Generate Sales Report</h1>
+            <div class="mb-3">
+                <input type="radio" id="daily" name="reporting-period" value="daily" checked>
+                <label for="daily">Daily</label>
+                
+                <input type="radio" id="weekly" name="reporting-period" value="weekly" class="ms-3">
+                <label for="weekly">Weekly</label>
+                
+                <input type="radio" id="monthly" name="reporting-period" value="monthly" class="ms-3">
+                <label for="monthly">Monthly</label>
+                
+                <input type="radio" id="custom" name="reporting-period" value="custom" class="ms-3">
+                <label for="custom">Custom Date Range</label>
+            </div>
+            
+            <div id="custom-date-range" class="mb-3" style="display: none;">
+                <label for="start-date" class="form-label">Start Date:</label>
+                <input type="date" id="start-date" class="form-control" required>
+                
+                <label for="end-date" class="form-label mt-2">End Date:</label>
+                <input type="date" id="end-date" class="form-control" required>
+                <small id="date-error" class="text-danger mt-2" style="display: none;">End date must be greater than start date.</small>
+            </div>
+
+            <button id="generate-report" class="btn btn-success">Generate Report</button>
+        </div>
     </div>
 
-    <button id="generate-report" style="background-color: green;">Generate Report</button>
-    
-    <div id="report-results" style="display: none;">
-        <h2>Sales Report</h2>
-        <table id="sales-report-table" class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Total Amount</th>
-                    <th>Sales Count</th>
-                    <th>Total Discount</th>
-                    <th>Coupons Deducted</th>
-                </tr>
-            </thead>
-            <tbody id="report-body"></tbody>
-        </table>
-        <p>Total Sales Count: <span id="totalSalesCount"></span></p>
-        <p>Total Order Amount: <span id="totalOrderAmount"></span></p>
-        <p>Total Discount: <span id="totalDiscount"></span></p>
-        <p>Total Coupons Deducted: <span id="totalCouponsDeducted"></span></p>
-        <button id="download-pdf">Download PDF</button>
-        <button id="download-excel">Download Excel</button>
+    <!-- Sales Report Results Section -->
+    <div id="report-results" class="card shadow-sm" style="display: none;">
+        <div class="card-body">
+            <h2>Sales Report</h2>
+            <div class="table-responsive">
+                <table id="sales-report-table" class="table table-striped table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Date</th>
+                            <th>Total Amount</th>
+                            <th>Sales Count</th>
+                            <th>Total Discount</th>
+                            <th>Coupons Deducted</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-body"></tbody>
+                </table>
+            </div>
+            <div class="mt-3">
+                <p>Total Sales Count: <span id="totalSalesCount"></span></p>
+                <p>Total Order Amount: <span id="totalOrderAmount"></span></p>
+                <p>Total Discount: <span id="totalDiscount"></span></p>
+                <p>Total Coupons Deducted: <span id="totalCouponsDeducted"></span></p>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button id="download-pdf" class="btn btn-success me-2">Download PDF</button>
+                <button id="download-excel" class="btn btn-warning">Download Excel</button>
+            </div>
+        </div>
     </div>
 
-  <script>
+    <!-- Sales Data Chart Section -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2>Sales Data</h2>
+            <div class="mb-3">
+                <select id="filterSelect" class="form-select" style="color: green; font-weight: bold;">
+                    <option >Filter by</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+            <canvas id="salesChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 style="color: green;">Best-Selling Products (Top 10)</h2>
+            <div class="table-responsive">
+                <table id="products-table" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Sold Count</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Categories Section -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 style="color: green;">Best-Selling Categories (Top 10)</h2>
+            <div class="table-responsive">
+                <table id="categories-table" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Category Name</th>
+                            <th>Sold Count</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categories-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ledger Download Section -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 >Download Ledger Book</h2>
+            <button id="download-ledger" class="btn btn-success" style="margin-left:40%; margin-top: 5%;">
+                Download Ledger PDF
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+
+document.querySelectorAll('input[name="reporting-period"]').forEach(input => {
+    input.addEventListener('change', function() {
+        document.getElementById('custom-date-range').style.display = 
+            this.value === 'custom' ? 'block' : 'none';
+    });
+});
+
+
+// Fetch and display top products
+async function fetchTopProducts() {
+    try {
+        const response = await fetch('/adminPanel/top-products');
+        const topProducts = await response.json();
+
+        const productsList = document.getElementById('products-list');
+        productsList.innerHTML = ''; // Clear the table body first
+
+        topProducts.forEach(product => {
+            const productName = product.productName || 'Unknown Product';
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${productName}</td>
+                <td>${product.totalSales}</td>
+            `;
+            productsList.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error fetching top products:", error);
+    }
+}
+
+// Fetch and display top categories
+async function fetchTopCategories() {
+    try {
+        const response = await fetch('/adminPanel/top-categories');
+        const topCategories = await response.json();
+
+        const categoriesList = document.getElementById('categories-list');
+        categoriesList.innerHTML = ''; // Clear the table body first
+
+        topCategories.forEach(category => {
+            const categoryName = category.name || 'Unknown Category';
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${categoryName}</td>
+                <td>${category.totalSales}</td>
+            `;
+            categoriesList.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error fetching top categories:", error);
+    }
+}
+
+
+// Download ledger PDF
+document.getElementById('download-ledger').addEventListener('click', async () => {
+    try {
+        const response = await fetch('/adminPanel/ledger');
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'ledger.pdf';
+        link.click();
+
+        window.URL.revokeObjectURL(url); // Clean up
+    } catch (error) {
+        console.error("Error downloading ledger:", error);
+    }
+});
+
+// Fetch data when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    fetchTopProducts();
+    fetchTopCategories();
+});
+
+
+    // salesReport.js
+    document.getElementById('filterSelect').addEventListener('change', async function () {
+    const filter = this.value;
+    const response = await fetch(`/adminPanel/sales-data?filter=${filter}`);
+    const salesData = await response.json();
+
+    // Prepare data for the chart
+    const labels = salesData.map(item => item._id); // The x-axis labels (e.g., months, weeks)
+    const dataPoints = salesData.map(item => item.totalSales); // The y-axis data
+
+    // Update the chart
+    updateChart(salesChart, labels, dataPoints);
+});
+
+// Initialize the chart
+const ctx = document.getElementById('salesChart').getContext('2d');
+let salesChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [], // Placeholder, will be populated dynamically
+        datasets: [{
+            label: 'Total Sales',
+            data: [],
+            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Function to update the chart data
+function updateChart(chart, labels, data) {
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = data;
+    chart.update();
+}
+
     let salesData=[]; 
- document.querySelectorAll('input[name="reporting-period"]').forEach((elem) => {
+        document.querySelectorAll('input[name="reporting-period"]').forEach((elem) => {
             elem.addEventListener('change', function() {
                 if (this.value === 'custom') {
                     document.getElementById('custom-date-range').style.display = 'block';
@@ -119,7 +326,7 @@
                 // Display the results
                 document.getElementById('report-results').style.display = 'block';
                 const reportBody = document.getElementById('report-body');
-                reportBody.innerHTML = ''; // Clear previous results
+                reportBody.innerHTML = '';
                 salesData = data.salesData;
                 data.salesData.forEach(item => {
                     const row = `<tr>
@@ -132,8 +339,7 @@
                     reportBody.insertAdjacentHTML('beforeend', row);
                 });
 
-                const totals = data.overallTotals; // Access overall totals
-                // e.g., display them in a specific element on the page
+                const totals = data.overallTotals; 
                 document.getElementById('totalSalesCount').innerText = totals.totalSalesCount;
                 document.getElementById('totalOrderAmount').innerText = totals.totalOrderAmount;
                 document.getElementById('totalDiscount').innerText = totals.totalDiscount;
@@ -147,11 +353,11 @@
         });
 
         async function fetchSalesReportData() {
-    const response = await fetch('/adminPanel/sales-report'); // Adjust the endpoint accordingly
+    const response = await fetch('/adminPanel/sales-report'); 
     if (!response.ok) {
         throw new Error('Failed to fetch sales report data');
     }
-    return await response.json(); // Assuming this returns an object with `salesData` key
+    return await response.json(); 
 }
         
 const downloadPDFButton = document.getElementById('download-pdf');
@@ -188,8 +394,8 @@ downloadPDFButton.addEventListener('click', async () => {
 });
 
 // Event to download Excel
-const downloadExcelButton = document.getElementById('download-excel');
-downloadExcelButton.addEventListener('click', async () => {
+    const downloadExcelButton = document.getElementById('download-excel');
+    downloadExcelButton.addEventListener('click', async () => {
     try {
         if (!salesData.length) {
             alert("No report data available. Please generate the report first.");
@@ -220,6 +426,23 @@ downloadExcelButton.addEventListener('click', async () => {
         alert('An error occurred while generating the Excel file');
     }
 });
+
+document.getElementById('end-date').addEventListener('change', validateDateRange);
+document.getElementById('start-date').addEventListener('change', validateDateRange);
+
+function validateDateRange() {
+    const startDate = document.getElementById('start-date').value;
+    const endDate = document.getElementById('end-date').value;
+    const errorElement = document.getElementById('date-error');
+
+    if (startDate && endDate && endDate <= startDate) {
+        errorElement.style.display = 'block';
+        document.getElementById('end-date').setCustomValidity('End date must be greater than start date.');
+    } else {
+        errorElement.style.display = 'none';
+        document.getElementById('end-date').setCustomValidity('');
+    }
+}
 
 
 </script>

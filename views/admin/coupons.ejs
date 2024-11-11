@@ -10,7 +10,7 @@
 </head>
 <body>
     <div class="container my-5">
-        <h2 class="text-center">Manage Coupons</h2>
+        <h2 >Coupon Management</h2>
 
 
         <!-- Search Bar -->
@@ -28,6 +28,10 @@
 
         <!-- Coupons Table -->
         <table class="table table-striped">
+            <% if (errorMessage) { %>
+                <div class="alert alert-danger"><%= errorMessage %></div>
+            <% } %>
+            
             <thead>
                 <tr>
                     <th>Coupon Code</th>
@@ -36,6 +40,7 @@
                     <th>Expiration Date</th>
                     <th>Usage Limit</th>
                     <th>Minimum Purchase</th>
+                    <th>Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -48,11 +53,18 @@
                         <td><%= coupon.expirationDate.toDateString() %></td>
                         <td><%= coupon.usageLimit %></td>
                         <td>₹<%= coupon.minimumPurchase %></td>
+                        <td><%= coupon.isActive ? 'Active' : 'inactive' %></td>
                         <td>
                             <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editCouponModal-<%= coupon._id %>">Edit</button>
-                            <form action="/adminPanel/coupons/delete/<%= coupon._id %>" method="POST" class="d-inline">
-                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                            </form>
+                            <% if (!coupon.isDeleted) { %>
+                                <form action="/adminPanel/coupons/delete/<%= coupon._id %>" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            <% } else { %>
+                                <form action="/adminPanel/coupons/restore/<%= coupon._id %>" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-success btn-sm">Restore</button>
+                                </form>
+                            <% } %>
                         </td>
                     </tr>
 
@@ -83,7 +95,7 @@
                                         </div>
                                         <div class="mb-3">
                                             <label for="editDiscountAmount" class="form-label">Discount Amount</label>
-                                            <input type="number" class="form-control" id="editDiscountAmount" name="discountValue" value="<%= coupon.discountValue %>" required min="0">
+                                            <input type="number" class="form-control" id="editDiscountAmount" name="discountValue" value="<%= coupon.discountValue %>" required min="1">
                                         </div>
                                         <div class="mb-3">
                                             <label for="editExpirationDate" class="form-label">Expiration Date</label>
@@ -95,13 +107,13 @@
                                         </div>
                                         <div class="mb-3">
                                             <label for="editMinimumPurchase" class="form-label">Minimum Purchase</label>
-                                            <input type="number" class="form-control" id="editMinimumPurchase" name="minimumPurchase" value="<%= coupon.minimumPurchase %>" required min="0">
+                                            <input type="number" class="form-control" id="editMinimumPurchase" name="minimumPurchase" value="<%= coupon.minimumPurchase %>" required min="100">
                                         </div>
                                         <div class="mb-3">
                                             <label for="addActive" class="form-label">Active</label>
                                             <select class="form-select" id="addActive" name="active" required>
-                                                <option value="true">Yes</option>
-                                                <option value="false">No</option>
+                                                <option value="true">Active</option>
+                                                <option value="false">inactive</option>
                                             </select>
                                         </div>
                                         <button type="submit" class="btn btn-success">Save Changes</button>
@@ -113,6 +125,28 @@
                 <% }); %>
             </tbody>
         </table>
+        <nav aria-label="Page navigation example">
+            <div class="d-flex justify-content-center">
+                <ul class="pagination">
+                    <li class="page-item <%= currentpage === 1 ? 'disabled' : '' %>">
+                        <a class="page-link" href="/adminPanel/coupons?page=<%= currentpage - 1 %>&search=<%= search %>" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                        <li class="page-item <%= currentpage === i ? 'active' : '' %>">
+                            <a class="page-link" href="/adminPanel/coupons?page=<%= i %>&search=<%= search %>"><%= i %></a>
+                        </li>
+                    <% } %>
+                    <li class="page-item <%= currentpage === totalPages ? 'disabled' : '' %>">
+                        <a class="page-link" href="/adminPanel/coupons?page=<%= currentpage + 1 %>&search=<%= search %>" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
     </div>
 
     <!-- Add Coupon Modal -->
@@ -134,15 +168,16 @@
                             <input type="text" class="form-control" id="addDescription" name="description">
                         </div>
                         <div class="mb-3">
-                            <label for="addDiscountType" class="form-label">Discount Type</label>
-                            <select class="form-select" id="addDiscountType" name="discountType" required>
+                            <label for="discountType" class="form-label">Discount Type</label>
+                            <select class="form-select" id="discountType" name="discountType" required>
                                 <option value="percentage">Percentage</option>
-                                <option value="flat">Flat</option>
+                                <option value="flat">Fixed Amount</option>
                             </select>
                         </div>
+                        
                         <div class="mb-3">
                             <label for="addDiscountAmount" class="form-label">Discount Amount</label>
-                            <input type="number" class="form-control" id="addDiscountAmount" name="discountValue" required min="0">
+                            <input type="number" class="form-control" id="addDiscountAmount" name="discountValue" required min="1">
                         </div>
                         <div class="mb-3">
                             <label for="addExpirationDate" class="form-label">Expiration Date</label>
@@ -154,22 +189,79 @@
                         </div>
                         <div class="mb-3">
                             <label for="addMinimumPurchase" class="form-label">Minimum Purchase</label>
-                            <input type="number" class="form-control" id="addMinimumPurchase" name="minimumPurchase" required min="0">
+                            <input type="number" class="form-control" id="addMinimumPurchase" name="minimumPurchase" required min="100">
                         </div>
                         <div class="mb-3">
                             <label for="addActive" class="form-label">Active</label>
                             <select class="form-select" id="addActive" name="active" required>
-                                <option value="true">Yes</option>
-                                <option value="false">No</option>
+                                <option value="true">Active</option>
+                                <option value="false">inactive</option>
                             </select>
                         </div>
                         <button type="submit" class="btn btn-success">Add Coupon</button>
                     </form>
                 </div>
             </div>
-        </div>  
+        </div> 
+         
     </div>
+    <script>
+// edit
+
+document.addEventListener('DOMContentLoaded', function() {
+    const discountTypeSelect = document.getElementById('editDiscountType');
+    const discountAmountInput = document.getElementById('editDiscountAmount');
+
+    function updateDiscountValidation() {
+        const discountType = discountTypeSelect.value;
+
+        if (discountType === 'percentage') {
+            discountAmountInput.max = 100;
+            discountAmountInput.min = 0;
+            discountAmountInput.placeholder = 'Enter a value between 0 and 100';
+        } else if (discountType === 'flat') {
+            discountAmountInput.removeAttribute('max'); 
+            discountAmountInput.min = 1;
+            discountAmountInput.placeholder = 'Enter a positive amount';
+        }
+    }
+
+    // Run the validation update when the page loads to set correct limits
+    updateDiscountValidation();
+
+    // Add event listener to update validation when discount type changes
+    discountTypeSelect.addEventListener('change', updateDiscountValidation);
+});
+
+
+
+// Get the input and select elements
+    const discountTypeSelect = document.getElementById('discountType');
+    const discountAmountInput = document.getElementById('addDiscountAmount');
     
+    // Function to update validation based on discount type
+    function updateDiscountValidation() {
+        const discountType = discountTypeSelect.value;
+
+        // Reset the validation
+        discountAmountInput.setCustomValidity("");
+
+        if (discountType === "percentage") {
+            // For percentage, value must be between 0 and 100
+            discountAmountInput.setAttribute('min', '0');
+            discountAmountInput.setAttribute('max', '100');
+        } else if (discountType === "flat") {
+            discountAmountInput.removeAttribute('max'); 
+            discountAmountInput.setAttribute('min', '0'); // To ensure it is positive
+        }
+    }
+
+    // Update validation whenever the discount type changes
+    discountTypeSelect.addEventListener('change', updateDiscountValidation);
+
+    // Initial validation update on page load
+    updateDiscountValidation();
+</script>
     <!-- Bootstrap JS and dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>

@@ -2,7 +2,7 @@ const User = require('../models/User');
 exports.renderCustomerPage = async (req, res) => {
     const search = req.query.search || '';
     const currentPage = parseInt(req.query.page) || 1; 
-    const itemsPerPage = 10; 
+    const itemsPerPage = 5; 
     
     try {
         const customersList = await User.find({
@@ -12,7 +12,7 @@ exports.renderCustomerPage = async (req, res) => {
             ]
         })
         .skip((currentPage - 1) * itemsPerPage)
-        .limit(itemsPerPage);
+        .limit(itemsPerPage).sort({createdAt:-1});
 
         const totalCustomers = await User.countDocuments({
             $or: [

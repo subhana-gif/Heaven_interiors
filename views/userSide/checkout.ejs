@@ -119,7 +119,6 @@
     <div class="container">
         <h2>Checkout</h2>
         <div class="checkout-section">
-            <h3>Your Cart</h3>
             <% if (cart && cart.length > 0) { %>
         <table>
             <thead>
@@ -128,7 +127,7 @@
                     <th>Quantity</th>
                     <th>Price</th>
                     <th>Total</th>
-                    <th>Action</th>
+                    <!-- <th>Action</th> -->
                 </tr>
             </thead>
             <tbody>
@@ -145,12 +144,12 @@
                             <div class="qty-container">
                                 <form action="/user/update-cart/<%= item.productId %>" method="POST" class="qty-form">
                                     <input type="hidden" name="action" value="decrease">
-                                    <button type="submit" <%= item.quantity === 1 ? 'disabled' : '' %>>-</button>
+                                    <!-- <button type="submit" <%= item.quantity === 1 ? 'disabled' : '' %>>-</button> -->
                                 </form>
                                 <span style="margin-left: 73%;"><%= item.quantity %></span> <!-- Display quantity inline -->
                                 <form action="/user/update-cart/<%= item.productId %>" method="POST" class="qty-form">
                                     <input type="hidden" name="action" value="increase">
-                                    <button type="submit" <%= item.quantity >= item.stock ? 'disabled' : '' %>>+</button>
+                                    <!-- <button type="submit" <%= item.quantity >= item.stock ? 'disabled' : '' %>>+</button> -->
                                 </form>
                             </div>
                         </td>
@@ -171,47 +170,20 @@
                             %>
                             ₹<%= totalPrice.toFixed(2) %>
                         </td>
-                        <!-- Remove button -->
-                        <td>
-                            <form action="/user/remove-from-cart/<%= item.productId %>" method="POST">
-                                <button type="submit" class="btn-remove">Remove</button>
-                            </form>
-                        </td>
                     </tr>
                 <% }); %>
             </tbody>
             
         </table>    
-                <!-- Total price calculation -->
-                <h2 style="font-weight: bolder; color: #14482a;">
-                    Total Price: ₹<%= totalPrice.toFixed(2) %>
-                </h2>
+        <h2 style="font-weight: bolder; color: #14482a;">
+            Total Price: ₹<%= cart.reduce((total, item) => total + (item.discountedPrice * item.quantity), 0).toFixed(2) %>
+        </h2>
+
             <% } else { %>
                 <p>Your cart is empty. Please add items to your cart before checking out.</p>
             <% } %>
         </div>
     
-        <div class="checkout-section">
-            <h3>Your Addresses</h3>
-            <button type="button" class="btn btn-success" onclick="openAddAddressModal()">Add New Address</button>
-    
-            <div id="addressList">
-                <% addresses.forEach(address => { %>
-                    <div>
-                        <!-- <input  name="selectedAddress" value="<%= address._id %>" required> -->
-                        <span style="margin-left: 8px;">
-                            <%= address.name %><br>
-                            <%= address.mobileNumber %><br>
-                            <%= address.city %><br>
-                            <%= address.state %><br>
-                            <%= address.pinCode %><br>
-                        </span>
-                        <button type="button" class="btn-edit" onclick="editAddress('<%= address._id %>', '<%= address.name %>', '<%= address.mobileNumber %>', '<%= address.city %>', '<%= address.state %>', '<%= address.pinCode %>')">Edit</button>
-                        <button type="button" class="btn-delete" onclick="deleteAddress('<%= address._id %>')">Delete</button>
-                    </div>
-                <% }) %>
-                </div>
-        </div>
     
         <div class="checkout-section">
             <div id="couponSection">
@@ -228,63 +200,98 @@
             </div>
         </div> 
 
-        
-
-        <div class="checkout-section">
-            <div id="walletSection">
-                <h4>Wallet Balance: ₹<span id="walletBalance"><%= walletBalance.toFixed(2) %></span></h4>
-                <!-- <input type="checkbox" id="useWallet" onchange="toggleWalletUsage()"> Use Wallet Balance -->
-            </div>
-        </div>
 
             <div id="newTotalPriceContainer" style="display: none;">
-                <h2 id="newTotalPrice" style="font-size: 2rem; color: green; font-weight: bold;">
+                <h2 id="newTotalPrice" style="font-size: 2rem; color: rgb(255, 255, 255); font-weight: bold;">
                     New Total Price: ₹<span id="totalPriceDisplay"></span>
                 </h2>
             </div>
 
-
-        <div class="checkout-section">
-            <form id="paymentForm" action="/user/checkout/placeOrder" method="POST">
-
-                <h4>Select Your Address:</h4>
-                <select name="selectedAddress" required>
-                    <% addresses.forEach(address => { %>
-                        <option value="<%= address._id %>"><%= address.name %>, <%= address.city %>, <%= address.state %> - <%= address.pinCode %></option>
-                    <% }) %>
-                </select>
+            
             <div class="checkout-section">
-                <h4>Payment Options:</h4>
-                <div>
-                    <label>
-                        <input type="radio" name="paymentMethod" value="Wallet" required id="useWallet" onchange="toggleWalletUsage()"> Wallet
-                    </label>
-                    <div id="walletMessage"></div>
-                </div>
-                <div>
-                    <label>
-                        <input type="radio" name="paymentMethod" value="COD" required> Cash on Delivery
-                    </label>
-                </div>
-                <div>
-                    <label>
-                        <input type="radio" name="paymentMethod" value="Razorpay" required> Credit Card (Razorpay)
-                    </label>
-                </div>
-                
-
-                <input type="hidden" name="razorpayPaymentId" id="razorpayPaymentId">
-                <input type="hidden" name="razorpayOrderId" id="razorpayOrderId">
-                <input type="hidden" name="razorpaySignature" id="razorpaySignature">
-                <% if (totalPrice > 0) { %>
-                    <button type="submit" id="rzp-button">Proceed</button>
-                <% } else { %>
-                    <button type="button" id="proceedButton" onclick="location.href='/user/checkout/orderConfirmation'">Proceed</button>
-                <% } %>
+                <div class="checkout-section">
+                    <h3>Your Addresses</h3>
+                    <button type="button" class="btn btn-success" onclick="openAddAddressModal()">Add New Address</button>
+            
+                    <div id="addressList">
+                        <% addresses.forEach(address => { %>
+                            <div data-address-id="<%= address._id %>">
+                                <span style="margin-left: 8px;">
+                                    <%= address.name %><br>
+                                    <%= address.mobileNumber %><br>
+                                    <%= address.city %><br>
+                                    <%= address.state %><br>
+                                    <%= address.pinCode %><br>
+                                </span>
+                                <button type="button" class="btn-edit" onclick="editAddress('<%= address._id %>', '<%= address.name %>', '<%= address.mobileNumber %>', '<%= address.city %>', '<%= address.state %>', '<%= address.pinCode %>')">Edit</button>
+                                <button type="button" class="btn-delete" onclick="deleteAddress('<%= address._id %>')">Delete</button>
+                            </div>
+                        <% }) %>
+                    </div>
+                                    </div>
+        
+                <form id="paymentForm" action="/user/checkout/placeOrder" method="POST" onsubmit="return validateForm()">
+                    <h4>Select Your Address:</h4>
+                    
+                    <!-- Address Dropdown -->
+                    <select name="selectedAddress" id="selectedAddress" required onchange="enablePaymentOptions()" onclick="displayDeliveryDetails()">
+                        <option value="">Select Address</option>
+                        <% addresses.forEach(address => { %>
+                            <option value="<%= address._id %>"><%= address.name %>, <%= address.city %>, <%= address.state %> - <%= address.pinCode %></option>
+                        <% }) %>
+                    </select>
+                    
+                    <!-- Error Message Placeholder -->
+                    <div id="addressError" style="color: red; display: none;">
+                        Please select an address before proceeding.
+                    </div>
+                    
+                    <div id="displayDeliveryDetails" style="display: none;">
+                        <h3>Delivery Charge:</h3>
+                        <p id="deliveryCharge">₹<%= deliveryCharge.toFixed(2) %></p>
+                        <h2 style="color: green;">Total Price: <span id="totalPrice">₹<%= totalPrice.toFixed(2) %></span></h2>
+                    </div>
+                                        
+                    <div class="checkout-section">
+                        <h4>Payment Options:</h4>
+                        
+                        <div>
+                            <label>
+                                <input type="radio" name="paymentMethod" value="Wallet" id="useWallet" disabled required onchange="toggleWalletUsage()">
+                                 Wallet(wallet balance:<%= walletBalance.toFixed(2) %>)
+                            </label>
+                            <div id="walletMessage"></div>
+                        </div>
+                        <div>
+                            <label>
+                                <input type="radio" name="paymentMethod" value="COD" id="useCOD" disabled required onchange="validatePaymentMethod()"> Cash on Delivery
+                            </label>
+                            <div id="codMessage" style="color: red;">
+                                <% if (errorMessage) { %>
+                                    <span><%= errorMessage %></span>
+                                <% } %>
+                            </div>
+                        </div>
+                        <div>
+                            <label>
+                                <input type="radio" name="paymentMethod" value="Razorpay" disabled required> Credit Card (Razorpay)
+                            </label>
+                        </div>
+                        
+                        <input type="hidden" name="razorpayPaymentId" id="razorpayPaymentId"/>
+                        <input type="hidden" name="razorpayOrderId" id="razorpayOrderId"/>
+                        <input type="hidden" name="razorpaySignature" id="razorpaySignature"/>
+                        
+                        <% if (totalPrice > 0) { %>
+                            <button type="submit" id="rzp-button">Proceed</button>
+                        <% } else { %>
+                            <button type="button" id="proceedButton" onclick="location.href='/user/checkout/orderConfirmation'">Proceed</button>
+                        <% } %>
+                    </div>
+                </form>
             </div>
-            </form>
-        </div>
-    </div>
+            
+         </div>
     
 
     <!-- Add Address Modal -->
@@ -293,14 +300,18 @@
             <h4>Add New Address</h4>
             <form action="/user/checkout/addresses/add" method="POST" id="addAddressForm">
                 <input type="text" name="name" placeholder="Name" required class="form-control mb-2" id="addName">
-                <input type="text" name="mobileNumber" placeholder="Mobile Number" required class="form-control mb-2" id="addMobileNumber">
+                <input type="text" name="mobileNumber" placeholder="Mobile Number" required class="form-control mb-2" 
+                id="addMobileNumber" pattern="^\d{10}$" title="Mobile number must be exactly 10 digits" 
+                oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid 10-digit mobile number.')">               
                 <input type="text" name="city" placeholder="City" required class="form-control mb-2" id="addCity">
                 <input type="text" name="state" placeholder="State" required class="form-control mb-2" id="addState">
-                <input type="text" name="pinCode" placeholder="Pin Code" required class="form-control mb-2" id="addPinCode">
+                <input type="text" name="pinCode" placeholder="Pin Code" required class="form-control mb-2" 
+                id="addPinCode" pattern="^\d{6}$" title="PIN code must be exactly 6 digits" 
+                oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid 6-digit PIN code.')">              
                 <button type="submit" class="btn btn-success">Add Address</button>
                 <button type="button" class="btn btn-danger" onclick="closeAddAddressModal()">Close</button>
             </form>
-        </div>
+            </div>
     </div>
 
     <!-- Edit Address Modal -->
@@ -310,14 +321,18 @@
         <form action="" method="POST" id="editAddressForm">
             <input type="hidden" name="addressId" id="editAddressId">
             <input type="text" name="name" placeholder="Name" required class="form-control mb-2" id="editName">
-            <input type="text" name="mobileNumber" placeholder="Mobile Number" required class="form-control mb-2" id="editMobileNumber">
+            <input type="text" name="mobileNumber" placeholder="Mobile Number" required class="form-control mb-2" 
+                   id="editMobileNumber" pattern="^\d{10}$" title="Mobile number must be exactly 10 digits" 
+                   oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid 10-digit mobile number.')">
             <input type="text" name="city" placeholder="City" required class="form-control mb-2" id="editCity">
             <input type="text" name="state" placeholder="State" required class="form-control mb-2" id="editState">
-            <input type="text" name="pinCode" placeholder="Pin Code" required class="form-control mb-2" id="editPinCode">
+            <input type="text" name="pinCode" placeholder="Pin Code" required class="form-control mb-2" 
+                   id="editPinCode" pattern="^\d{6}$" title="PIN code must be exactly 6 digits" 
+                   oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('Please enter a valid 6-digit PIN code.')">           
             <button type="submit" class="btn btn-success">Update Address</button>
             <button type="button" class="btn btn-danger" onclick="closeEditAddressModal()">Close</button>
-        </form>
-    </div>
+            </form>
+            </div>
 </div>
 
     <%- include('../partials/footer.ejs') %>
@@ -329,8 +344,91 @@
     const totalPrice = <%= totalPrice %>;
     const walletBalance = <%= walletBalance %>;
 </script>
-
     <script>
+
+        function displayDeliveryDetails(){
+            deliverydetails = document.getElementById('displayDeliveryDetails');
+            deliverydetails.style.display = 'block'
+        }
+                // Function to enable payment options when an address is selected
+                function enablePaymentOptions() {
+                    const addressDropdown = document.getElementById('selectedAddress');
+                    const paymentOptions = document.querySelectorAll('input[name="paymentMethod"]');
+            
+                    // Enable payment radio buttons only if an address is selected
+                    if (addressDropdown.value) {
+                        paymentOptions.forEach(option => {
+                            option.disabled = false; // Enable radio buttons
+                        });
+                        document.getElementById('addressError').style.display = 'none'; // Hide error message
+                    } else {
+                        paymentOptions.forEach(option => {
+                            option.disabled = true; // Disable radio buttons
+                        });
+                    }
+                }
+            
+                // Function to validate the form
+                function validateForm() {
+                    const addressDropdown = document.getElementById('selectedAddress');
+                    const addressError = document.getElementById('addressError');
+                    
+                    if (addressDropdown.value === "") {
+                        addressError.style.display = "block";  // Show error message
+                        return false;  // Prevent form submission
+                    }
+                    
+                    addressError.style.display = "none";  // Hide error if valid
+                    return true;  // Allow form submission
+                }
+
+    // Function to update delivery charge and total price based on selected address
+    document.querySelector('select[name="selectedAddress"]').addEventListener('change', async function() {
+        const selectedAddressId = this.value;
+        const deliveryChargeElement = document.getElementById('deliveryCharge');
+        const totalPriceElement = document.getElementById('totalPrice');
+        
+        try {
+            // Make an API call to fetch delivery charge for the selected address
+            const response = await fetch(`/user/checkout/getDeliveryCharge/${selectedAddressId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update the delivery charge and total price elements
+                deliveryChargeElement.textContent = `₹${data.deliveryCharge.toFixed(2)}`;
+                const newTotalPrice = parseFloat(data.deliveryCharge) + parseFloat(data.cartTotal);
+                totalPriceElement.textContent = `₹${newTotalPrice.toFixed(2)}`;
+            } else {
+                console.error('Error fetching delivery charge:', data.message);
+            }
+        } catch (error) {
+            console.error('Error fetching delivery charge:', error);
+        }
+    });
+
+
+// Assuming you have already defined totalPrice and walletBalance as necessary
+async function validatePaymentMethod() {
+    const codMessage = document.getElementById('codMessage');
+    const codOption = document.getElementById('useCOD');
+    // Clear previous messages
+    codMessage.innerHTML = '';
+
+    const totalPrice = <%= totalPrice %>;
+    
+
+    if (codOption.checked) {
+        if (totalPrice > 1000) {
+            codMessage.innerHTML = '<span style="color: red;">Cash on Delivery is only available for orders less than ₹1000.</span>';
+        } else {
+            codMessage.innerHTML = '<span style="color: green;">Cash on Delivery is available for this order.</span>';
+        }
+    }
+// Call validatePaymentMethod on page load to check the current selection
+window.onload = function() {
+    validatePaymentMethod();
+};
+}
 
         function openAddAddressModal() {
             document.getElementById('addAddressModal').style.display = 'block';
@@ -372,41 +470,51 @@ window.onclick = function(event) {
     }
 }
 
-function deleteAddress(id) {
-    if (confirm("Are you sure you want to delete this address?")) {
-        fetch(`/user/checkout/addresses/delete/${id}`, {
-            method: 'POST'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Remove the deleted address from the DOM
-                const addressElement = document.querySelector(`li[data-address-id="${id}"]`);
-                if (addressElement) {
-                    addressElement.remove();
-                }
+function deleteAddress(addressId) {
+    fetch(`/user/checkout/addresses/delete/${addressId}`, {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the address div from the DOM
+            const addressElement = document.querySelector(`div[data-address-id="${addressId}"]`);
+            if (addressElement) {
+                addressElement.remove();
             } else {
-                alert("Failed to delete address: " + data.message);
+                console.log("Address element not found!");
             }
-        })
-    }
+        } else {
+            alert("Failed to delete address: " + data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error deleting address:", error);
+        alert("Error deleting address. Please try again later.");
+    });
 }
-
 
 document.getElementById('rzp-button').onclick = async function (e) {
     e.preventDefault();
 
     const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
 
-    if (paymentMethod === 'Razorpay') {  // Change this line
-        // Fetch order details from backend
+    if (paymentMethod === 'Razorpay') {
+    try {
+        
+        // Fetch order details from the backend
         const response = await fetch('/user/checkout/createOrder', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ totalPrice: 1000 })  // replace with actual total
+            body: JSON.stringify({ selectedAddress: document.querySelector('select[name="selectedAddress"]').value })
         });
+
+        if (!response.ok) {
+            throw new Error('Failed to create Razorpay order');
+        }
+
         const data = await response.json();
 
         const options = {
@@ -414,19 +522,57 @@ document.getElementById('rzp-button').onclick = async function (e) {
             "amount": data.amount,
             "currency": data.currency,
             "name": "Heaven_interior",
-            "description": "Test Transaction",
+            "description": "Order Payment",
             "image": "/images/Screenshot%202024-10-23%20075333.png",
             "order_id": data.orderId,
             "handler": function (response) {
-                // Log the response to check for properties
-                console.log("Payment Response:", response);
                 document.getElementById('razorpayPaymentId').value = response.razorpay_payment_id;
                 document.getElementById('razorpayOrderId').value = response.razorpay_order_id;
                 document.getElementById('razorpaySignature').value = response.razorpay_signature;
-
-                // Submit the form to the backend
                 document.getElementById('paymentForm').submit();
             },
+"modal": {
+    ondismiss: function () {
+        console.log('Payment modal closed');
+        alert("Payment was not completed. Please try again.");
+        const selectedAddressId = document.querySelector('select[name="selectedAddress"]').value;
+        const paymentMethod = 'Razorpay';
+        const orderData = {
+            paymentMethod,
+            selectedAddress: selectedAddressId,
+            razorpayPaymentId: null, // No payment completed
+            razorpayOrderId: null,    // No order ID generated
+            razorpaySignature: null    // No signature
+        };
+
+        // Send the request to place the order with pending payment status
+        fetch('/user/checkout/placeOrderPending', { // Using Fetch API for a modern approach
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json', // Set content type to JSON
+            },
+            body: JSON.stringify(orderData), // Convert orderData to JSON
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Order placed with pending payment status:', data);
+            window.location.href = '/user/orders'; // Uncomment to redirect
+        })
+        .catch(error => {
+            console.error('Error placing order:', error);
+            // Handle error, show a message to the user
+            alert('An error occurred while placing your order. Please try again.');
+        });
+    }
+},
+            
+
             "prefill": {
                 "name": "Customer Name",
                 "email": "customer@example.com",
@@ -439,12 +585,17 @@ document.getElementById('rzp-button').onclick = async function (e) {
 
         const rzp1 = new Razorpay(options);
         rzp1.open();
-    } else {
-        // If COD or other payment methods are selected
-        document.getElementById('paymentForm').submit();
-    }
-}
 
+    } catch (error) {
+        console.error('Error in initiating Razorpay payment:', error);
+        alert("Failed to initiate Razorpay payment. Please try again.");
+    }
+
+} else {
+    // If COD or other payment methods are selected
+    document.getElementById('paymentForm').submit();
+}
+}
 
 document.getElementById('applyCouponBtn').addEventListener('click', async function() {
     const couponCode = document.getElementById('couponDropdown').value;
@@ -483,7 +634,6 @@ document.getElementById('removeCouponBtn').addEventListener('click', async funct
     }
 });
 
-
 document.getElementById('applyCouponBtn').addEventListener('click', async function() {
             const couponCode = document.getElementById('couponDropdown').value;
             const response = await fetch('/user/checkout/applyCoupon', {
@@ -500,7 +650,7 @@ document.getElementById('applyCouponBtn').addEventListener('click', async functi
         <div class="coupon-message-box success">
             <h3 style="color:green">Coupon Applied Successfully!</h3>
             <p><strong>Coupon:</strong> ${result.message}</p>
-            <p><strong>New Total:</strong> <span class="new-total">₹${result.newTotalPrice}</span></p>
+            <p><strong>New Total:</strong> <span class="new-total">₹${result.newTotalPrice.toFixed(2)}</span></p>
         </div>
     `;   
      } else {
@@ -520,6 +670,7 @@ document.getElementById('applyCouponBtn').addEventListener('click', async functi
         }
     });
 
+   
     async function fetchWalletBalance() {
     const response = await fetch('/user/wallet/balance'); // Adjust this endpoint to your actual API
     if (response.ok) {
@@ -538,13 +689,12 @@ async function toggleWalletUsage() {
     walletMessage.innerHTML = '';
 
     if (walletOption.checked) {
-        console.log('Wallet Balance:', walletBalance); // Debugging line
-        console.log('Total Price:', totalPrice); // Debugging line
-
         if (walletBalance < totalPrice) {
             walletMessage.innerHTML = '<span style="color: red;">Insufficient wallet balance for this purchase.</span>';
+            return false;
         } else {
             walletMessage.innerHTML = '<span style="color: green;">Wallet balance is sufficient.</span>';
+            return true;
         }
     }
 }

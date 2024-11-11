@@ -1,13 +1,30 @@
 const mongoose = require('mongoose');
 
+
 // Sub-schema for cart items
 const cartItemSchema = new mongoose.Schema({
+    // existing fields
     productId: { type: String, required: true },
     name: { type: String, required: true },
     price: { type: Number, required: true },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
     quantity: { type: Number, required: true },
-    status: { type: String, default: "Active" },
-    image: { type: String, required: true }
+    status: { 
+        type: String, 
+        enum: ['Ordered', 'Shipped', 'Delivered', 'Cancelled', 'Returned', 'Payment Pending'],
+        default: 'Ordered'
+    },
+    image: { type: String, required: true },
+    deliveredDate: { type: Date },
+    statusHistory: [
+        {
+            status: { 
+                type: String, 
+                enum: ['Ordered', 'Shipped', 'Delivered', 'Cancelled', 'Returned', 'Payment Pending'],
+            },
+            updatedAt: { type: Date, default: Date.now }
+        }
+    ]
 });
 
 // Main order schema
@@ -18,7 +35,7 @@ const orderSchema = new mongoose.Schema({
         required: true
     },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    cartItems: [cartItemSchema],
+    cartItems: [cartItemSchema],  // Array of items with individual statuses
     paymentMethod: { type: String, required: true },
     address: {
         name: { type: String, required: true },
@@ -31,22 +48,14 @@ const orderSchema = new mongoose.Schema({
     discount: { type: Number, default: 0 }, 
     coupon: { type: String },
     couponDeduction: { type: Number, default: 0 },
-    status: {
+    paymentStatus: {
         type: String,
-        enum: ['Ordered', 'Shipped', 'Delivered', 'Cancelled','Returned'],
-        default: 'Ordered'
+        enum: ['Pending', 'Failed', 'Success'], 
+        default: 'Pending'
     },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
-    paymentStatus: {
-        type: String    },
-    deliveredDate: { type: Date },
-    statusHistory: [
-        {
-            status: { type: String, enum: ['Ordered', 'Shipped', 'Delivered', 'Cancelled'] },
-            updatedAt: { type: Date, default: Date.now }
-        }
-    ]
+    deliveredDate: { type: Date }
 });
 
 const Order = mongoose.model('Order', orderSchema);

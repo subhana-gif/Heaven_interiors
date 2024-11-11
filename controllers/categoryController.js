@@ -5,7 +5,7 @@ exports.renderCategoryPage = async (req, res) => {
     try {
         const search = req.query.search || ''; 
         const currentpage = parseInt(req.query.page) || 1; 
-        const limit = 10;
+        const limit = 5;
         const skip = (currentpage - 1) * limit;
 
         const categories = await Category.find({
@@ -40,8 +40,6 @@ exports.renderCategoryPage = async (req, res) => {
 };
 
 
-
-// Add Category
 exports.addCategory = async (req, res) => {
     const { name, description, status } = req.body;
 

@@ -15,7 +15,8 @@ router.post('/checkout/addresses/delete/:id', isAuthenticated, checkUserBlocked,
 router.post('/checkout/applyCoupon', isAuthenticated, checkUserBlocked,couponController.applyCoupon);
 router.post('/checkout/removeCoupon', isAuthenticated, checkUserBlocked,couponController.removeCoupon);
 router.post('/checkout/applyWallet', isAuthenticated, checkUserBlocked,walletController.applyWallet);
-
+router.get('/checkout/getDeliveryCharge/:addressId', isAuthenticated, checkoutController.getDeliveryCharge);
+router.post('/checkout/placeOrderPending',isAuthenticated,checkUserBlocked,checkoutController.placeOrderPending)
 
 
 module.exports = router;

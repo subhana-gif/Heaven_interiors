@@ -4,13 +4,14 @@ const productSchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
-    discountedPrice: { type: Number, default: 0 }, // Add this field for discounted price
+    discountedPrice: { type: Number, default: 0 },
     discount: { type: Number, default: 0 }, 
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
     stock: { type: Number, required: true },
     stockStatus: {type: String,enum: ['In Stock', 'Out of Stock'],required: true},
     images: [{ type: String }],
     specifications: { type: Object, default: {} }, 
+    estimatedDeliveryDate: { type: Date },
     highlights: { type: [String], default: [] },
             isDelete: {
         type: Boolean,
