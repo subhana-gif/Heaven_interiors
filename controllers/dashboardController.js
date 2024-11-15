@@ -6,19 +6,18 @@ const excel = require('exceljs');
 const {calculateDeliveryCharge} = require('../config/delivery');
 
 exports.getSalesReport = async (req, res) => {
-    let { startDate, endDate } = req.query;
 
-    // Calculate start and end dates if provided
-    if (req.query.startDate && req.query.endDate) {
-        startDate = new Date(req.query.startDate).toISOString();
-        endDate = new Date(req.query.endDate);
-        endDate.setUTCDate(endDate.getUTCDate() + 1); // Increment by one day
-        endDate = endDate.toISOString();
-    } else {
-        console.log("No valid date range provided.");
-    }
 
     try {
+        let { startDate, endDate } = req.query;
+
+        if (req.query.startDate && req.query.endDate) {
+            startDate = new Date(req.query.startDate).toISOString();
+            endDate = new Date(req.query.endDate);
+            endDate.setUTCDate(endDate.getUTCDate() + 1); 
+            endDate = endDate.toISOString();
+        } else {
+        }
         const salesData = await Order.aggregate([
             { $unwind: "$cartItems" },
             {
@@ -39,7 +38,6 @@ exports.getSalesReport = async (req, res) => {
             { $sort: { _id: 1 } }
         ]);
 
-        // Calculate overall totals and format them to two decimal places
         const overallTotals = {
             totalSalesCount: salesData.reduce((acc, curr) => acc + curr.totalOrders, 0),
             totalOrderAmount: parseFloat(salesData.reduce((acc, curr) => acc + curr.totalSales, 0).toFixed(2)),
@@ -47,7 +45,6 @@ exports.getSalesReport = async (req, res) => {
             totalCouponsDeducted: parseFloat(salesData.reduce((acc, curr) => acc + curr.couponsDeducted, 0).toFixed(2)),
         };
 
-        // Format each item in salesData with two decimal places
         const formattedSalesData = salesData.map(item => ({
             ...item,
             totalSales: parseFloat(item.totalSales.toFixed(2)),
@@ -63,15 +60,12 @@ exports.getSalesReport = async (req, res) => {
 };
 
 exports.generatePDFReport = async (req, res) => {
-    const salesData = req.body.salesData;
-
-    // Check if salesData is valid
-    if (!Array.isArray(salesData)) {
-        return res.status(400).json({ error: 'Invalid sales data format. Expected an array.' });
-    }
-
     try {
-        // Define the HTML content with inline styling for the PDF table
+        const salesData = req.body.salesData;
+
+        if (!Array.isArray(salesData)) {
+            return res.status(400).json({ error: 'Invalid sales data format. Expected an array.' });
+        }
         const html = `
             <h1 style="text-align: center; font-family: Arial, sans-serif;">Sales Report</h1>
             <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
@@ -98,7 +92,6 @@ exports.generatePDFReport = async (req, res) => {
             </table>
         `;
 
-        // Create the PDF with the styled HTML table
         pdf.create(html).toFile('salesReport.pdf', (err, result) => {
             if (err) {
                 console.error('Error creating PDF:', err);
@@ -118,11 +111,8 @@ exports.generatePDFReport = async (req, res) => {
 };
 
 exports.generateExcelReport = async (req, res) => {
-    const salesData = req.body.salesData; // Extract the salesData from the request body
+    const salesData = req.body.salesData;
 
-    // Log the data for debugging
-
-    // Check if salesData is an array
     if (!Array.isArray(salesData)) {
         return res.status(400).json({ error: 'Invalid data format. Expected an array.' });
     }
@@ -138,7 +128,6 @@ exports.generateExcelReport = async (req, res) => {
             { header: 'Total Discount', key: 'totalDiscount', width: 20 }
         ];
 
-        // Add rows to worksheet
         salesData.forEach(item => {
             worksheet.addRow({
                 date: item._id,
@@ -151,7 +140,7 @@ exports.generateExcelReport = async (req, res) => {
         const filePath = `SalesReport-${Date.now()}.xlsx`;
         await workbook.xlsx.writeFile(filePath);
         res.download(filePath, () => {
-            fs.unlinkSync(filePath); // Optionally delete the file after download
+            fs.unlinkSync(filePath); 
         });
     } catch (error) {
         console.error('Error generating Excel file:', error);
@@ -160,38 +149,35 @@ exports.generateExcelReport = async (req, res) => {
 };
 
 exports.getSalesData = async (req, res) => {
+    try {
+
     const { filter } = req.query; 
     let startDate = new Date();
     let endDate = new Date();
     let dateFormat;
 
-    // Calculate the start and end dates based on the filter
     switch (filter) {
         case 'yearly':
-            startDate = new Date(startDate.getFullYear(), 0, 1); // January 1st of the current year
-            dateFormat = "%Y"; // Yearly format
+            startDate = new Date(startDate.getFullYear(), 0, 1); 
+            dateFormat = "%Y"; 
             break;
         case 'monthly':
-            startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1); // First day of the current month
-            dateFormat = "%Y-%m"; // Monthly format
+            startDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1); 
+            dateFormat = "%Y-%m";
             break;
         case 'weekly':
             const dayOfWeek = startDate.getDay();
-            startDate.setDate(startDate.getDate() - dayOfWeek); // Move to the start of the week
+            startDate.setDate(startDate.getDate() - dayOfWeek);
             startDate.setHours(0, 0, 0, 0);
-            dateFormat = "%Y-%U"; // Weekly format
+            dateFormat = "%Y-%U";
             break;
         default:
-            // Default to yearly
             startDate = new Date(startDate.getFullYear(), 0, 1);
             dateFormat = "%Y";
     }
 
-    // Set endDate to the end of the day
     endDate.setHours(23, 59, 59, 999);
 
-    try {
-        // Aggregate data based on the date range and grouping format
         const salesData = await Order.aggregate([
             { $unwind: "$cartItems" },
             {
@@ -209,7 +195,6 @@ exports.getSalesData = async (req, res) => {
             },
             { $sort: { _id: 1 } }
         ]);
-        console.log('salesDate:',salesData);
         
         res.json(salesData);
     } catch (error) {
@@ -234,7 +219,8 @@ exports.getTopProducts = async (req, res) => {
         ]);
         res.json(topProducts);
             } catch (error) {
-        res.status(500).json({ message: "Error fetching top products", error });
+                console.error('error getting top products:',error);
+                res.status(500).json({ message: "Error fetching top products", error });
     }
 };
 
@@ -244,28 +230,28 @@ exports.getTopCategories = async (req, res) => {
             { $unwind: "$cartItems" },
             {
                 $group: {
-                    _id: { $toObjectId: "$cartItems.category" }, // Convert string to ObjectId
+                    _id: { $toObjectId: "$cartItems.category" },
                     totalSales: { $sum: "$cartItems.quantity" }
                 }
             },
             {
                 $lookup: {
-                    from: 'categories', // The collection name for categories
-                    localField: '_id', // Grouped category ID
-                    foreignField: '_id', // Field in categories
-                    as: 'categoryDetails' // Output array name
+                    from: 'categories',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'categoryDetails'
                 }
             },
             {
                 $unwind: {
                     path: "$categoryDetails",
-                    preserveNullAndEmptyArrays: true // Keep unmatched results
+                    preserveNullAndEmptyArrays: true
                 }
             },
             {
                 $project: {
                     _id: 1,
-                    name: "$categoryDetails.name", // Access the category name
+                    name: "$categoryDetails.name", 
                     totalSales: 1
                 }
             },
@@ -292,27 +278,22 @@ exports.generateLedger = async (req, res) => {
 
         doc.fontSize(20).text("Ledger Book", { align: 'center' }).moveDown();
 
-        // Table layout settings
         const tableTop = 150;
         const rowHeight = 35;
         const cellPadding = 5;
-        const columnWidths = [80, 120, 70, 70, 80, 80, 80]; // Set each column width
+        const columnWidths = [80, 120, 70, 70, 80, 80, 80];
         let leftMargin = 10;
 
         const headers = ["Order ID", "User", "Payment\nMethod", "Total\nPrice", "Offer\nDiscount", "Coupon\nDiscount", "Delivery\nCharge"];
         doc.fontSize(12).font('Helvetica-Bold');
 
         headers.forEach((header, i) => {
-            doc.rect(leftMargin, tableTop, columnWidths[i], rowHeight).stroke(); // Draw rectangle for each header cell
+            doc.rect(leftMargin, tableTop, columnWidths[i], rowHeight).stroke(); 
             doc.text(header, leftMargin + cellPadding, tableTop + cellPadding);
             leftMargin += columnWidths[i];
         });
 
-        // Draw a border below the header row
-        // doc.moveTo(40, tableTop + rowHeight).lineTo(40 + columnWidths.reduce((a, b) => a + b), tableTop + rowHeight).stroke();
-
-        // Populate rows with data and draw borders for each cell
-        let rowPosition = tableTop + rowHeight; // Start position for the first row
+        let rowPosition = tableTop + rowHeight;
         doc.fontSize(10).font('Helvetica');
 
         ledgerData.forEach(order => {
@@ -327,15 +308,15 @@ exports.generateLedger = async (req, res) => {
                 deliveryCharge
             ];
 
-            leftMargin = 10; // Reset left margin for each row
+            leftMargin = 10;
 
             rowData.forEach((data, i) => {
-                doc.rect(leftMargin, rowPosition, columnWidths[i], rowHeight).stroke(); // Draw border for each cell
-                doc.text(data, leftMargin + cellPadding, rowPosition + cellPadding); // Add cell text with padding
+                doc.rect(leftMargin, rowPosition, columnWidths[i], rowHeight).stroke(); 
+                doc.text(data, leftMargin + cellPadding, rowPosition + cellPadding);
                 leftMargin += columnWidths[i];
             });
 
-            rowPosition += rowHeight; // Move down for the next row
+            rowPosition += rowHeight;
         });
 
         doc.end();
@@ -346,7 +327,7 @@ exports.generateLedger = async (req, res) => {
                     console.error("Error downloading ledger:", err);
                     res.status(500).json({ message: "Error downloading ledger" });
                 }
-                fs.unlinkSync(filePath); // Clean up the file after sending
+                fs.unlinkSync(filePath); 
             });
         });
 

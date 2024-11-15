@@ -33,11 +33,17 @@ const sendOtpEmail = async (req,to) => {
 };
 
 const renderOtpForm = (req, res) => {
+    try{
     res.render('userSide/otpForm', { errorMessage: null });
+    }catch(error){
+        console.error('error returning otp form:',error);
+        res.status(500).json({ success: false, message: 'Failed to return OTP' });
+    }
 };
 
 
 const verifyOtp = async (req, res) => {
+    try{
     const { otp } = req.body;
     if (otp == req.session.otp) {
         const userData = {
@@ -55,19 +61,23 @@ const verifyOtp = async (req, res) => {
             errorMessage: 'Invalid OTP. Please try again.'
         });
     }
+    }catch(error){
+        console.error('error verifying otp',error);
+        res.status(500).json({ success: false, message: 'Failed to verify OTP' });
+    }
 };
 
 
 const resendOtp = async (req, res) => {
-    const newOtp = generateOtp();
-    req.session.otp = newOtp;
-    const email = req.session.email;
-
-    if (!email) {
-        return res.status(400).json({ success: false, message: 'Email not found in session' });
-    }
 
     try {
+        const newOtp = generateOtp();
+        req.session.otp = newOtp;
+        const email = req.session.email;
+    
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email not found in session' });
+        }    
         await sendOtpEmail(email, newOtp);
         res.json({ success: true });
     } catch (error) {

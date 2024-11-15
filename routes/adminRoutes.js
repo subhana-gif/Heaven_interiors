@@ -6,7 +6,6 @@ const noCache = require('../middleware/noCacheMiddleware');
 
 router.get('/login', adminController.renderLoginPage);  
 router.post('/login', adminController.handleLogin); 
-
 router.get('/', authMiddleware.isAdminAuthenticated,noCache, adminController.renderAdminPanel);
 router.get('/dashboard', authMiddleware.isAdminAuthenticated,noCache, (req, res) => {
     res.render('adminPanel', { body: 'admin/dashboard' });

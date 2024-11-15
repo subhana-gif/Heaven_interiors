@@ -44,15 +44,14 @@ exports.renderEditProductPage = async (req, res) => {
             return res.status(404).send('Product not found');
         }
         
-        const categories = await Category.find(); // Fetch categories here
-        res.render('editProduct', { product, categories }); // Pass categories to the view
+        const categories = await Category.find(); 
+        res.render('editProduct', { product, categories }); 
     } catch (err) {
         console.error('Error fetching product:', err);
         res.status(500).send('Server error');
     }
 };
 
-// Add Product
 exports.addProduct = async (req, res) => {
     try {
         const { name, description, price, category, stockQuantity, stockStatus } = req.body;
@@ -90,7 +89,6 @@ exports.addProduct = async (req, res) => {
     }
 };
 
-//Product Edit
 exports.editProduct = async (req, res) => {
     try {
         const productId = req.params.id;
@@ -115,7 +113,6 @@ exports.editProduct = async (req, res) => {
         const uploadedFiles = req.files.images; 
         if (uploadedFiles) {
             uploadedFiles.forEach((file, index) => {
-                // Replace the image at the specific index
                 if (index < product.images.length) {
                     const oldImage = product.images[index];
                     product.images[index] = file.path; 
@@ -138,7 +135,7 @@ exports.editProduct = async (req, res) => {
         await product.save();
         res.redirect('/adminPanel/products');
     } catch (err) {
-        console.error(err);
+        console.error('error edit product:',err);
         res.status(500).send('Server error');
     }
 };
@@ -154,12 +151,10 @@ exports.uploadImage = async(req, res) => {
                 const base64Data = croppedImages[i].replace(/^data:image\/\w+;base64,/, "");
                 const buffer = Buffer.from(base64Data, 'base64');
 
-                // Resize the image using sharp (e.g., to 500x500)
                 const resizedBuffer = await sharp(buffer)
-                    .resize(500, 500) // Resize to 500x500 or any size you prefer
+                    .resize(500, 500) 
                     .toBuffer();
 
-                // Save the resized image to the uploads folder
                 const fileName = `product_${Date.now()}_${i}.png`;
                 const filePath = path.join(__dirname, 'uploads', fileName);
                 await sharp(resizedBuffer).toFile(filePath);
@@ -170,12 +165,11 @@ exports.uploadImage = async(req, res) => {
 
         res.status(200).send('Images uploaded and processed successfully');
     } catch (error) {
-        console.error(error);
+        console.error('error uploading image:',error);
         res.status(500).send('Error processing images');
     }
 };
 
-// View Product Details
 exports.viewProduct = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id).populate('reviews');
@@ -186,7 +180,6 @@ exports.viewProduct = async (req, res) => {
     }
 };
 
-// Toggle Product Status
 exports.toggleProductStatus = async (req, res) => {
     try {
         const productId = req.params.id;
@@ -201,7 +194,6 @@ exports.toggleProductStatus = async (req, res) => {
     }
 };
 
-// Handle Product Deletion
 exports.deleteProduct = async (req, res) => {
     try {
         await Product.findByIdAndDelete(req.params.id);
@@ -217,10 +209,11 @@ const addDays = (date, days) => {
     result.setDate(result.getDate() + days);
     return result;
 };
+
 exports.updateSpecifications = async (req, res) => {
     const productId = req.params.id;
     const { highlights, specifications, deliveryDays } = req.body;
-    const orderDate = new Date(); // Use the actual order date in your case
+    const orderDate = new Date(); 
     const estimatedDelivery = addDays(orderDate,  parseInt(deliveryDays, 10)); 
     try {
         await Product.findByIdAndUpdate(productId, {
@@ -231,7 +224,7 @@ exports.updateSpecifications = async (req, res) => {
 
         res.redirect('/adminPanel/products'); 
     } catch (error) {
-        console.error(error);
+        console.error('error updating specification:',error);
         res.status(500).send('Server Error');
     }
 };

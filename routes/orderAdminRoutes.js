@@ -7,5 +7,6 @@ const nocache=require('../middleware/noCacheMiddleware')
 
 router.get('/orders', authMiddleware.isAdminAuthenticated,nocache,orderAdminController.getOrders);
 router.post('/orders/:id/status', orderAdminController.updateOrderStatus);
+router.post('/orders/:orderId/approveStatus',orderAdminController.approveStatus)
 
 module.exports = router;

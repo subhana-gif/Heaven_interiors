@@ -21,8 +21,8 @@ const couponSchema = new mongoose.Schema({
     },
     maxDiscountAmount: {
         type: Number,
-        default: null, // Maximum discount amount for percentage-based coupons
-        min: 0, // Ensure this value is positive
+        default: null, 
+        min: 0, 
     },
     expirationDate: {
         type: Date,
@@ -30,23 +30,23 @@ const couponSchema = new mongoose.Schema({
     },
     minimumPurchase: {
         type: Number,
-        default: 0, // Minimum cart total required to apply the coupon
-        min: 0, // Ensure this value is positive
+        default: 0, 
+        min: 0, 
     },
     usageLimit: {
         type: Number,
-        default: null, // Total times the coupon can be used (across all users)
-        min: 1, // Ensure this value is positive
+        default: null, 
+        min: 1, 
     },
     usedCount: {
         type: Number,
-        default: 0, // Number of times the coupon has been used
-        min: 0, // Ensure this value is positive
+        default: 0, 
+        min: 0,
     },
     userUsageLimit: {
         type: Number,
-        default: 1, // Number of times a single user can use the coupon
-        min: 1, // Ensure this value is positive
+        default: 1,
+        min: 1, 
     },
     usedCount: { 
         type: Number, 
@@ -63,14 +63,13 @@ const couponSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    description: { // Short description for the coupon
+    description: {
         type: String,
-        required: false, // Make this optional
+        required: false, 
         trim: true,
     },
 });
 
-// Middleware to update the updatedAt timestamp before saving
 couponSchema.pre('save', function (next) {
     this.updatedAt = Date.now();
     next();

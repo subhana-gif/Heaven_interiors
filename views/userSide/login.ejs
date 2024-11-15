@@ -29,11 +29,12 @@
         <input type="password" name="password" class="form-control" id="password" required>
       </div>
       
-      <a href="/auth/google" class="google-signin">
+      <button type="submit" class="btn btn-custom " style="background-color: green; margin-bottom: 1%;">Login</button>
+      
+      <a href="/auth/google" class="google-signin" style="background-color:green ;">
         <img src="https://th.bing.com/th?id=OIP.AfKMLf4rKX7EqOSAVpujIQHaEK&w=333&h=187&c=8&rs=1&qlt=90&o=6&dpr=1.5&pid=3.1&rm=2" 
         alt="Google Sign-In"> Sign in with Google</a>
-      <button type="submit" class="btn btn-custom " style="background-color: green;">Login</button>
-    
+
       <% if (errorMessage) { %>
         <div class="alert alert-danger" role="alert">
           <%= errorMessage %>

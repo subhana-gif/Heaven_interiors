@@ -1,26 +1,24 @@
-// config/delivery.js
 const deliveryChargesByDistance = {
-    local: 50,      // Within 10 km
-    regional: 100,  // Within 50 km
-    national: 150   // Beyond 50 km
+    local: 50,     
+    regional: 100,  
+    national: 150  
 };
 
 const storeLocation = {
-    pincode: "673637" // Store's base pincode
+    pincode: "673637"
 };
 
-// Function to calculate distance (simple estimation)
+// Function to calculate distance 
 function calculateDistance(customerPincode) {
     if (!customerPincode) {
-        return Infinity; // Return a high value for undefined inputs
+        return Infinity;
     }
 
-    // For simplicity, assume distance is based on numerical difference
     const storePincodeValue = parseInt(storeLocation.pincode, 10);
     const customerPincodeValue = parseInt(customerPincode, 10);
     
-    const distance = Math.abs(storePincodeValue - customerPincodeValue); // This is a simplified estimation
-        return distance; // Return the distance
+    const distance = Math.abs(storePincodeValue - customerPincodeValue); 
+        return distance; 
 }
 
 // Function to determine delivery charge based on distance
@@ -29,11 +27,11 @@ function calculateDeliveryCharge(customerPincode) {
 
     let charge;
     if (distance <= 10) {
-        charge = deliveryChargesByDistance.local; // Within 10 km
+        charge = deliveryChargesByDistance.local; 
     } else if (distance <= 50) {
-        charge = deliveryChargesByDistance.regional; // Within 50 km
+        charge = deliveryChargesByDistance.regional; 
     } else {
-        charge = deliveryChargesByDistance.national; // Beyond 50 km
+        charge = deliveryChargesByDistance.national; 
     }
 
 

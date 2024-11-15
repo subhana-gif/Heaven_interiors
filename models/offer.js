@@ -36,7 +36,6 @@ const offerSchema = new mongoose.Schema({
         required: true,
         validate: {
             validator: function (value) {
-                // Ensure startDate is less than endDate
                 return this.endDate && value < this.endDate;
             },
             message: 'Start date must be earlier than end date.'

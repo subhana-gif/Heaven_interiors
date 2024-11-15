@@ -1,6 +1,5 @@
 const Coupon = require('../models/coupon');
 
-// Get all coupons
 exports.getAllCoupons = async (req, res) => {
     const search = req.query.search ? req.query.search.trim() : '';
 
@@ -35,13 +34,12 @@ exports.getAllCoupons = async (req, res) => {
     }
 };
 
-// Add a new coupon
+
 exports.addCoupon = async (req, res) => {
     const { code, discountType, discountValue, expirationDate, usageLimit, minimumPurchase, description, active, search } = req.body;
     const today = new Date();
     const expDate = new Date(expirationDate);
 
-    // Fetch all coupons for rendering in case of errors
     const coupons = await Coupon.find({});
     const currentpage = parseInt(req.query.page) || 1;
     const limit = 5;
@@ -51,7 +49,6 @@ exports.addCoupon = async (req, res) => {
     const totalCoupons = await Coupon.countDocuments(searchQuery);
     const totalPages = Math.ceil(totalCoupons / limit);
 
-    // Check if expiration date is in the future
     if (expDate <= today) {
         return res.render('adminPanel', {
             body: 'admin/coupons',
@@ -65,7 +62,6 @@ exports.addCoupon = async (req, res) => {
     }
 
     try {
-        // Check if a coupon with the same code already exists
         const existingCoupon = await Coupon.findOne({ code });
         if (existingCoupon) {
             return res.render('adminPanel', {
@@ -98,14 +94,12 @@ exports.addCoupon = async (req, res) => {
     }
 };
 
-// Edit an existing coupon
 exports.editCoupon = async (req, res) => {
     const { id } = req.params;
     const { code, discountType, discountValue, expirationDate, usageLimit, minimumPurchase, description, active, search } = req.body;
     const today = new Date();
     const expDate = new Date(expirationDate);
 
-    // Fetch all coupons for rendering in case of errors
     const coupons = await Coupon.find({});
     const currentpage = parseInt(req.query.page) || 1;
     const limit = 5;
@@ -115,7 +109,6 @@ exports.editCoupon = async (req, res) => {
     const totalCoupons = await Coupon.countDocuments(searchQuery);
     const totalPages = Math.ceil(totalCoupons / limit);
 
-    // Check if expiration date is in the future
     if (expDate <= today) {
         return res.render('adminPanel', {
             body: 'admin/coupons',
@@ -134,7 +127,6 @@ exports.editCoupon = async (req, res) => {
             return res.status(404).send('Coupon not found');
         }
 
-        // Check if another coupon with the same code exists
         const existingCoupon = await Coupon.findOne({ code, _id: { $ne: id } });
         if (existingCoupon) {
             return res.render('adminPanel', {
@@ -148,7 +140,6 @@ exports.editCoupon = async (req, res) => {
             });
         }
 
-        // Update coupon fields
         coupon.code = code;
         coupon.discountType = discountType;
         coupon.discountValue = discountValue;
@@ -166,7 +157,6 @@ exports.editCoupon = async (req, res) => {
     }
 };
 
-// Apply coupon
 exports.applyCoupon = async (req, res) => {
     const { couponCode } = req.body;
     const totalPrice = req.session.totalPrice; 
@@ -191,7 +181,6 @@ exports.applyCoupon = async (req, res) => {
             return res.status(400).json({ success: false, message: `Minimum purchase amount should be ${coupon.minimumPurchase}` });
         }
 
-        // Calculate discount
         let discountAmount = 0;
         if (coupon.discountType === 'percentage') {
             discountAmount = (totalPrice * coupon.discountValue) / 100;
@@ -204,13 +193,13 @@ exports.applyCoupon = async (req, res) => {
     
         const newTotalPrice = totalPrice - discountAmount;        
         
-        req.session.totalPrice = newTotalPrice; // Update session
+        req.session.totalPrice = newTotalPrice;
         req.session.discountAmount = discountAmount; 
-        req.session.couponCode = couponCode; // Store coupon code in session
+        req.session.couponCode = couponCode; 
 
         if (coupon.usageLimit) {
-            coupon.usedCount = (coupon.usedCount || 0) + 1; // Increment usedCount
-            await coupon.save(); // Save changes to the coupon
+            coupon.usedCount = (coupon.usedCount || 0) + 1; 
+            await coupon.save();
         }
 
         return res.json({ success: true, message: 'Coupon applied successfully', newTotalPrice });
@@ -220,11 +209,15 @@ exports.applyCoupon = async (req, res) => {
     }
 };
 
-// Remove coupon
 exports.removeCoupon = (req, res) => {
-    const originalTotalPrice = req.session.originalTotalPrice; // Store the original price in session when applying coupon
-    req.session.totalPrice = originalTotalPrice; // Reset total price
+    try{
+    const originalTotalPrice = req.session.originalTotalPrice; 
+    req.session.totalPrice = originalTotalPrice;
     return res.json({ success: true, message: 'Coupon removed successfully', newTotalPrice: originalTotalPrice });
+    }catch(error){
+        console.error('error removing coupon',error);
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
 };
 
 exports.softDeleteCoupon = async (req, res) => {

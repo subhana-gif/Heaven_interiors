@@ -102,13 +102,11 @@
                         method: 'POST',
                         data: formData,
                         success: function(response) {
-                            alert('Address added successfully!');
                             // Reload the address list
                             $('#address-management-link').trigger('click');
                         },
                         error: function(err) {
                             console.error('Error adding address:', err);
-                            alert('Failed to add address.');
                         }
                     });
                 });

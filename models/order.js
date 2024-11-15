@@ -1,9 +1,6 @@
 const mongoose = require('mongoose');
 
-
-// Sub-schema for cart items
 const cartItemSchema = new mongoose.Schema({
-    // existing fields
     productId: { type: String, required: true },
     name: { type: String, required: true },
     price: { type: Number, required: true },
@@ -15,6 +12,8 @@ const cartItemSchema = new mongoose.Schema({
         default: 'Ordered'
     },
     image: { type: String, required: true },
+    returnReason: { type: String },  
+    cancellationReason: { type: String },  
     deliveredDate: { type: Date },
     statusHistory: [
         {
@@ -24,10 +23,14 @@ const cartItemSchema = new mongoose.Schema({
             },
             updatedAt: { type: Date, default: Date.now }
         }
-    ]
+    ],
+    userRequestStatus: {
+        type: String,
+        enum: ['None', 'Pending Approval', 'Approved', 'Rejected'],
+        default: 'None' 
+    }
 });
 
-// Main order schema
 const orderSchema = new mongoose.Schema({
     orderNumber: {
         type: String,
@@ -35,7 +38,7 @@ const orderSchema = new mongoose.Schema({
         required: true
     },
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    cartItems: [cartItemSchema],  // Array of items with individual statuses
+    cartItems: [cartItemSchema],  
     paymentMethod: { type: String, required: true },
     address: {
         name: { type: String, required: true },
@@ -52,6 +55,11 @@ const orderSchema = new mongoose.Schema({
         type: String,
         enum: ['Pending', 'Failed', 'Success'], 
         default: 'Pending'
+    },
+    status: { 
+        type: String, 
+        enum: ['Ordered', 'Shipped', 'Delivered', 'Cancelled', 'Returned', 'Payment Pending'],
+        default: 'Ordered'
     },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },

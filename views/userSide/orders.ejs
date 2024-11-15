@@ -97,34 +97,82 @@
 
     <%- include('../partials/user_navbar.ejs') %>
     
-    <div class="container-fluid">
+<div class="container-fluid">
         <div style="display: flex; justify-content: center; align-items: center; margin: 3%; color: green; font-family: Georgia, 'Times New Roman', Times, serif;">
             <h1>Your Orders</h1>
         </div>
     
         <ul class="nav nav-pills mb-3 justify-content-center" id="orderTabs" role="tablist">
-            <a class="nav-link active" id="ordered-tab" data-bs-toggle="tab" href="#ordered" role="tab" aria-controls="ordered" aria-selected="true">
+            <a class="nav-link active" id="ordered-tab" data-bs-toggle="tab" href="#ordered" role="tab" aria-controls="ordered" aria-selected="true" onclick="window.location.href='?tab=ordered'">
                 Ordered
             </a>
-            <a class="nav-link" id="shipped-tab" data-bs-toggle="tab" href="#shipped" role="tab" aria-controls="shipped" aria-selected="false">
+            <a class="nav-link" id="shipped-tab" data-bs-toggle="tab" href="#shipped" role="tab" aria-controls="shipped" aria-selected="false" onclick="window.location.href='?tab=shipped'">
                 Shipped
             </a>
-            <a class="nav-link" id="delivered-tab" data-bs-toggle="tab" href="#delivered" role="tab" aria-controls="delivered" aria-selected="false">
+            <a class="nav-link" id="delivered-tab" data-bs-toggle="tab" href="#delivered" role="tab" aria-controls="delivered" aria-selected="false" onclick="window.location.href='?tab=delivered'">
                 Delivered
             </a>
-            <a class="nav-link" id="cancelled-tab" data-bs-toggle="tab" href="#cancelled" role="tab" aria-controls="cancelled" aria-selected="false">
+            <a class="nav-link" id="cancelled-tab" data-bs-toggle="tab" href="#cancelled" role="tab" aria-controls="cancelled" aria-selected="false" onclick="window.location.href='?tab=cancelled'">
                 Cancelled
             </a>
-            <a class="nav-link" id="returned-tab" data-bs-toggle="tab" href="#returned" role="tab" aria-controls="returned" aria-selected="false">
+            <a class="nav-link" id="returned-tab" data-bs-toggle="tab" href="#returned" role="tab" aria-controls="returned" aria-selected="false" onclick="window.location.href='?tab=returned'">
                 Returned
             </a>
-            <a class="nav-link" id="failed-tab" data-bs-toggle="tab" href="#failed" role="tab" aria-controls="failed" aria-selected="false">
+            <a class="nav-link" id="failed-tab" data-bs-toggle="tab" href="#failed" role="tab" aria-controls="failed" aria-selected="false" onclick="window.location.href='?tab=failed'">
                 Pending
             </a>            
         </ul>
-    
+            
         <div class="container flex-grow-1">
             <div class="tab-content">
+
+<!-- Delivered Tab -->
+<div class="tab-pane fade" id="delivered" role="tabpanel" aria-labelledby="delivered-tab">
+    <h2>Delivered</h2>
+    <% let deliveredItemsExist = false; %>
+    <% deliveredOrders.forEach(order => { %>
+        <% order.cartItems
+            .filter(item => item.status === 'Delivered')
+            .forEach(item => { %>
+            <% deliveredItemsExist = true; %>
+            <div class="mb-2">
+                <div class="product-container">
+                    <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
+                    <div>
+                        <h6>
+                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
+                                Order ID: <%= order.orderNumber %>
+                            </a>
+                        </h6>
+                        <p><strong>Product:</strong> <%= item.name %></p>
+                        <p><strong>Quantity:</strong> <%= item.quantity %></p>
+                        <form action="/user/orders/returnForm/<%= order._id %>/<%= item.productId %>" method="GET" style="display:inline;">
+                            <% if (item.userRequestStatus === 'Pending Approval') { %>
+                                <p class="text-warning">Return Pending Approval</p>
+                            <% } else { %>
+                                <button class="btn btn-warning return-order-btn" data-order-id="<%= order._id %>">Return</button>
+                            <% } %>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    <% }) %>
+        <% if (!deliveredItemsExist) { %>
+        <p>No Delivered items to display.</p>
+    <% } %>
+    <div class="pagination">
+        <% if (deliveredPage > 1) { %>
+            <a href="?tab=delivered&deliveredPage=<%= deliveredPage - 1 %>">&laquo; Previous</a>
+        <% } %>
+        <% for (let i = 1; i <= totalDeliveredPages; i++) { %>
+            <a href="?tab=delivered&deliveredPage=<%= i %>" class="<%= deliveredPage === i ? 'active' : '' %>"><%= i %></a>
+        <% } %>
+        <% if (deliveredPage < totalDeliveredPages) { %>
+            <a href="?tab=delivered&deliveredPage=<%= deliveredPage + 1 %>">Next &raquo;</a>
+        <% } %>
+    </div>
+</div>
 
 <!-- Ordered Tab -->
 <div class="tab-pane fade show active" id="ordered" role="tabpanel" aria-labelledby="ordered-tab">
@@ -146,9 +194,14 @@
                         </h6>
                         <p><strong>Product:</strong> <%= item.name %></p>
                         <p><strong>Quantity:</strong> <%= item.quantity %></p>
+                        <p><strong>Ordered on:</strong> <%= new Date(order.createdAt).toDateString() %></p>
                         <p>Estimated delivery date: <%= new Date(order.createdAt.getTime() + 7 * 24 * 60 * 60 * 1000).toDateString() %></p>
                         <form action="/user/orders/cancellationForm/<%= order._id %>/<%= item.productId %>" method="GET" style="display:inline;">
-                            <button type="submit" class="btn btn-danger">Cancel This Product</button>
+                            <% if (item.userRequestStatus === 'Pending Approval') { %>
+                                <p class="text-warning">Cancellation Pending Approval</p>
+                            <% } else { %>
+                                <button class="btn btn-danger cancel-order-btn" data-order-id="<%= order._id %>">Cancel</button>
+                            <% } %>
                         </form>
                     </div>
                 </div>
@@ -160,13 +213,13 @@
     <% } %>
     <div class="pagination">
         <% if (orderedPage > 1) { %>
-            <a href="?orderedPage=<%= orderedPage - 1 %>">&laquo; Previous</a>
+            <a href="?tab=ordered&orderedPage=<%= orderedPage - 1 %>">&laquo; Previous</a>
         <% } %>
         <% for (let i = 1; i <= totalOrderedPages; i++) { %>
-            <a href="?orderedPage=<%= i %>" class="<%= orderedPage === i ? 'active' : '' %>"><%= i %></a>
+            <a href="?tab=ordered&orderedPage=<%= i %>" class="<%= orderedPage === i ? 'active' : '' %>"><%= i %></a>
         <% } %>
         <% if (orderedPage < totalOrderedPages) { %>
-            <a href="?orderedPage=<%= orderedPage + 1 %>">Next &raquo;</a>
+            <a href="?tab=ordered&orderedPage=<%= orderedPage + 1 %>">Next &raquo;</a>
         <% } %>
     </div>
 </div>
@@ -202,13 +255,13 @@
     <% } %>
     <div class="pagination">
         <% if (cancelledPage > 1) { %>
-            <a href="?cancelledPage=<%= cancelledPage - 1 %>">&laquo; Previous</a>
+            <a href="?tab=cancelled&cancelledPage=<%= cancelledPage - 1 %>">&laquo; Previous</a>
         <% } %>
         <% for (let i = 1; i <= totalCancelledPages; i++) { %>
-            <a href="?cancelledPage=<%= i %>" class="<%= cancelledPage === i ? 'active' : '' %>"><%= i %></a>
+            <a href="?tab=cancelled&cancelledPage=<%= i %>" class="<%= cancelledPage === i ? 'active' : '' %>"><%= i %></a>
         <% } %>
         <% if (cancelledPage < totalCancelledPages) { %>
-            <a href="?cancelledPage=<%= cancelledPage + 1 %>">Next &raquo;</a>
+            <a href="?tab=cancelled&cancelledPage=<%= cancelledPage + 1 %>">Next &raquo;</a>
         <% } %>
     </div>
 </div>
@@ -241,13 +294,13 @@
     <% } %>
     <div class="pagination">
         <% if (returnedPage > 1) { %>
-            <a href="?returnedPage=<%= returnedPage - 1 %>">&laquo; Previous</a>
+            <a href="?tab=returned&returnedPage=<%= returnedPage - 1 %>">&laquo; Previous</a>
         <% } %>
         <% for (let i = 1; i <= totalReturnedPages; i++) { %>
-            <a href="?returnedPage=<%= i %>" class="<%= returnedPage === i ? 'active' : '' %>"><%= i %></a>
+            <a href="?tab=returned&returnedPage=<%= i %>" class="<%= returnedPage === i ? 'active' : '' %>"><%= i %></a>
         <% } %>
         <% if (returnedPage < totalReturnedPages) { %>
-            <a href="?returnedPage=<%= returnedPage + 1 %>">Next &raquo;</a>
+            <a href="?tab=returned&returnedPage=<%= returnedPage + 1 %>">Next &raquo;</a>
         <% } %>
     </div>
 </div>
@@ -255,39 +308,47 @@
 <!-- pending tab -->
 <div class="tab-pane fade" id="failed" role="tabpanel" aria-labelledby="failed-tab">
     <h2>Pending</h2>
-    <% let pendingItemsExist = false; %>
+    <% let pendingOrdersExist = false; %>
     <% pendingOrders.forEach(order => { %>
-        <% order.cartItems.filter(item => item.status === 'Payment Pending').forEach(item => { %>
-            <% pendingItemsExist = true; %>
-            <div class="mb-2">
-                <div class="product-container">
-                    <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
-                    <div>
-                        <h6>
-                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
-                                Order ID: <%= order.orderNumber %>
-                            </a>
-                        </h6>
-                        <form onsubmit="event.preventDefault(); retryPayment('<%= order._id %>');" action="/user/orders/confirmation/<%= order._id %>">
-                            <button type="submit" class="btn btn-warning">Retry Payment</button>
-                        </form>
-                    </div>
+        <% if (order.status === 'Payment Pending') { %> <!-- Check order status directly -->
+            <% pendingOrdersExist = true; %>
+            <div class="order-container mb-3 p-3 border rounded">
+                <!-- Order Details and Product List -->
+                <h6>
+                    <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
+                        Order ID: <%= order.orderNumber %>
+                    </a>
+                </h6>
+                <div>
+                    <p style="font-size: large;"><strong>₹<%= order.totalPrice %></strong></p>
                 </div>
+                <div class="product-list mb-3">
+                    <% order.cartItems.forEach(item => { %>
+                        <div class="product-item d-flex align-items-center mb-2">
+                            <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                            <p class="mb-0"><%= item.name %></p>
+                        </div>
+                    <% }) %>
+                </div>
+                <!-- Retry Payment Button below the list -->
+                <form onsubmit="event.preventDefault(); retryPayment('<%= order._id %>');" action="/user/orders/confirmation/<%= order._id %>">
+                    <button type="submit" class="btn btn-warning w-100">Retry Payment</button>
+                </form>
             </div>
-        <% }) %>
+        <% } %>
     <% }) %>
-    <% if (!pendingItemsExist) { %>
-        <p>No Pending items to display.</p>
+    <% if (!pendingOrdersExist) { %>
+        <p>No Pending orders to display.</p>
     <% } %>
     <div class="pagination">
         <% if (pendingPage > 1) { %>
-            <a href="?pendingPage=<%= pendingPage - 1 %>">&laquo; Previous</a>
+            <a href="?tab=pending&pendingPage=<%= pendingPage - 1 %>">&laquo; Previous</a>
         <% } %>
         <% for (let i = 1; i <= totalPendingPages; i++) { %>
-            <a href="?pendingPage=<%= i %>" class="<%= pendingPage === i ? 'active' : '' %>"><%= i %></a>
+            <a href="?tab=pending&pendingPage=<%= i %>" class="<%= pendingPage === i ? 'active' : '' %>"><%= i %></a>
         <% } %>
         <% if (pendingPage < totalPendingPages) { %>
-            <a href="?pendingPage=<%= pendingPage + 1 %>">Next &raquo;</a>
+            <a href="?tab=pending&pendingPage=<%= pendingPage + 1 %>">Next &raquo;</a>
         <% } %>
     </div>
 </div>
@@ -323,65 +384,18 @@
     <% } %>
     <div class="pagination">
         <% if (shippedPage > 1) { %>
-            <a href="?shippedPage=<%= shippedPage - 1 %>">&laquo; Previous</a>
+            <a href="?tab=shipped&shippedPage=<%= shippedPage - 1 %>">&laquo; Previous</a>
         <% } %>
         <% for (let i = 1; i <= totalShippedPages; i++) { %>
-            <a href="?shippedPage=<%= i %>" class="<%= shippedPage === i ? 'active' : '' %>"><%= i %></a>
+            <a href="?tab=shipped&shippedPage=<%= i %>" class="<%= shippedPage === i ? 'active' : '' %>"><%= i %></a>
         <% } %>
         <% if (shippedPage < totalShippedPages) { %>
-            <a href="?shippedPage=<%= shippedPage + 1 %>">Next &raquo;</a>
+            <a href="?tab=shipped&shippedPage=<%= shippedPage + 1 %>">Next &raquo;</a>
         <% } %>
     </div>
 </div>
 
 
-<!-- Delivered Tab -->
-<div class="tab-pane fade" id="delivered" role="tabpanel" aria-labelledby="delivered-tab">
-    <h2>Delivered</h2>
-    <% let deliveredItemsExist = false; %>
-    <% deliveredOrders.forEach(order => { %>
-        <% order.cartItems
-            .filter(item => item.status === 'Delivered')
-            .forEach(item => { %>
-            <% deliveredItemsExist = true; %>
-            <div class="mb-2">
-                <div class="product-container">
-                    <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
-                    <div>
-                        <h6>
-                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
-                                Order ID: <%= order.orderNumber %>
-                            </a>
-                        </h6>
-                        <p><strong>Product:</strong> <%= item.name %></p>
-                        <p><strong>Quantity:</strong> <%= item.quantity %></p>
-                        <% if (item.status === 'Returned') { %>
-                            <span class="text-success">Returned</span>
-                        <% } else { %>
-                            <form action="/user/orders/returnForm/<%= order._id %>/<%= item.productId %>" method="GET" style="display:inline;">
-                                <button type="submit" class="btn btn-warning">Return This Product</button>
-                            </form>
-                        <% } %>
-                    </div>
-                </div>
-            </div>
-        <% }) %>
-    <% }) %>
-    <% if (!deliveredItemsExist) { %>
-        <p>No Delivered items to display.</p>
-    <% } %>
-    <div class="pagination">
-        <% if (deliveredPage > 1) { %>
-            <a href="?deliveredPage=<%= deliveredPage - 1 %>">&laquo; Previous</a>
-        <% } %>
-        <% for (let i = 1; i <= totalOrderedPages; i++) { %>
-            <a href="?deliveredPage=<%= i %>" class="<%= deliveredPage === i ? 'active' : '' %>"><%= i %></a>
-        <% } %>
-        <% if (deliveredPage < totalDeliveredPages) { %>
-            <a href="?deliveredPage=<%= deliveredPage + 1 %>">Next &raquo;</a>
-        <% } %>
-    </div>
-    </div>
     </div>
     </div>
 </div>
@@ -394,6 +408,24 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
+
+document.addEventListener("DOMContentLoaded", function() {
+        // Get the URL parameter for 'tab'
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab') || 'ordered'; // Default to 'ordered' if no tab specified
+
+        // Find the tab to activate
+        const activeTabLink = document.querySelector(`#orderTabs a[href="#${activeTab}"]`);
+        const activeTabPane = document.querySelector(`#${activeTab}`);
+
+        // Activate the tab link and pane
+        if (activeTabLink && activeTabPane) {
+            const tab = new bootstrap.Tab(activeTabLink);
+            tab.show(); // Show the active tab
+        }
+    });
+
+
          async function retryPayment(orderId) {
         try {
             // Fetch the Razorpay order details

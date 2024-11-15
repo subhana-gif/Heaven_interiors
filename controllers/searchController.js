@@ -6,9 +6,8 @@ const Offer = require ('../models/offer')
 exports.getSearchSuggestions = async (req, res) => {
     const query = req.query.q;
 
-    // Check for empty query
     if (!query) {
-        return res.json([]); // Return an empty array if no query
+        return res.json([]); 
     }
 
     try {
@@ -22,28 +21,25 @@ exports.getSearchSuggestions = async (req, res) => {
 
         res.json(suggestions);
     } catch (error) {
-        console.error(error);
+        console.error('error geting search',error);
         res.status(500).send('Server Error');
     }
 };
 
 
 exports.getSearchResults = async (req, res) => {
-    const query = req.query.q.trim(); // Trim whitespace from the query
+    const query = req.query.q.trim();
     const sort = req.query.sort;
 
     try {
         let results = [];
-
-        // If the query is empty or only spaces, retrieve all products
         if (query === '') {
-            results = await Product.find({}).populate('category'); // Get all products
+            results = await Product.find({}).populate('category');
         } else {
-            const searchRegex = new RegExp(query, 'i'); // Case-insensitive regex
+            const searchRegex = new RegExp(query, 'i');
             const categories = await Category.find({ name: { $regex: searchRegex } });
             const categoryIds = categories.map(category => category._id);
 
-            // Search products based on name or category
             results = await Product.find({
                 $or: [
                     { name: { $regex: searchRegex } },
@@ -51,6 +47,12 @@ exports.getSearchResults = async (req, res) => {
                 ]
             }).populate('category');
         }
+
+        results = results.filter(product => {
+            if (!product || product.isDelete) return false;
+            if (product.category && product.category.status !== 'active' && product.category.isDelete !== 'false') return false;
+            return true;
+        });
 
         for (const product of results) {
             const offer = await Offer.findOne({
@@ -63,19 +65,15 @@ exports.getSearchResults = async (req, res) => {
             });
 
             if (offer) {
-                // Calculate the discounted price
                 product.discountedPrice = offer.discountType === 'percentage'
                     ? product.price * (1 - offer.discountValue / 100)
                     : product.price - offer.discountValue;
-
-                // Format to two decimal places
                 product.discountedPrice = parseFloat(product.discountedPrice.toFixed(2));
             } else {
-                product.discountedPrice = null; // No discount available
+                product.discountedPrice = null;
             }
         }
 
-        // Process images
         results = results.map(product => {
             const productImagePath = product.images && product.images.length > 0
                 ? `/uploads/${product.images[0].split('\\').pop().split('/').pop()}`
@@ -84,11 +82,10 @@ exports.getSearchResults = async (req, res) => {
             return {
                 ...product._doc,
                 image: productImagePath,
-                discountedPrice: product.discountedPrice 
+                discountedPrice: product.discountedPrice
             };
         });
 
-        // Sort results if necessary
         if (results.length > 0 && sort) {
             switch (sort) {
                 case 'popularity':
@@ -123,7 +120,6 @@ exports.getSearchResults = async (req, res) => {
             }
         }
 
-        // Render the results page with the query and results
         res.render('userSide/searchResult', { query, results });
     } catch (err) {
         console.error(err);

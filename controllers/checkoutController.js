@@ -19,7 +19,7 @@ const { v4: uuidv4 } = require('uuid');
 
 function generateOrderNumber() {
     const prefix = 'OD';
-    const randomNumber = Math.floor(1000000000 + Math.random() * 9000000000); // Generates a random 10-digit number
+    const randomNumber = Math.floor(1000000000 + Math.random() * 9000000000);
     return `${prefix}${randomNumber}`;
 }
 
@@ -28,7 +28,7 @@ exports.getDeliveryCharge = async (req, res) => {
         const address = await Address.findById(req.params.addressId);
         if (address && address.pinCode) {
             const deliveryCharge = calculateDeliveryCharge(address.pinCode);
-            const cartTotal = req.session.totalPrice || 0; // Ensure this is set in the session
+            const cartTotal = req.session.totalPrice || 0; 
             
             res.json({
                 success: true,
@@ -53,7 +53,6 @@ exports.createOrder = async (req, res) => {
     }
 
     try {
-        // Step 1: Calculate discounted subtotal based on item prices and quantities
         let subtotal = 0;
         for (const item of cart) {
             const productFromDb = await Product.findById(item.productId);
@@ -61,7 +60,6 @@ exports.createOrder = async (req, res) => {
                 return res.status(404).json({ message: 'Product not found' });
             }
 
-            // Check for an active offer or fallback to discounted price if available
             const offer = await Offer.findOne({
                 $or: [
                     { offerType: 'product', relatedId: productFromDb._id },
@@ -76,12 +74,10 @@ exports.createOrder = async (req, res) => {
                     ? productFromDb.price * (1 - offer.discountValue / 100)
                     : productFromDb.price - offer.discountValue
                 : productFromDb.discountedPrice || productFromDb.price;
-            console.log('unit price',unitPrice);
             
             subtotal += unitPrice * item.quantity;
         }
 
-        // Step 2: Apply coupon deduction if a valid coupon is provided
         const couponCode = req.session.couponCode || null;
         if (couponCode) {
             const coupon = await Coupon.findOne({ code: couponCode, isDeleted: false, isActive: true, expirationDate: { $gte: Date.now() } });
@@ -91,28 +87,22 @@ exports.createOrder = async (req, res) => {
                 } else if (coupon.discountType === 'fixed') {
                     subtotal -= coupon.discountValue;
                 }
-                subtotal = Math.max(subtotal, 0); //
+                subtotal = Math.max(subtotal, 0); 
             }
         }
         
 
-        // Step 3: Add delivery charges (example: fixed delivery charge)
         const address = await Address.findById(selectedAddress);
         const deliveryCharge = calculateDeliveryCharge(address.pinCode)
-        console.log('delivery charge:',deliveryCharge);
         
 
-        // Step 4: Calculate final total after applying discounts and adding delivery charge
         const finalAmount = subtotal  + deliveryCharge;
-        console.log('final:',finalAmount);
-        console.log('subtotal:',subtotal);
         
         
-        // Create an order in Razorpay with the final amount in paisa (INR)
         const options = {
             amount: Math.round(finalAmount * 100), // Convert to paisa
             currency: "INR",
-            receipt: `receipt_order_${new Date().getTime()}` // Unique receipt ID
+            receipt: `receipt_order_${new Date().getTime()}`
         };
 
         const order = await razorpay.orders.create(options);
@@ -121,7 +111,7 @@ exports.createOrder = async (req, res) => {
             orderId: order.id,
             amount: order.amount,
             currency: order.currency,
-            key: process.env.RAZORPAY_KEY_ID, // Pass Razorpay key to client
+            key: process.env.RAZORPAY_KEY_ID, 
             discountedSubtotal: subtotal,
             deliveryCharge,
             finalAmount
@@ -138,35 +128,30 @@ exports.getCheckoutPage = async (req, res) => {
             return res.redirect('/user_login');
         }
 
-        // Initialize the cart if it doesn't exist
         if (!req.session.cart) {
             req.session.cart = [];
         }
 
-        // Fetch active coupons and wallet balance
         const coupons = await Coupon.find({ isDeleted: false, isActive: true, expirationDate: { $gte: Date.now() } });
         const wallet = await Wallet.findOne({ userId: req.user._id });
         const walletBalance = wallet ? wallet.balance : 0;
 
-        // Fetch user addresses
         const addresses = await Address.find({ userId: req.user._id });
 
-        // Get selected address from request body, if available
-        const selectedAddressId = req.body.selectedAddress; // Adjust this line based on how you are submitting the form
-        let deliveryCharge = 0; // Default delivery charge
-        let customerPincode = ''; // Default pincode
+        const selectedAddressId = req.body.selectedAddress;
+        let deliveryCharge = 0; 
+        let customerPincode = ''; 
 
         if (selectedAddressId) {
             const selectedAddress = await Address.findById(selectedAddressId);
             if (selectedAddress) {
-                customerPincode = selectedAddress.pinCode; // Use the pin code from the selected address
-                deliveryCharge = calculateDeliveryCharge(customerPincode); // Calculate delivery charge based on the pin code
+                customerPincode = selectedAddress.pinCode;
+                deliveryCharge = calculateDeliveryCharge(customerPincode);
             } else {
                 console.error("Selected address not found.");
             }
         }
 
-        // Fetch detailed cart items
         const detailedCart = await Promise.all(req.session.cart.map(async (item) => {
             const product = await Product.findById(item.productId);
             if (!product) return null;
@@ -175,7 +160,6 @@ exports.getCheckoutPage = async (req, res) => {
             const productImagePath = product.images.length > 0 ? `/uploads/${product.images[0].split('\\').pop().split('/').pop()}` : '/uploads/placeholder.jpg';
             let discountedPrice = product.price;
 
-            // Apply offer discounts if available
             if (offer) {
                 discountedPrice = offer.discountType === 'percentage' ? product.price * (1 - offer.discountValue / 100) : product.price - offer.discountValue;
                 discountedPrice = parseFloat(discountedPrice.toFixed(2));
@@ -186,10 +170,8 @@ exports.getCheckoutPage = async (req, res) => {
 
         const couponCode = req.session.couponCode || null;
 
-        // Calculate the total price before any coupon deduction
         let totalPrice = detailedCart.reduce((total, item) => total + (item.discountedPrice * item.quantity), 0);
 
-        // Check for the coupon and apply discount
         if (couponCode) {
             const coupon = await Coupon.findOne({ code: couponCode, isDeleted: false, isActive: true, expirationDate: { $gte: Date.now() } });
             if (coupon) {
@@ -198,14 +180,13 @@ exports.getCheckoutPage = async (req, res) => {
                 } else if (coupon.discountType === 'fixed') {
                     totalPrice -= coupon.discountValue;
                 }
-                totalPrice = Math.max(totalPrice, 0); // Ensure total price doesn't go negative
-                req.session.appliedCoupon = couponCode; // Store applied coupon code in session
+                totalPrice = Math.max(totalPrice, 0); 
+                req.session.appliedCoupon = couponCode; 
             }
         }
 
         req.session.totalPrice = totalPrice;
 
-        // Calculate final price including delivery charge
         const finalPrice = totalPrice + deliveryCharge; 
 
         let errorMessage = '';
@@ -251,7 +232,7 @@ exports.addAddress = async (req, res) => {
         req.session.successMessage = 'Address added successfully.';
         res.redirect('/user/checkout')
     } catch (error) {
-        console.error(error);
+        console.error('error adding address:',error);
         req.session.errorMessage = 'Error adding address.';
         res.status(500).json({ success: false, message: 'Error adding address.' });    }
 };
@@ -270,7 +251,7 @@ exports.editAddress = async (req, res) => {
         req.session.successMessage = 'Address updated successfully.';
         res.redirect('/user/checkout');
     } catch (error) {
-        console.error(error);
+        console.error('error editing address:',error);
         req.session.errorMessage = 'Error updating address.';
         res.redirect('/user/checkout');
     }
@@ -295,23 +276,21 @@ exports.placeOrder = async (req, res) => {
     try {
         const cart = req.session.cart || [];
 
-        // Validate cart items
         const validCartItems = await Promise.all(cart.map(async (item) => {
             const product = await Product.findById(item.productId);
             if (product && product.stock > 0) {
                 return {
                     ...item,
-                    quantity: Math.min(item.quantity, product.stock) // Use available stock
+                    quantity: Math.min(item.quantity, product.stock)
                 };
             }
-            return null; // Invalid item
+            return null;
         }));
 
         const filteredValidItems = validCartItems.filter(item => item !== null);
 
-        // If there are invalid items, return to cart with an error message
         if (filteredValidItems.length < cart.length) {
-            req.session.cart = filteredValidItems; // Update session cart
+            req.session.cart = filteredValidItems; 
             return res.render('userSide/cart', {
                 cart: filteredValidItems,
                 user: req.session.user,
@@ -336,8 +315,8 @@ exports.placeOrder = async (req, res) => {
         const customerPincode = address.pinCode;
         const deliveryCharge = calculateDeliveryCharge(customerPincode);
 
-        let orderStatus = 'Ordered'; // Default status
-        let paymentStatus = 'Failed'; // Default payment status
+        let orderStatus = 'Ordered';
+        let paymentStatus = 'Failed'; 
 
         if (paymentMethod === 'Razorpay') {
             const crypto = require('crypto');
@@ -346,9 +325,8 @@ exports.placeOrder = async (req, res) => {
             const generatedSignature = hmac.digest('hex');
         
             if (generatedSignature === razorpaySignature) {
-                paymentStatus = 'Success'; // Payment was successful
+                paymentStatus = 'Success';
             } else {
-                console.log('Razorpay payment verification failed');
             }
         }
 
@@ -402,20 +380,16 @@ exports.placeOrder = async (req, res) => {
 
         const finalTotalPrice = totalDiscountedPrice - discountAmount + deliveryCharge;
 
-        // Check for COD limit
         if (paymentMethod === 'COD' && finalTotalPrice > 1000) {
             return res.status(400);
         }
 
-        // Handle wallet payment if selected
         if (paymentMethod === 'Wallet') {
             const wallet = await Wallet.findOne({ userId: req.user._id });
             if (!wallet || wallet.balance < finalTotalPrice) {
-                console.log('Insufficient wallet balance');
                 return res.status(400);
             }
 
-            // Deduct balance from wallet and add transaction only if sufficient
             wallet.balance -= finalTotalPrice;
             wallet.transactions.push({
                 amount: finalTotalPrice,
@@ -426,7 +400,6 @@ exports.placeOrder = async (req, res) => {
             await wallet.save();
         }
 
-        // Create the order after payment verification
         const order = new Order({
             user: req.user._id,
             orderNumber,
@@ -458,7 +431,6 @@ exports.placeOrder = async (req, res) => {
             }
         }
 
-        // Clear session data after order completion
         req.session.cart = [];
         req.session.totalPrice = 0;
         req.session.couponCode = null;
@@ -487,13 +459,11 @@ exports.placeOrderPending = async (req, res) => {
         const orderNumber = generateOrderNumber();
 
         if (!selectedAddress) {
-            console.log('No address selected');
             return res.status(400).json({ error: "Address selection is required for order placement." });
         }
 
         const address = await Address.findById(selectedAddress);
         if (!address || !address.pinCode) {
-            console.log('Address validation failed');
             return res.status(400).json({ error: "Valid pincode is required for order placement." });
         }
 
@@ -505,16 +475,13 @@ exports.placeOrderPending = async (req, res) => {
         let totalDiscountFromOffers = 0;
         let totalDiscountedPrice = 0;
 
-        // Process cart items and apply discounts
         const detailedCart = await Promise.all(cart.map(async (item) => {
             const product = await Product.findById(item.productId);
             let discountedPrice = product.price;
             if (!product) {
-                console.log(`Product not found: ${item.productId}`);
                 throw new Error(`Product not found for ID: ${item.productId}`);
             }
 
-            // Find any valid offers for the product
             const offer = await Offer.findOne({
                 isDeleted: false,
                 $or: [
@@ -539,7 +506,6 @@ exports.placeOrderPending = async (req, res) => {
             totalDiscountedPrice += itemTotalDiscountedPrice;
             totalDiscountFromOffers += itemTotalOriginalPrice - itemTotalDiscountedPrice;
 
-            // Return the detailed cart item
             return {
                 ...item,
                 name: product.name,
@@ -557,11 +523,10 @@ exports.placeOrderPending = async (req, res) => {
         const deliveryCharge = calculateDeliveryCharge(address.pinCode);
         const finalTotalPrice = totalDiscountedPrice - discountAmount + deliveryCharge;
 
-        // Create the order with payment status as 'Failed' and status as 'Payment Pending'
         const order = new Order({
             user: req.user._id,
             orderNumber,
-            cartItems: detailedCart, // Use the detailed cart with updated statuses
+            cartItems: detailedCart,
             paymentMethod: 'Razorpay',
             address: {
                 name: address.name,
@@ -579,11 +544,9 @@ exports.placeOrderPending = async (req, res) => {
             paymentStatus: 'Failed',
         });
 
-        // Save the order
         await order.save();
 
         req.session.cart = [];
-        console.log('Order saved with pending status:', order._id);
         res.status(200).json({ message: 'Order saved with pending payment status', orderId: order._id });
     } catch (error) {
         console.error('Error handling pending order:', error);

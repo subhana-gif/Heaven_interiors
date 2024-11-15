@@ -8,13 +8,11 @@ exports.getOffers = async (req, res) => {
         const searchQuery = req.query.search || '';
         const searchOptions = searchQuery ? { title: { $regex: searchQuery, $options: 'i' } } : {};
 
-        const page = parseInt(req.query.page) || 1; // Current page, default is 1
-        const itemsPerPage = 5; // Number of items per page
+        const page = parseInt(req.query.page) || 1;
+        const itemsPerPage = 5; 
 
-        // Get total number of offers matching the search
         const totalOffers = await Offer.countDocuments(searchOptions);
 
-        // Fetch offers for the current page
         const offers = await Offer.find(searchOptions)
             .skip((page - 1) * itemsPerPage)
             .limit(itemsPerPage).sort({createdAt:-1});
@@ -31,7 +29,7 @@ exports.getOffers = async (req, res) => {
         }
         let errorMessage = '';
         
-        // Render the view with pagination data
+       
         res.render('adminPanel', {
             body: 'admin/offers',
             offers,
@@ -65,17 +63,17 @@ exports.addOffer = async (req, res) => {
         const categories = await Category.find();
 
         const existingOffer = await Offer.findOne({
-            title: { $regex: new RegExp('^' + title + '$', 'i') },  // Case-insensitive regex search
+            title: { $regex: new RegExp('^' + title + '$', 'i') }, 
         });
 
         if (existingOffer) {
             res.render('adminPanel', {
                 body: 'admin/offers',
                 offers,
-                offer: req.body,  // Send the entered data back so the form isn't reset
+                offer: req.body, 
                 search: req.body.title,
-                currentPage: 1,  // Default to page 1 if an error occurs
-                totalPages: 1,   // You can adjust this if you're paginating offers
+                currentPage: 1, 
+                totalPages: 1,  
                 products,
                 categories,
                 errorMessage: 'offer title already exists'  
@@ -99,10 +97,10 @@ exports.addOffer = async (req, res) => {
             return res.render('adminPanel', {
                 body: 'admin/offers',
                 offers,
-                offer: req.body,  // Send the entered data back so the form isn't reset
+                offer: req.body,
                 search: req.body.title,
-                currentPage: 1,  // Default to page 1 if an error occurs
-                totalPages: 1,   // You can adjust this if you're paginating offers
+                currentPage: 1, 
+                totalPages: 1,  
                 products,
                 categories,
                 errorMessage: 'Start date must be earlier than end date.'
@@ -119,13 +117,13 @@ exports.addOffer = async (req, res) => {
         res.render('adminPanel', {
             body: 'admin/offers',
             offers,
-            offer: req.body,  // Send the entered data back so the form isn't reset
+            offer: req.body, 
             search: req.body.title,
-            currentPage: 1,  // Default to page 1 if an error occurs
-            totalPages: 1,   // You can adjust this if you're paginating offers
+            currentPage: 1, 
+            totalPages: 1,  
             products,
             categories,
-            errorMessage: 'Offer name already exists'  // Pass the error message to be displayed
+            errorMessage: 'Offer name already exists' 
         });
     }
 };
@@ -143,47 +141,45 @@ exports.editOffer = async (req, res) => {
             endDate,
         } = req.body;
 
-        // Fetch existing offers, products, and categories for rendering the page
+        
         const offers = await Offer.find().sort({ createdAt: -1 });
         const products = await Product.find();
         const categories = await Category.find();
 
-        // Normalize the title to lowercase for case-insensitive comparison and check if title already exists
+        
         const existingOffer = await Offer.findOne({
-            title: { $regex: new RegExp('^' + title + '$', 'i') },  // Case-insensitive regex search
-            _id: { $ne: offerId }  // Ensure it's not the current offer being edited
+            title: { $regex: new RegExp('^' + title + '$', 'i') },  
+            _id: { $ne: offerId }  
         });
 
         if (existingOffer) {
             return res.render('adminPanel', {
                 body: 'admin/offers',
                 offers,
-                offer: { ...req.body },  // Retain form data and offer ID
+                offer: { ...req.body }, 
                 search: req.body.title,
                 currentPage: 1,
                 totalPages: 1,
                 products,
                 categories,
-                errorMessage: 'Offer title already exists'  // Display error message
+                errorMessage: 'Offer title already exists'  
             });
         }
 
-        // Check that the start date is earlier than the end date
         if (new Date(startDate) >= new Date(endDate)) {
             return res.render('adminPanel', {
                 body: 'admin/offers',
                 offers,
-                offer: req.body,  // Send the entered data back so the form isn't reset
+                offer: req.body,  
                 search: req.body.title,
-                currentPage: 1,  // Default to page 1 if an error occurs
-                totalPages: 1,   // You can adjust this if you're paginating offers
+                currentPage: 1,  
+                totalPages: 1,  
                 products,
                 categories,
                 errorMessage: 'Start date must be earlier than end date.'
             });
         }
 
-        // Update the offer if validation passes
         await Offer.findByIdAndUpdate(offerId, {
             title,
             offerType,

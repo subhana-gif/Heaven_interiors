@@ -159,10 +159,14 @@ th, td {
     <div id="notification"></div>
     
     <% if (errorMessage) { %>
-        <div class="alert alert-danger">
+        <div class="alert alert-danger <%= errorMessage === 'Cannot add more than available stock or maximum limit of 5' ? 'alert-dismissible fade show' : '' %>" role="alert">
             <%= errorMessage %>
+            <% if (errorMessage === 'Cannot add more than available stock or maximum limit of 5') { %>
+                <button type="button" class="btn-close" aria-label="Close" onclick="this.parentElement.style.display='none';"></button>
+            <% } %>
         </div>
     <% } %>
+    
 
     <% if (cart.length === 0) { %>
         <p>Your cart is empty.</p>

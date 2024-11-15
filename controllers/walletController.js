@@ -1,31 +1,39 @@
-const User = require('../models/User')
 const Wallet = require('../models/wallet')
-// walletController.js
 
 exports.renderWalletPage = async (req, res) => {
     const userId = req.user._id;
+    const page = parseInt(req.query.page) || 1; 
+    const pageSize = 5;  
 
     try {
         const wallet = await Wallet.findOne({ userId });
 
         if (!wallet) {
-            return res.render('userSide/wallet', { walletBalance: 0, transactions: [] });
+            return res.render('userSide/wallet', { walletBalance: 0, transactions: [], currentPage: page, totalPages: 1 });
         }
 
         const walletBalance = wallet.balance || 0;
 
-        // Fetch wallet transactions
-        const transactions = wallet.transactions || [];
-        transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        // Render the wallet page with balance and transaction data
-        res.render('userSide/wallet', { walletBalance, transactions });
+        const totalTransactions = wallet.transactions.length;
+        const totalPages = Math.ceil(totalTransactions / pageSize); 
+
+        const transactions = wallet.transactions
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .slice((page - 1) * pageSize, page * pageSize);  
+
+        res.render('userSide/wallet', { 
+            walletBalance, 
+            transactions, 
+            currentPage: page, 
+            totalPages 
+        });
     } catch (error) {
         console.error('Error fetching wallet data:', error);
         res.status(500).send("Internal Server Error");
     }
 };
 
-// Get wallet balance (for APIs if needed)
+
 exports.getWalletBalance = async (req, res) => {
     const userId = req.user._id;
 

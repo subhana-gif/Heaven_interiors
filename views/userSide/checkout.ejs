@@ -340,6 +340,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
     <!-- checkout.ejs -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const totalPrice = <%= totalPrice %>;
     const walletBalance = <%= walletBalance %>;
@@ -500,102 +501,114 @@ document.getElementById('rzp-button').onclick = async function (e) {
     const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
 
     if (paymentMethod === 'Razorpay') {
-    try {
-        
-        // Fetch order details from the backend
-        const response = await fetch('/user/checkout/createOrder', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ selectedAddress: document.querySelector('select[name="selectedAddress"]').value })
-        });
+        try {
+            // Fetch order details from the backend
+            const response = await fetch('/user/checkout/createOrder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ selectedAddress: document.querySelector('select[name="selectedAddress"]').value })
+            });
 
-        if (!response.ok) {
-            throw new Error('Failed to create Razorpay order');
+            if (!response.ok) {
+                throw new Error('Failed to create Razorpay order');
+            }
+
+            const data = await response.json();
+
+            const options = {
+                "key": data.key,
+                "amount": data.amount,
+                "currency": data.currency,
+                "name": "Heaven_interior",
+                "description": "Order Payment",
+                "image": "/images/Screenshot%202024-10-23%20075333.png",
+                "order_id": data.orderId,
+                "handler": function (response) {
+                    document.getElementById('razorpayPaymentId').value = response.razorpay_payment_id;
+                    document.getElementById('razorpayOrderId').value = response.razorpay_order_id;
+                    document.getElementById('razorpaySignature').value = response.razorpay_signature;
+                    document.getElementById('paymentForm').submit();
+                },
+                "modal": {
+                    ondismiss: function () {
+                        console.log('Payment modal closed');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Payment Failed',
+                            text: 'Payment was not completed. Please try again from pending orders.',
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const selectedAddressId = document.querySelector('select[name="selectedAddress"]').value;
+                                const orderData = {
+                                    paymentMethod: 'Razorpay',
+                                    selectedAddress: selectedAddressId,
+                                    razorpayPaymentId: null,
+                                    razorpayOrderId: null,
+                                    razorpaySignature: null
+                                };
+
+                                // Send the request to place the order with pending payment status
+                                fetch('/user/checkout/placeOrderPending', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(orderData)
+                                })
+                                .then(response => {
+                                    if (!response.ok) {
+                                        throw new Error('Network response was not ok');
+                                    }
+                                    return response.json();
+                                })
+                                .then(data => {
+                                    console.log('Order placed with pending payment status:', data);
+                                    window.location.href = '/user/orders'; // Redirect to orders page
+                                })
+                                .catch(error => {
+                                    console.error('Error placing order:', error);
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Order Error',
+                                        text: 'An error occurred while placing your order. Please try again.'
+                                    });
+                                });
+                            }
+                        });
+                    }
+                },
+                "prefill": {
+                    "name": "Customer Name",
+                    "email": "customer@example.com",
+                    "contact": "9999999999"
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+
+            const rzp1 = new Razorpay(options);
+            rzp1.open();
+
+        } catch (error) {
+            console.error('Error in initiating Razorpay payment:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Payment Initialization Failed',
+                text: 'Failed to initiate Razorpay payment. Please try again.',
+                confirmButtonText: 'OK'
+            });
         }
 
-        const data = await response.json();
-
-        const options = {
-            "key": data.key,
-            "amount": data.amount,
-            "currency": data.currency,
-            "name": "Heaven_interior",
-            "description": "Order Payment",
-            "image": "/images/Screenshot%202024-10-23%20075333.png",
-            "order_id": data.orderId,
-            "handler": function (response) {
-                document.getElementById('razorpayPaymentId').value = response.razorpay_payment_id;
-                document.getElementById('razorpayOrderId').value = response.razorpay_order_id;
-                document.getElementById('razorpaySignature').value = response.razorpay_signature;
-                document.getElementById('paymentForm').submit();
-            },
-"modal": {
-    ondismiss: function () {
-        console.log('Payment modal closed');
-        alert("Payment was not completed. Please try again.");
-        const selectedAddressId = document.querySelector('select[name="selectedAddress"]').value;
-        const paymentMethod = 'Razorpay';
-        const orderData = {
-            paymentMethod,
-            selectedAddress: selectedAddressId,
-            razorpayPaymentId: null, // No payment completed
-            razorpayOrderId: null,    // No order ID generated
-            razorpaySignature: null    // No signature
-        };
-
-        // Send the request to place the order with pending payment status
-        fetch('/user/checkout/placeOrderPending', { // Using Fetch API for a modern approach
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json', // Set content type to JSON
-            },
-            body: JSON.stringify(orderData), // Convert orderData to JSON
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Order placed with pending payment status:', data);
-            window.location.href = '/user/orders'; // Uncomment to redirect
-        })
-        .catch(error => {
-            console.error('Error placing order:', error);
-            // Handle error, show a message to the user
-            alert('An error occurred while placing your order. Please try again.');
-        });
+    } else {
+        // If COD or other payment methods are selected
+        document.getElementById('paymentForm').submit();
     }
-},
-            
-
-            "prefill": {
-                "name": "Customer Name",
-                "email": "customer@example.com",
-                "contact": "9999999999"
-            },
-            "theme": {
-                "color": "#3399cc"
-            }
-        };
-
-        const rzp1 = new Razorpay(options);
-        rzp1.open();
-
-    } catch (error) {
-        console.error('Error in initiating Razorpay payment:', error);
-        alert("Failed to initiate Razorpay payment. Please try again.");
-    }
-
-} else {
-    // If COD or other payment methods are selected
-    document.getElementById('paymentForm').submit();
 }
-}
+
 
 document.getElementById('applyCouponBtn').addEventListener('click', async function() {
     const couponCode = document.getElementById('couponDropdown').value;

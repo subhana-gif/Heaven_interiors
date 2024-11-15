@@ -5,20 +5,16 @@ const Wishlist = require('../models/wishlist')
 const Offer = require('../models/offer')
 
 exports.renderUserProductPage = async (req, res) => {
-    const page = parseInt(req.query.page) || 1; // Current page number
-    const limit = 9; // Items per page (3 rows x 3 products per row)
+    const page = parseInt(req.query.page) || 1;
+    const limit = 9;
     const skip = (page - 1) * limit;
+    const categoryName = req.query.category; 
+    let products, totalProducts;
 
     try {
-        const categoryName = req.query.category;
-        const categories = await Category.find({
-            status: 'active',
-            isDelete: false
-        });
-       let products, totalProducts;
+        const categories = await Category.find({ status: 'active', isDelete: false });
 
         if (categoryName) {
-            // Filter by category and apply pagination
             const category = await Category.findOne({ name: categoryName, status: 'active' });
             if (category) {
                 totalProducts = await Product.countDocuments({ category: category._id, isDelete: false });
@@ -30,29 +26,19 @@ exports.renderUserProductPage = async (req, res) => {
                 products = [];
             }
         } else {
-            // No category filter, fetch all active categories with pagination
-            const activeCategories = await Category.find({ status: 'active' }).select('_id');
+            const activeCategories = await Category.find({ status: 'active', isDelete: false }).select('_id');
             totalProducts = await Product.countDocuments({ category: { $in: activeCategories }, isDelete: false });
             products = await Product.find({ category: { $in: activeCategories }, isDelete: false })
                 .skip(skip)
                 .limit(limit);
         }
 
-        const totalPages = Math.ceil(totalProducts / limit);
-
         for (const product of products) {
             const offer = await Offer.findOne({
-                $and: [
-                    { isDeleted: false },
-                    {
-                        $or: [
-                            { offerType: 'product', relatedId: product._id },
-                            { offerType: 'category', relatedId: product.category._id }
-                        ]
-                    },
-                    { startDate: { $lte: new Date() } },
-                    { endDate: { $gte: new Date() } }
-                ]
+                isDeleted: false,
+                $or: [{ offerType: 'product', relatedId: product._id }, { offerType: 'category', relatedId: product.category._id }],
+                startDate: { $lte: new Date() },
+                endDate: { $gte: new Date() }
             });
 
             if (offer) {
@@ -60,9 +46,9 @@ exports.renderUserProductPage = async (req, res) => {
                     ? product.price * (1 - offer.discountValue / 100)
                     : product.price - offer.discountValue;
 
-                product.discountedPrice = product.discountedPrice.toFixed(2); // Format to two decimal places
+                product.discountedPrice = product.discountedPrice.toFixed(2);
             } else {
-                product.discountedPrice = null; // No discount available
+                product.discountedPrice = null;
             }
         }
 
@@ -72,20 +58,28 @@ exports.renderUserProductPage = async (req, res) => {
 
         if (userId) {
             const userWishlist = await Wishlist.findOne({ userId });
-
             if (userWishlist && userWishlist.products) {
-                wishlist = userWishlist.products.map(p => p.toString());  // Convert ObjectIds to strings for easier comparison
+                wishlist = userWishlist.products.map(p => p.toString());
             }
         }
 
-        res.render('userSide/shop', { products, user, totalPages, currentPage: page, isAuthenticated: !!req.session.user, wishlist, categories });
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        res.render('userSide/shop', {
+            products,
+            user,
+            totalPages,
+            currentPage: page,
+            isAuthenticated: !!req.session.user,
+            wishlist,
+            categories,
+            categoryName 
+        });
     } catch (error) {
         console.error("Error fetching products:", error);
         res.status(500).send("Internal Server Error");
     }
 };
-
-
 
 exports.filterProducts = async (req, res) => {
     const { selectedCategories, sort, page = 1 } = req.body;
@@ -97,7 +91,6 @@ exports.filterProducts = async (req, res) => {
         : {};
 
     try {
-        // Define sort options directly in MongoDB query
         let sortOptions = {};
         switch (sort) {
             case 'popularity':
@@ -126,7 +119,6 @@ exports.filterProducts = async (req, res) => {
         const totalProducts = await Product.countDocuments(categoryFilter);
         const totalPages = Math.ceil(totalProducts / limit);
 
-        // Apply offer logic in parallel
         const productsWithOffers = await Promise.all(
             products.map(async (product) => {
                 const offer = await Offer.findOne({
@@ -151,27 +143,28 @@ exports.filterProducts = async (req, res) => {
             })
         );
 
-        res.json({ products: productsWithOffers, totalPages, currentPage: page });
+        res.json({
+            products: productsWithOffers,
+            totalPages,
+            currentPage: page
+        });
     } catch (error) {
         console.error('Error filtering products:', error);
         res.status(500).json({ error: 'Server Error' });
     }
 };
 
-
 exports.viewProduct = async (req, res) => {
     try {
         const productId = req.params.id;
         const product = await Product.findById(productId).populate('category');
         
-        // If no product found or is deleted, return 404
-        if (!product || product.isDelete || (product.category && product.category.status !== 'active')) {
+        if (!product || product.isDelete || (product.category && (product.category.isDelete || product.category.status !== 'active')) ){
             return res.status(404).send('Product not found');
         }
 
         const selectedAddressId = req.session.selectedAddressId || null;
         
-        // Find any applicable offer
         const offer = await Offer.findOne({
             $and: [
                 { isDeleted: false },
@@ -186,17 +179,15 @@ exports.viewProduct = async (req, res) => {
             ]
         });
 
-        // Calculate discounted price if there's an offer
         let discountedPrice = null;
         if (offer) {
             discountedPrice = offer.discountType === 'percentage'
                 ? product.price * (1 - offer.discountValue / 100)
-                : Math.max(0, product.price - offer.discountValue); // Prevent negative prices
+                : Math.max(0, product.price - offer.discountValue);
         }
 
         const source = req.query.source || 'shop'; 
         
-        // Fetch related products only if category exists
         const relatedProducts = product.category
             ? await Product.find({
                 _id: { $ne: product._id },
@@ -204,7 +195,6 @@ exports.viewProduct = async (req, res) => {
             }).limit(4)
             : [];
 
-        // Render product page
         res.render('userSide/viewProduct', {
             product,
             relatedProducts,

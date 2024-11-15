@@ -1,7 +1,6 @@
 const Category = require('../models/category');
 const Product = require('../models/productModal');
 
-// home page
 const renderHomePage = async (req, res) => {
     try {
         const categories = await Category.find();

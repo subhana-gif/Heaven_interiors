@@ -11,17 +11,16 @@ exports.addToCart = async (req, res) => {
         const productId = req.params.id;
         const quantity = req.body.quantity || 1;
         let cart = req.session.cart || [];
+        let outOfStockItems = [];
 
-        const pageSize = 5; // Items per page
-        const currentPage = parseInt(req.query.page) || 1; // Current page from query or default to 1
-        const totalItems = cart.length; // Total items in cart
-        const totalPages = Math.ceil(totalItems / pageSize); // Total number of pages
+        const pageSize = 5;
+        const currentPage = parseInt(req.query.page) || 1; 
+        const totalItems = cart.length; 
+        const totalPages = Math.ceil(totalItems / pageSize); 
 
-        // Calculate start and end indexes for pagination
         const startIndex = (currentPage - 1) * pageSize;
         const endIndex = Math.min(startIndex + pageSize, totalItems);
-        const paginatedCart = cart.slice(startIndex, endIndex); // Get the items for the current page
-
+        const paginatedCart = cart.slice(startIndex, endIndex);
 
         const product = await Product.findById(productId);
         if (!product) {
@@ -32,10 +31,10 @@ exports.addToCart = async (req, res) => {
             const product = await Product.findById(item.productId); 
           
             if (product.stock < item.quantity) {
-                item.quantity = product.stock; // Update to available stock level
+                item.quantity = product.stock; 
             }
             if (product.stock === 0) {
-                outOfStockItems.push(product.name); // Add out of stock product name to the array
+                outOfStockItems.push(product.name);
             }
 
 
@@ -76,8 +75,8 @@ exports.addToCart = async (req, res) => {
                 cart[existingProductIndex].quantity = newQuantity;
             }else {
                 return res.render('userSide/cart', {
-                    currentPage, // Pass current page to the template
-                    totalPages, // Pass total pages to the template        
+                    currentPage, 
+                    totalPages,         
                     cart:detailedCart,
                     totalPrice,
                     errorMessage: 'Cannot add more than available stock or maximum limit of 5'
@@ -101,7 +100,7 @@ exports.addToCart = async (req, res) => {
         await Cart.findOneAndUpdate(
             { userId: req.user._id }, 
             { items: cart }, 
-            { upsert: true } // Create document if it doesn't exist
+            { upsert: true } 
         );
 
         res.redirect('/user/cart');
@@ -123,7 +122,6 @@ exports.updateCart = async (req, res) => {
             return res.status(404).json({ error: 'Product not found.' });
         }
 
-        // Fetch any applicable offer for the product
         const offer = await Offer.findOne({
             $or: [
                 { offerType: 'product', relatedId: productFromDb._id },
@@ -133,22 +131,19 @@ exports.updateCart = async (req, res) => {
             endDate: { $gte: new Date() }
         });
 
-        // Calculate the unit price with discount if offer exists
         let unitPrice = productFromDb.price;
         if (offer) {
             unitPrice = offer.discountType === 'percentage'
                 ? productFromDb.price * (1 - offer.discountValue / 100)
                 : productFromDb.price - offer.discountValue;
-            unitPrice = parseFloat(unitPrice.toFixed(2)); // Format to two decimal places
+            unitPrice = parseFloat(unitPrice.toFixed(2));
         } else if (productFromDb.discountedPrice) {
-            // Fallback to product's existing discountedPrice if no offer is active
             unitPrice = productFromDb.discountedPrice;
         }
 
         const stockLeft = productFromDb.stock;
         const productInCart = cart.find(item => item.productId.toString() === productId);
 
-        // Adjust quantity based on the action (increase or decrease)
         if (productInCart) {
             if (action === 'increase') {
                 if (productInCart.quantity < stockLeft && productInCart.quantity < 5) {
@@ -164,7 +159,6 @@ exports.updateCart = async (req, res) => {
                 productInCart.quantity -= 1;
             }
         } else {
-            // Add the product if not already in cart, respecting stock limits
             if (stockLeft > 0) {
                 cart.push({ productId: productId, quantity: 1 });
             }
@@ -208,17 +202,18 @@ exports.updateCart = async (req, res) => {
         res.json({
             newQuantity: updatedQuantity,
             stock: stockLeft,
-            itemTotalPrice: updatedQuantity * unitPrice, // total for the updated item
-            cartTotalPrice: parseFloat(cartTotalPrice.toFixed(2)) // total for the entire cart
+            itemTotalPrice: updatedQuantity * unitPrice,
+            cartTotalPrice: parseFloat(cartTotalPrice.toFixed(2)) 
         });
 
     } catch (error) {
-        console.error(error);
+        console.error('error updating cart:',error);
         res.status(500).json({ error: 'Server Error' });
     }
 };
 
 exports.removeFromCart = async(req, res) => {
+    try{
     const productId = req.params.id;
     let cart = req.session.cart || [];
 
@@ -231,6 +226,10 @@ exports.removeFromCart = async(req, res) => {
     );
     
     res.redirect('/user/cart');
+} catch (error) {
+    console.error('error removing from cart:',error);
+    res.status(500).send('Server error');
+}
 };
 
 exports.renderCart = async (req, res) => {
@@ -241,34 +240,30 @@ exports.renderCart = async (req, res) => {
     try {
         let cart = req.session.cart;
 
-        // Load from database if not in session
         if (!cart) {
             const userCart = await Cart.findOne({ userId: req.user._id });
             cart = userCart ? userCart.items : [];
-            req.session.cart = cart; // Save to session for further use
+            req.session.cart = cart;
         }
 
-        // Pagination logic
-        const pageSize = 5; // Items per page
-        const currentPage = parseInt(req.query.page) || 1; // Current page from query or default to 1
-        const totalItems = cart.length; // Total items in cart
-        const totalPages = Math.ceil(totalItems / pageSize); // Total number of pages
+        const pageSize = 5;
+        const currentPage = parseInt(req.query.page) || 1;
+        const totalItems = cart.length;
+        const totalPages = Math.ceil(totalItems / pageSize); 
 
-        // Calculate start and end indexes for pagination
         const startIndex = (currentPage - 1) * pageSize;
         const endIndex = Math.min(startIndex + pageSize, totalItems);
-        const paginatedCart = cart.slice(startIndex, endIndex); // Get the items for the current page
+        const paginatedCart = cart.slice(startIndex, endIndex);
 
         let outOfStockItems = [];
-        // Map through the paginated cart items to get detailed information
         const detailedCart = await Promise.all(paginatedCart.map(async (item) => {
             const product = await Product.findById(item.productId); 
           
             if (product.stock < item.quantity) {
-                item.quantity = product.stock; // Update to available stock level
+                item.quantity = product.stock;
             }
             if (product.stock === 0) {
-                outOfStockItems.push(product.name); // Add out of stock product name to the array
+                outOfStockItems.push(product.name); 
             }
 
 
@@ -308,7 +303,6 @@ exports.renderCart = async (req, res) => {
             errorMessage = 'Some products are out of stock Please Remove it from your cart.';
         }
 
-        // Render the cart page with pagination data
         res.render('userSide/cart', {
             cart: detailedCart,
             totalPrice,
@@ -316,10 +310,10 @@ exports.renderCart = async (req, res) => {
             addresses,
             currentPage,
             errorMessage,
-            totalPages // Pass total pages to the template
+            totalPages
         });
     } catch (error) {
-        console.error(error);
+        console.error('error rendering cart:',error);
         res.status(500).send('Server error');
     }
 };

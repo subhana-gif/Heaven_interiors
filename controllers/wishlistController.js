@@ -1,7 +1,6 @@
 const Wishlist = require('../models/wishlist'); 
 const Offer = require('../models/offer')
 
-// Add to Wishlist
 exports.addToWishlist = async (req, res) => {
     const { productId } = req.params;
     const userId = req.user._id; 
@@ -38,7 +37,6 @@ exports.removeFromWishlist = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Wishlist not found' });
         }
 
-        // Remove the product from the wishlist
         wishlist.products.pull(productId);
         await wishlist.save();
 
@@ -50,21 +48,26 @@ exports.removeFromWishlist = async (req, res) => {
 };
 
 
-// Get Wishlist
 exports.getWishlist = async (req, res) => {
-    const page = parseInt(req.query.page) || 1; // Current page
-    const limit = 4; // Number of items per page
+    const page = parseInt(req.query.page) || 1; 
+    const limit = 4;
     const skip = (page - 1) * limit;
 
     try {
         const userId = req.session.user._id;
-
-        // Find the wishlist without pagination first to get the total count
         const wishlist = await Wishlist.findOne({ userId }).lean();
-        const totalItems = wishlist.products.length; // Total products in wishlist
+        if (!wishlist || wishlist.products.length === 0) {
+            return res.render('userSide/wishlist', { 
+                wishlist: [], 
+                message: 'Your wishlist is empty.', 
+                totalPages: 0, 
+                currentPage: page 
+            });
+        }
+
+        const totalItems = wishlist.products.length;
         const totalPages = Math.ceil(totalItems / limit);
 
-        // Fetch paginated products with skip and limit
         const paginatedWishlist = await Wishlist.findOne({ userId })
             .populate({
                 path: 'products',
@@ -72,7 +75,6 @@ exports.getWishlist = async (req, res) => {
             })
             .lean();
 
-        // Calculate discounted prices for each product
         const wishlistWithPrices = await Promise.all(paginatedWishlist.products.map(async (product) => {
             const offer = await Offer.findOne({
                 $and: [
@@ -102,9 +104,8 @@ exports.getWishlist = async (req, res) => {
             };
         }));
 
-        // Render the wishlist page with the updated wishlist items
         res.render('userSide/wishlist', { 
-            wishlist: wishlistWithPrices, // Paginated products with prices
+            wishlist: wishlistWithPrices, 
             totalPages, 
             currentPage: page 
         });
@@ -119,7 +120,6 @@ exports.toggleWishlist = async (req, res) => {
     const userId = req.user._id;
 
     try {
-        // Find or create a wishlist for the user
         let wishlist = await Wishlist.findOne({ userId });
         if (!wishlist) {
             wishlist = new Wishlist({ userId, products: [] });
@@ -128,9 +128,9 @@ exports.toggleWishlist = async (req, res) => {
         const isInWishlist = wishlist.products.includes(productId.toString());
 
         if (isInWishlist) {
-            wishlist.products.pull(productId); // Remove from wishlist
+            wishlist.products.pull(productId);
         } else {
-            wishlist.products.push(productId); // Add to wishlist
+            wishlist.products.push(productId); 
         }
 
         await wishlist.save();

@@ -67,8 +67,6 @@ exports.addCategory = async (req, res) => {
     } catch (err) {
         console.error('Error saving category:', err);
 
-
-
         // duplicate key error
         if (err.code === 11000) { 
             return res.render('adminPanel', {
@@ -93,8 +91,6 @@ exports.addCategory = async (req, res) => {
 };
 
 
-
-
 // Edit Category
 exports.editCategory = async (req, res) => {
     try {
@@ -106,7 +102,7 @@ exports.editCategory = async (req, res) => {
         });
         res.redirect('/adminPanel/category');
     } catch (err) {
-        console.error(err);
+        console.error('error editing:',err);
         res.status(500).send('Server Error');
     }
 };

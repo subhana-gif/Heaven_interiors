@@ -5,13 +5,17 @@ const bcrypt = require('bcrypt');
 const Cart=require('../models/cart')
 const { sendOtpEmail } = require('./otpController'); 
 
-// Render login page
 const renderUserLogin = (req, res) => {
-    res.render('userSide/login', { errorMessage: null, successMessage: null });
+    try{
+        res.render('userSide/login', { errorMessage: null, successMessage: null });
+    }catch(error){
+        console.error('error rendering user login',error);
+        res.status(500).send('Server Error');
+    }
 };
 
-// Render signup page
 const renderUserSignup = (req, res) => {
+    try{
     const { errorMessage, email, username } = req.query;
     res.render('userSide/signup', {
         errorMessage: errorMessage || null,
@@ -19,9 +23,12 @@ const renderUserSignup = (req, res) => {
         email: email || '',
         username: username || ''
     });
+}catch(error){
+    console.error('error rendering user signup',error);
+    res.status(500).send('Server Error');
+}
 };
 
-// Handle user login
 const handleUserLogin = async (req, res) => {
     const { email, password } = req.body;
 
@@ -65,7 +72,6 @@ const handleUserLogin = async (req, res) => {
     }
 };
 
-// Handle user signup
 const handleUserSignup = async (req, res) => {
 
     const { email, username, password, confirmPassword } = req.body;
@@ -109,6 +115,7 @@ const handleUserSignup = async (req, res) => {
 
 
 const handleUserLogout = (req, res) => {
+    try{
     req.session.destroy(err => {
         if (err) {
             console.error('Error during logout:', err);
@@ -117,15 +124,22 @@ const handleUserLogout = (req, res) => {
         res.clearCookie('connect.sid');  
         return res.redirect('/user/user_login');
     });
+    }catch(error){
+        console.error('error handling logout',error);
+        res.status(500).send('Server Error');
+    }
 };
 
 
 const renderForgotPassword = (req, res) => {
-    
-    res.render('userSide/forgetPassword', { errorMessage: null, successMessage: null });
+    try{
+        res.render('userSide/forgetPassword', { errorMessage: null, successMessage: null });
+    }catch(error){
+        console.error('error rendering forget password page',error);
+        res.render('userSide/forgetPassword', { errorMessage: null, successMessage: null });        
+    }
 };
 
-// Handle forgot password (send reset email)
 const handleForgotPassword = async (req, res) => {
     const { email } = req.body;
     try {
@@ -137,7 +151,6 @@ const handleForgotPassword = async (req, res) => {
             });
         }
 
-        // Create password reset token
         const token = crypto.randomBytes(20).toString('hex');
         const resetTokenExpiry = Date.now() + 3600000; 
         user.resetPasswordToken = token;
@@ -181,7 +194,6 @@ const handleForgotPassword = async (req, res) => {
     }
 };
 
-// Render reset password page
 const renderResetPassword = async (req, res) => {
     const { token } = req.params;
     try {
@@ -213,7 +225,6 @@ const renderResetPassword = async (req, res) => {
     }
 };
 
-// Handle password reset
 const handleResetPassword = async (req, res) => {
     const { token } = req.params;
     const { password, confirmPassword } = req.body;
@@ -242,7 +253,6 @@ const handleResetPassword = async (req, res) => {
         }
 
 
-        // Hash and set the new password
         user.password = password;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;

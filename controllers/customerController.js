@@ -30,7 +30,7 @@ exports.renderCustomerPage = async (req, res) => {
             totalPages  
         });
     } catch (error) {
-        console.error(error);
+        console.error('error rendering page:',error);
         res.status(500).send('Server Error');
     }
 };

@@ -68,25 +68,20 @@ exports.getPersonalInformation = async (req, res) => {
 <div id="message-box" style="display:none; margin-top:20px;"></div>
 
 <script>
-    // Handle the "Edit" button click to show the form
     document.getElementById('edit-button').onclick = function() {
-        // Populate input fields with current user information
         document.getElementById('edit-username').value = document.getElementById('user-username').textContent;
         document.getElementById('edit-profile-form').style.display = 'block';
-        this.style.display = 'none'; // Hide the edit button
+        this.style.display = 'none';
     };
 
-    // Handle the "Cancel" button to hide the form
     document.getElementById('cancel-button').onclick = function() {
         document.getElementById('edit-profile-form').style.display = 'none';
-        document.getElementById('edit-button').style.display = 'inline'; // Show edit button again
+        document.getElementById('edit-button').style.display = 'inline'; 
     };
 
-    // Add event listener for form submission and handle response
     document.getElementById('edit-profile-form').onsubmit = async function(event) {
-        event.preventDefault(); // Prevent default form submission
+        event.preventDefault(); 
 
-        // Extract form data
         const formData = new FormData(this);
         const data = Object.fromEntries(formData.entries());
 
@@ -99,7 +94,6 @@ exports.getPersonalInformation = async (req, res) => {
 
             const result = await response.text();
 
-            // Show feedback message
             const messageBox = document.getElementById('message-box');
             messageBox.style.display = 'block';
 
@@ -111,7 +105,6 @@ exports.getPersonalInformation = async (req, res) => {
                 messageBox.style.color = 'red';
             }
 
-            // Optionally hide the form and show the edit button again
             document.getElementById('edit-profile-form').style.display = 'none';
             document.getElementById('edit-button').style.display = 'inline';
         } catch (error) {
@@ -132,14 +125,12 @@ exports.updateProfile = async (req, res) => {
     const userId = req.user._id;     
 
     try {
-        // Fetch the user by ID
         const user = await User.findById(userId);
 
         if (!user) {
             return res.status(404).send('User not found');
         }
 
-        // Check if the old password matches the hashed password in the database
         const isMatch = await bcrypt.compare(oldPassword, user.password);
         if (!isMatch) {
             return res.status(400).send('Old password is incorrect');
@@ -148,7 +139,6 @@ exports.updateProfile = async (req, res) => {
         user.username = username;
         user.password = newPassword; 
 
-        // Save the updated user information
         await user.save();
         res.send('Profile updated successfully');
     } catch (error) {
@@ -166,7 +156,6 @@ exports.getUserAddresses = async (req, res) => {
         const userId = req.user._id;
         const addresses = await Address.find({ userId });
 
-        // HTML for "Add New Address" form at the top
         let addressesHtml = `
             <h4 style="color:green">Add New Address</h4>
             <form id="new-address-form" onsubmit="return validateNewAddress()">
@@ -181,7 +170,6 @@ exports.getUserAddresses = async (req, res) => {
             <h3 style="color:green">Your Addresses</h3>
         `;
 
-        // HTML for address list with rectangle styling
         addresses.forEach(address => {
             addressesHtml += `
                 <div class="address" data-id="${address._id}" style="border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px;">
@@ -209,7 +197,6 @@ exports.getUserAddresses = async (req, res) => {
             `;
         });
 
-        // Include JavaScript for edit and delete functionality
         addressesHtml += `
             <script>
                 function editAddress(addressId) {
@@ -321,12 +308,12 @@ exports.updateAddress = async (req, res) => {
     }
 
     const addressId = req.params.id;
-    const { name, mobileNumber, city, state, pinCode } = req.body;  // make sure to extract the correct fields
+    const { name, mobileNumber, city, state, pinCode } = req.body;  
 
     try {
         const updatedAddress = await Address.findByIdAndUpdate(
             addressId,
-            { name, mobileNumber, city, state, pinCode },  // Make sure these fields match your schema
+            { name, mobileNumber, city, state, pinCode }, 
             { new: true, runValidators: true }
         );
 
@@ -334,8 +321,7 @@ exports.updateAddress = async (req, res) => {
             return res.status(404).send('Address not found');
         }
 
-        // Send back the updated address as a JSON object
-        res.json(updatedAddress);  // Send the updated address as JSON, not as HTML
+        res.json(updatedAddress);  
     } catch (error) {
         console.error('Error updating address:', error);
         res.status(500).send('Internal Server Error');
