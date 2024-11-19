@@ -290,7 +290,6 @@ function updateChart(chart, labels, data) {
                 endDate = document.getElementById('end-date').value;
 
                 if (!startDate || !endDate) {
-                    alert("Please select both start and end date.");
                     return;
                 }
             } else {
@@ -348,7 +347,6 @@ function updateChart(chart, labels, data) {
 
             } catch (error) {
                 console.error("Error fetching report data:", error);
-                alert("Failed to generate report: " + error.message);
             }
         });
 
@@ -364,7 +362,6 @@ const downloadPDFButton = document.getElementById('download-pdf');
 downloadPDFButton.addEventListener('click', async () => {
     try {
         if (!salesData.length) {
-            alert("No report data available. Please generate the report first.");
             return;
         }
 
@@ -385,11 +382,11 @@ downloadPDFButton.addEventListener('click', async () => {
             a.click();
             a.remove();
         } else {
-            alert('Error generating PDF report');
+            console.error('Error downloading PDF:', error);
+
         }
     } catch (error) {
         console.error('Error downloading PDF:', error);
-        alert('An error occurred while generating the PDF');
     }
 });
 
@@ -398,7 +395,6 @@ downloadPDFButton.addEventListener('click', async () => {
     downloadExcelButton.addEventListener('click', async () => {
     try {
         if (!salesData.length) {
-            alert("No report data available. Please generate the report first.");
             return;
         }
         
@@ -419,11 +415,10 @@ downloadPDFButton.addEventListener('click', async () => {
             a.click();
             a.remove();
         } else {
-            alert('Error generating Excel report');
+
         }
     } catch (error) {
         console.error('Error downloading Excel:', error);
-        alert('An error occurred while generating the Excel file');
     }
 });
 
