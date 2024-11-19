@@ -93,17 +93,47 @@ exports.addCategory = async (req, res) => {
 
 // Edit Category
 exports.editCategory = async (req, res) => {
+    const { name, description, status } = req.body;
+    const categoryId = req.params.id;
+
     try {
-        const { name, description, status } = req.body;
-        await Category.findByIdAndUpdate(req.params.id, {
-            name,
+        // Check if a category with the same name already exists (excluding the current one)
+        const existingCategory = await Category.findOne({
+            name: { $regex: `^${name.trim()}$`, $options: "i" },
+            _id: { $ne: categoryId }, // Exclude the current category
+        });
+
+        if (existingCategory) {
+            return res.render('adminPanel', {
+                body: 'admin/category',
+                errorMessage: 'Category name must be unique and case-sensitive.',
+                categories: await Category.find({}),
+                search: '',
+                currentpage: 1,
+                totalPages: 1,
+            });
+        }
+
+        // Update the category
+        await Category.findByIdAndUpdate(categoryId, {
+            name: name.trim(),
             description,
             status: status === 'active' ? 'active' : 'inactive',
         });
+
         res.redirect('/adminPanel/category');
     } catch (err) {
-        console.error('error editing:',err);
-        res.status(500).send('Server Error');
+        console.error('Error editing category:', err);
+
+        // Handle unexpected errors
+        res.render('adminPanel', {
+            body: 'admin/category',
+            errorMessage: 'An unexpected error occurred. Please try again.',
+            categories: await Category.find({}),
+            search: '',
+            currentpage: 1,
+            totalPages: 1,
+        });
     }
 };
 
