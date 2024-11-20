@@ -1,11 +1,12 @@
 const express = require('express');
-const http = require('http');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const routes=require('./routes/routes')
+const MongoStore = require('connect-mongo');
+
 
 require('./config/passport_setup');
 
@@ -14,12 +15,21 @@ dotenv.config();
 
 const app = express();
 
-app.use(session({
-  secret:  'yourSecretKey', 
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false } 
-}));
+
+app.use(
+  session({
+    secret: 'yourSecretKey',
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
+    cookie: {
+      secure: true,
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60
+    }
+  })
+);
 
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store');
