@@ -1,12 +1,11 @@
 const express = require('express');
+const http = require('http');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const routes=require('./routes/routes')
-const MongoStore = require('connect-mongo');
-
 
 require('./config/passport_setup');
 
@@ -15,21 +14,12 @@ dotenv.config();
 
 const app = express();
 
-
-app.use(
-  session({
-    secret: 'yourSecretKey',
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
-    cookie: {
-      secure: true,
-      httpOnly: true,
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 60
-    }
-  })
-);
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'yourSecretKey', 
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } 
+}));
 
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-store');
@@ -61,10 +51,13 @@ app.use((req, res, next) => {
 });
 
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
 .then(() => console.log('MongoDB connected...'))
 .catch(err => console.error('MongoDB connection error:', err));
 
 app.use(routes)
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
