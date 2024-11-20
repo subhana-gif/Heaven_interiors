@@ -443,13 +443,11 @@ document.addEventListener("DOMContentLoaded", function() {
             const data = await response.json();
 
             if (!data.success) {
-                alert(data.message || 'Could not initiate retry payment');
                 return;
             }
 
             // Verify that necessary data is present before proceeding
             if (!data.key || !data.orderId || !data.amount || !data.currency) {
-                alert('Incomplete payment details received.');
                 return;
             }
 
@@ -475,13 +473,11 @@ document.addEventListener("DOMContentLoaded", function() {
                             console.log('hii');
                             window.location.href = `/user/orders/confirmation/${orderId}`;
                         } else {
-                            alert('Payment was not completed successfully.');
                         }
                     });
                 },
                 "modal": {
                     "ondismiss": function () {
-                        alert("Payment was not completed. You may try again.");
                     }
                 },
                 "prefill": {
@@ -499,7 +495,6 @@ document.addEventListener("DOMContentLoaded", function() {
             rzp.open();
         } catch (error) {
             console.error('Error retrying payment:', error);
-            alert('Failed to retry payment. Please try again later.');
         }
     }
        
