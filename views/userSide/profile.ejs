@@ -6,109 +6,68 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
         <style>
             /* Sidebar styles */
             .sidebar {
-                height: 100%;
-                background-color: #e3e7e3;
-                margin-top: 0.2%;
+                position: static;
+                width: 250px; /* Sidebar width */
+                height: 40em; /* Full height */
+                background-color: #f0f0f0; /* Light gray background */
             }
-            .sidebar a {
+        
+            .sidebar ul {
+                list-style-type: none;
+                padding-left: 0;
+            }
+        
+            .sidebar ul li {
+                padding: 1%;
+            }
+        
+            .sidebar ul li a {
+                text-decoration: none;
+                color: #000;
                 display: block;
                 padding: 10px;
-                color: #174509;
-                text-decoration: none;
                 border-radius: 5px;
+                background-color: #f8f9fa;
             }
-            .sidebar a:hover {
-                background-color: #ffffff;
+        
+            .sidebar ul li a:hover,
+            .sidebar ul li.active a {
+                background-color: #2d4739; /* Green background for active link */
+                color: #fff;
             }
+        
         </style>
+                  
     </head>
     <body>
         <%- include('../partials/user_navbar.ejs') %>
-
-        <div class="container-fluid">
-            <div class="row">
-                <nav class="col-md-3 sidebar" style="padding-bottom: 30%;">
-                    <a href="/user/personal-information" id="personal-info-link">Personal Information</a>
-                    <a href="/user/orders" >My Orders</a>
-                    <a href="/user/wallet">wallet</a>
-                    <a href="/user/addresses" id="address-management-link">Address Management</a>
-                </nav>
-                <div class="col-md-9" style="margin-bottom: 35%;">
-                    <div id="dynamic-content">
-                    </div>
-                </div>
-            </div>
+    <div style="display: flex;">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <ul>
+                <li><a href="/user/profile/personal-info">Personal Information</a></li>
+                <li><a href="/user/profile/address-management">Address Management</a></li> 
+            </ul>
         </div>
-        
+    
+        <!-- Main Content -->
+        <div class="content">
+            <% if (selectedView === 'personalInfo') { %>
+                <%- include('./personalInfo.ejs') %>  <!-- Include personal info template -->
+            <% } else if (selectedView === 'address') { %>
+                <%- include('./address.ejs') %>  <!-- Include address template -->
+            <% } %>
+        </div>
+    </div>
+    
         <%- include('../partials/footer.ejs') %>
-        
+
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-        <script>
-    $(document).ready(function() {
-            // Automatically load personal information when the page loads
-            loadPersonalInformation();
-
-            // Handle click on personal information link
-            $('#personal-info-link').click(function(e) {
-                e.preventDefault();
-                loadPersonalInformation();
-            });
-
-            // Load the personal information using AJAX
-            function loadPersonalInformation() {
-                $.ajax({
-                    url: '/user/personal-information', // Ensure this matches your route
-                    method: 'GET',
-                    success: function(data) {
-                        $('#dynamic-content').html(data); // Insert the response HTML into the content area
-                    },
-                    error: function(err) {
-                        console.error('Error loading personal information:', err);
-                        $('#dynamic-content').html('<p>Error loading personal information.</p>');
-                    }
-                });
-            }    
-                $('#address-management-link').click(function(e) {
-                    e.preventDefault();
-        
-                    $.ajax({
-                        url: '/user/addresses',
-                        method: 'GET',
-                        success: function(data) {
-                            $('#dynamic-content').html(data);
-                        },
-                        error: function(err) {
-                            console.error('Error loading addresses:', err);
-                        }
-                    });
-                });
-
-
-                // Handle new address form submission
-                $(document).on('submit', '#new-address-form', function(e) {
-                    e.preventDefault();
-        
-                    const formData = $(this).serialize(); // Serialize form data
-        
-                    $.ajax({
-                        url: '/user/add-address',
-                        method: 'POST',
-                        data: formData,
-                        success: function(response) {
-                            // Reload the address list
-                            $('#address-management-link').trigger('click');
-                        },
-                        error: function(err) {
-                            console.error('Error adding address:', err);
-                        }
-                    });
-                });
-            });
-        </script>   
+    </body>
+    

@@ -331,7 +331,7 @@ a {
             const productsContainer = document.getElementById('productsContainer');
             const paginationContainer = document.querySelector('.pagination');
         
-            function renderPagination(currentPage, totalPages, pageHandler) {
+function renderPagination(currentPage, totalPages, pageHandler) {
     paginationContainer.innerHTML = '';
 
     if (currentPage > 1) {
@@ -415,7 +415,7 @@ function loadCompleteProducts(page = 1) {
                     .catch(error => console.error('Error loading products:', error));
             }
         
-            function filterProducts(page = 1) {
+function filterProducts(page = 1) {
     const selectedCategories = Array.from(document.querySelectorAll('.category-filter input[type="checkbox"]:checked')).map(cb => cb.value);
     const sort = document.querySelector('.sort-filter input[type="radio"]:checked')?.value || '';
 

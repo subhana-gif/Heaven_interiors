@@ -140,12 +140,14 @@ exports.filterProducts = async (req, res) => {
             })
         );
 
+        const wishlist = req.user ? req.user.wishlist.map(id => id.toString()) : [];
         res.json({
             products: productsWithOffers,
             totalPages,
             currentPage: page,
             selectedCategories,
-            sort
+            sort,
+            wishlist
         });
     } catch (error) {
         console.error('Error filtering products:', error);

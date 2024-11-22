@@ -1,0 +1,101 @@
+
+<div class="container">
+    <h3>Personal Information</h3>
+    <div class="row">
+        <div class="col-md-8">
+            <form id="personal-info-form">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" class="form-control" id="email" value="<%= user.email %>" readonly />
+                </div>
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" class="form-control" id="username" value="<%= user.username %>" readonly />
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" class="form-control" id="password" value="********" readonly />
+                </div>
+                <button type="button" class="btn btn-primary" id="edit-btn">Edit</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for editing personal information -->
+    <div class="modal fade" id="editPersonalInfoModal" tabindex="-1" aria-labelledby="editPersonalInfoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editPersonalInfoModalLabel">Edit Personal Information</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-info-form">
+                        <div class="form-group">
+                            <label for="newUsername">New Username:</label>
+                            <input type="text" class="form-control" id="newUsername" value="<%= user.username %>" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="oldPassword">Old Password:</label>
+                            <input type="password" class="form-control" id="oldPassword" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">New Password:</label>
+                            <input type="password" class="form-control" id="newPassword" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmNewPassword">Confirm New Password:</label>
+                            <input type="password" class="form-control" id="confirmNewPassword" required />
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveChangesBtn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- JavaScript to handle the editing process -->
+<script>
+    document.getElementById('edit-btn').addEventListener('click', function() {
+        $('#editPersonalInfoModal').modal('show');
+    });
+
+    document.getElementById('saveChangesBtn').addEventListener('click', function() {
+        const newUsername = document.getElementById('newUsername').value;
+        const oldPassword = document.getElementById('oldPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+        if (newPassword !== confirmNewPassword) {
+            alert('Passwords do not match');
+            return;
+        }
+
+        // Send AJAX request to update personal information
+        $.ajax({
+            url: '/user/profile/update-info',
+            method: 'POST',
+            data: {
+                username: newUsername,
+                oldPassword: oldPassword,
+                newPassword: newPassword
+            },
+            success: function(response) {
+                if (response.success) {
+                    alert('Personal information updated successfully!');
+                    location.reload(); // Reload the page to show the updated info
+                } else {
+                    alert(response.message);
+                }
+            }
+        });
+    });
+</script>

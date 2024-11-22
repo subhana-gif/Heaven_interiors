@@ -3,13 +3,8 @@ const router = express.Router();
 const profileController = require('../controllers/profileController'); 
 const { isAuthenticated, checkUserBlocked } = require('../middleware/authUserMiddleware'); 
 
-router.get('/profile',isAuthenticated,checkUserBlocked, profileController.getProfilePage);
-router.get('/personal-information', isAuthenticated,checkUserBlocked,profileController.getPersonalInformation);
-router.post('/update-profile', isAuthenticated,checkUserBlocked,profileController.updateProfile);
-router.get('/addresses',isAuthenticated,checkUserBlocked, profileController.getUserAddresses);
-router.post('/add-address',isAuthenticated,checkUserBlocked, profileController.addNewAddress);
-router.get('/addresses/:id/edit', isAuthenticated,checkUserBlocked,profileController.getEditAddress);
-router.post('/addresses/:id/edit',isAuthenticated,checkUserBlocked, profileController.updateAddress);
-router.delete('/addresses/:id', isAuthenticated,checkUserBlocked,profileController.deleteAddress);
+router.get('/profile', isAuthenticated,checkUserBlocked, profileController.renderProfile);
+router.get('/profile/personal-info', isAuthenticated,checkUserBlocked, profileController.getPersonalInfo);
+router.get('/profile/address-management', isAuthenticated,checkUserBlocked, profileController.getAddressManagement);
 
 module.exports = router;
