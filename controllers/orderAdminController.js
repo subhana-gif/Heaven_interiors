@@ -1,6 +1,7 @@
 const Order = require('../models/order');
 const Wallet = require('../models/wallet');
 const Offer = require('../models/offer')
+const Product = require('../models/productModal')
 
 const getOrders = async (req, res) => {
 
@@ -55,7 +56,6 @@ const updateOrderStatus = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
-
 
 const cancelOrder = async (req, res) => {
     const { id } = req.params;
@@ -160,10 +160,112 @@ const approveStatus = async (req, res) => {
     }
 };
 
+const viewDetails = async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+        // Fetch the order using the order ID and populate product details
+        const order = await Order.findById(orderId).populate('cartItems.productId');
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        let totalRefundAmount = 0; // Initialize total refund amount
+        let totalDiscountAmount = 0; // Total discount for the order
+        let totalCouponDeduction = 0; // Total coupon deduction
+
+        // Calculate the total price of the order
+        const totalOrderPrice = order.cartItems.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+        );
+
+        // Process each item in the cart
+        for (let item of order.cartItems) {
+            const baseRefundAmount = item.price * item.quantity;
+            let itemDiscountShare = 0;
+            let itemCouponShare = 0;
+
+            // Fetch applicable offers for the product or category
+            const offer = await Offer.findOne({
+                isDeleted: false,
+                $or: [
+                    { offerType: 'product', relatedId: item.productId },
+                    { offerType: 'category', relatedId: item.category }
+                ],
+                startDate: { $lte: new Date() },
+                endDate: { $gte: new Date() }
+            });
+
+            // Calculate the discount share for this item
+            if (offer) {
+                if (
+                    offer.offerType === 'product' &&
+                    offer.relatedId.toString() === item.productId._id.toString()
+                ) {
+                    itemDiscountShare =
+                        offer.discountType === 'percentage'
+                            ? (offer.discountValue / 100) * baseRefundAmount
+                            : offer.discountValue * item.quantity;
+                } else if (
+                    offer.offerType === 'category' &&
+                    offer.relatedId.toString() === item.productId.category?.toString()
+                ) {
+                    itemDiscountShare =
+                        offer.discountType === 'percentage'
+                            ? (offer.discountValue / 100) * baseRefundAmount
+                            : offer.discountValue * item.quantity;
+                }
+            }
+
+            // Apply coupon deduction proportionately
+            const discountAmount = order.couponDeduction || 0;
+            itemCouponShare = Math.round(
+                (baseRefundAmount / totalOrderPrice) * discountAmount * 100
+            ) / 100;
+
+            // Calculate the total refund amount for this item
+            const itemRefundAmount =
+                baseRefundAmount - itemDiscountShare - itemCouponShare;
+
+            // Add to the totals
+            totalRefundAmount += itemRefundAmount;
+            totalDiscountAmount += itemDiscountShare;
+            totalCouponDeduction += itemCouponShare;
+        }
+
+        // Respond with order and refund details
+        res.json({
+            success: true,
+            orderNumber: order.orderNumber,
+            address: order.address,
+            paymentMethod: order.paymentMethod,
+            totalPrice: totalOrderPrice,
+            totalDiscount: totalDiscountAmount,
+            totalCouponDeduction: totalCouponDeduction,
+            totalRefundAmount: totalRefundAmount,
+            cartItems: order.cartItems.map((item) => ({
+                productId: item.productId._id,
+                name: item.productId.name,
+                price: item.price,
+                quantity: item.quantity,
+                refundAmount:
+                    item.price * item.quantity -
+                    (totalDiscountAmount + totalCouponDeduction),
+            })),
+        });
+    } catch (error) {
+        console.error('Error viewing order details:', error);
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
 
 module.exports = {
     getOrders,
     updateOrderStatus,
     cancelOrder,
-    approveStatus
+    approveStatus,
+    viewDetails
 };

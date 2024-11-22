@@ -2,12 +2,11 @@
 const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/categoryController');
-const authMiddleware=require('../middleware/authMiddleware')
-const noCache = require('../middleware/noCacheMiddleware');
+const {isAdminAuthenticated}=require('../middleware/authMiddleware')
 
-router.get('/category', authMiddleware.isAdminAuthenticated,noCache,categoryController.renderCategoryPage);
-router.post('/category/add', categoryController.addCategory);
-router.post('/category/edit/:id', categoryController.editCategory);
-router.post('/category/toggle-status/:id', categoryController.toggleCategoryStatus);
+router.get('/category',isAdminAuthenticated,categoryController.renderCategoryPage);
+router.post('/category/add',isAdminAuthenticated,categoryController.addCategory);
+router.post('/category/edit/:id',isAdminAuthenticated,categoryController.editCategory);
+router.post('/category/toggle-status/:id',isAdminAuthenticated,categoryController.toggleCategoryStatus);
 
 module.exports = router;

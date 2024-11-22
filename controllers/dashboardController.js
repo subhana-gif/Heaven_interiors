@@ -224,48 +224,6 @@ exports.getTopProducts = async (req, res) => {
     }
 };
 
-exports.getTopCategories = async (req, res) => {
-    try {
-        const topCategories = await Order.aggregate([
-            { $unwind: "$cartItems" },
-            {
-                $group: {
-                    _id: { $toObjectId: "$cartItems.category" },
-                    totalSales: { $sum: "$cartItems.quantity" }
-                }
-            },
-            {
-                $lookup: {
-                    from: 'categories',
-                    localField: '_id',
-                    foreignField: '_id',
-                    as: 'categoryDetails'
-                }
-            },
-            {
-                $unwind: {
-                    path: "$categoryDetails",
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-            {
-                $project: {
-                    _id: 1,
-                    name: "$categoryDetails.name", 
-                    totalSales: 1
-                }
-            },
-            { $sort: { totalSales: -1 } },
-            { $limit: 10 }
-        ]);
-
-        res.json(topCategories);
-    } catch (error) {
-        console.error("Error fetching top categories:", error);
-        res.status(500).json({ message: "Error fetching top categories", error });
-    }
-};
-
 exports.generateLedger = async (req, res) => {
     try {
         const ledgerData = await Order.find().populate('user').populate('cartItems.productId');
@@ -341,4 +299,46 @@ exports.generateLedger = async (req, res) => {
         res.status(500).json({ message: "Error generating ledger", error });
     }
 };
+
+exports.getCategoryWiseSales = async (req, res) => {
+    try {
+        const salesData = await Order.aggregate([
+            { $unwind: "$cartItems" },
+            {
+                $group: {
+                    _id: { $toObjectId: "$cartItems.category" },
+                    totalSales: { $sum: "$cartItems.quantity" }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'categoryDetails'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$categoryDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: "$categoryDetails.name", 
+                    totalSales: 1
+                }
+            },
+            { $sort: { totalSales: -1 } }
+        ]);
+        res.json(salesData);
+    } catch (error) {
+        console.error("Error fetching category-wise sales data:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
 

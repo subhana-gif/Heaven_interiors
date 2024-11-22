@@ -30,30 +30,68 @@ exports.getSearchSuggestions = async (req, res) => {
 exports.getSearchResults = async (req, res) => {
     const query = req.query.q.trim();
     const sort = req.query.sort;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 3;
 
     try {
-        let results = [];
-        if (query === '') {
-            results = await Product.find({}).populate('category');
-        } else {
+        let filter = {};
+        let totalResults = 0;
+
+        if (query !== '') {
             const searchRegex = new RegExp(query, 'i');
             const categories = await Category.find({ name: { $regex: searchRegex } });
             const categoryIds = categories.map(category => category._id);
 
-            results = await Product.find({
+            filter = {
                 $or: [
                     { name: { $regex: searchRegex } },
                     { category: { $in: categoryIds } }
                 ]
-            }).populate('category');
+            };
         }
 
-        results = results.filter(product => {
-            if (!product || product.isDelete) return false;
-            if (product.category && product.category.status !== 'active' && product.category.isDelete !== 'false') return false;
-            return true;
-        });
+        // Get total count for pagination
+        totalResults = await Product.countDocuments(filter);
 
+        // Define sorting criteria
+        let sortCriteria = {};
+        switch (sort) {
+            case 'popularity':
+                sortCriteria.popularity = -1; // Descending
+                break;
+            case 'priceLowToHigh':
+                sortCriteria.price = 1; // Ascending
+                break;
+            case 'priceHighToLow':
+                sortCriteria.price = -1; // Descending
+                break;
+            case 'averageRatings':
+                sortCriteria.averageRating = -1; // Descending
+                break;
+            case 'newArrivals':
+                sortCriteria.createdAt = -1; // Newest first
+                break;
+            case 'aToZ':
+                sortCriteria.name = 1; // Alphabetical (A-Z)
+                break;
+            case 'zToA':
+                sortCriteria.name = -1; // Reverse alphabetical (Z-A)
+                break;
+            case 'stockManagement':
+                sortCriteria.stock = -1; // Higher stock first
+                break;
+            default:
+                break;
+        }
+
+        // Fetch sorted and paginated results
+        let results = await Product.find(filter)
+            .populate('category')
+            .sort(sortCriteria) // Apply sorting first
+            .skip((page - 1) * limit) // Apply pagination
+            .limit(limit);
+
+        // Apply discounts for each product
         for (const product of results) {
             const offer = await Offer.findOne({
                 $or: [
@@ -74,6 +112,7 @@ exports.getSearchResults = async (req, res) => {
             }
         }
 
+        // Map product images and data
         results = results.map(product => {
             const productImagePath = product.images && product.images.length > 0
                 ? `/uploads/${product.images[0].split('\\').pop().split('/').pop()}`
@@ -86,41 +125,16 @@ exports.getSearchResults = async (req, res) => {
             };
         });
 
-        if (results.length > 0 && sort) {
-            switch (sort) {
-                case 'popularity':
-                    results.sort((a, b) => b.popularity - a.popularity);
-                    break;
-                case 'priceLowToHigh':
-                    results.sort((a, b) => a.price - b.price);
-                    break;
-                case 'priceHighToLow':
-                    results.sort((a, b) => b.price - a.price);
-                    break;
-                case 'averageRatings':
-                    results.sort((a, b) => b.averageRating - a.averageRating);
-                    break;
-                case 'featured':
-                    results = results.filter(item => item.featured === true);
-                    break;
-                case 'newArrivals':
-                    results.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                    break;
-                case 'aToZ':
-                    results.sort((a, b) => a.name.localeCompare(b.name));
-                    break;
-                case 'zToA':
-                    results.sort((a, b) => b.name.localeCompare(a.name));
-                    break;
-                case 'stockManagement':
-                    results.sort((a, b) => b.stock - a.stock);
-                    break;
-                default:
-                    break;
-            }
-        }
+        const totalPages = Math.ceil(totalResults / limit);
 
-        res.render('userSide/searchResult', { query, results });
+        // Send results to the view
+        res.render('userSide/searchResult', {
+            query,
+            results,
+            currentPage: page,
+            totalPages,
+            sort, // Send the current sort option
+        });
     } catch (err) {
         console.error(err);
         res.status(500).send('Server error');

@@ -297,7 +297,7 @@ exports.showCancelForm = async (req, res) => {
         });
 
         if (offer) {
-            if (offer.offerType === 'product' && offer.relatedId.toString() === item.productId.toString()) {
+            if (offer.offerType === 'product' && offer.relatedId.toString() === item.product._Id.toString()) {
                 if (offer.discountType === 'percentage') {
                     itemDiscountShare = (offer.discountValue / 100) * baseRefundAmount;
                 } else if (offer.discountType === 'fixed') {

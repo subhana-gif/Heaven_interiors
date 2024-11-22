@@ -19,30 +19,5 @@ const renderHomePage = async (req, res) => {
 
 
 
-//categories
-const fetchCategories = async (req, res) => {
-    try {
-        const categories = await Category.find();
-        res.json(categories);
-    } catch (error) {
-        console.error('Error fetching categories:', error);
-        res.status(500).send('Error fetching categories');
-    }
-};
 
-//fetching products
-const fetchProducts = async (req, res) => {
-    try {
-        const products = await Product.find();
-        res.json(products); 
-    } catch (error) {
-        console.error('Error fetching products:', error);
-        res.status(500).send('Error fetching products');
-    }
-};
-
-module.exports = {
-    renderHomePage,
-    fetchCategories,
-    fetchProducts,
-};
+module.exports = {renderHomePage};

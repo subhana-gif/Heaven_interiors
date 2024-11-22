@@ -10,7 +10,6 @@ const customerRoutes = require('./customerRoutes');
 const productRoutes = require('./productRoutes');
 const orderAdminRoutes = require('./orderAdminRoutes');
 const couponRoutes = require('./couponRoutes');
-const settingRoutes = require('./settingRoutes');
 
 const authRoutes = require('./auth');
 const userRoutes = require('./userRoutes');
@@ -35,7 +34,6 @@ router.use('/adminPanel', customerRoutes);
 router.use('/adminPanel', productRoutes);
 router.use('/adminPanel', orderAdminRoutes);
 router.use('/adminPanel', couponRoutes);
-router.use('/adminPanel', settingRoutes);
 router.use('/adminPanel',offerRoutes)
 
 // User Routes

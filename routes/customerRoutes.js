@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const customerController = require('../controllers/customerController');
-const authMiddleware=require('../middleware/authMiddleware')
-const noCache = require('../middleware/noCacheMiddleware');
+const {isAdminAuthenticated}=require('../middleware/authMiddleware')
 
-router.get('/customers',  authMiddleware.isAdminAuthenticated,noCache,customerController.renderCustomerPage);
-router.post('/customers/toggle-status/:id', customerController.toggleUserStatus); 
+router.get('/customers',isAdminAuthenticated,customerController.renderCustomerPage);
+router.post('/customers/toggle-status/:id', isAdminAuthenticated,customerController.toggleUserStatus); 
 module.exports = router;

@@ -7,6 +7,7 @@ const { sendOtpEmail } = require('./otpController');
 
 const renderUserLogin = (req, res) => {
     try{
+        res.set('Cache-Control', 'no-store'); 
         res.render('userSide/login', { errorMessage: null, successMessage: null });
     }catch(error){
         console.error('error rendering user login',error);
@@ -59,9 +60,6 @@ const handleUserLogin = async (req, res) => {
             email: user.email,
             username: user.username
         };
-
-        const cart = await Cart.findOne({ userId: user._id });
-        req.session.cart = cart ? cart.items : [];
         return res.redirect('/user/home');
     } catch (error) {
         console.error('Error during login:', error);
@@ -113,7 +111,6 @@ const handleUserSignup = async (req, res) => {
     }
 };
 
-
 const handleUserLogout = (req, res) => {
     try{
     req.session.destroy(err => {
@@ -129,7 +126,6 @@ const handleUserLogout = (req, res) => {
         res.status(500).send('Server Error');
     }
 };
-
 
 const renderForgotPassword = (req, res) => {
     try{
@@ -274,8 +270,6 @@ const handleResetPassword = async (req, res) => {
         });
     }
 };
-
-
 
 module.exports = {
     renderUserLogin,

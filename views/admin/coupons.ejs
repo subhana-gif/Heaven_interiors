@@ -99,7 +99,9 @@
                                         </div>
                                         <div class="mb-3">
                                             <label for="editExpirationDate" class="form-label">Expiration Date</label>
-                                            <input type="date" class="form-control" id="editExpirationDate" name="expirationDate" value="<%= coupon.expirationDate.toISOString().split('T')[0] %>" required>
+                                            <input type="date" class="form-control" id="editExpirationDate" name="expirationDate" 
+                                            value="<%= coupon.expirationDate.toISOString().split('T')[0] %>" 
+                                            min="<%= new Date().toISOString().split('T')[0] %>" required>
                                         </div>
                                         <div class="mb-3">
                                             <label for="editUsageLimit" class="form-label">Usage Limit</label>
@@ -181,7 +183,8 @@
                         </div>
                         <div class="mb-3">
                             <label for="addExpirationDate" class="form-label">Expiration Date</label>
-                            <input type="date" class="form-control" id="addExpirationDate" name="expirationDate" required>
+                            <input type="date" class="form-control" id="addExpirationDate" name="expirationDate" 
+                            min="<%= new Date().toISOString().split('T')[0] %>" required>
                         </div>
                         <div class="mb-3">
                             <label for="addUsageLimit" class="form-label">Usage Limit</label>
