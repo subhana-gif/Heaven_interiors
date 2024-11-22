@@ -191,10 +191,6 @@ a {
                 <h3>Sort By</h3>
                 <div class="sort-filter">
                     <label>
-                        <input type="radio" name="sort" value="popularity">
-                        Popularity
-                    </label>
-                    <label>
                         <input type="radio" name="sort" value="priceLowToHigh">
                         Price: Low to High
                     </label>
@@ -329,58 +325,87 @@ a {
             }
         }
         
+        
         document.addEventListener('DOMContentLoaded', () => {
             let currentPage = 1;
             const productsContainer = document.getElementById('productsContainer');
             const paginationContainer = document.querySelector('.pagination');
         
-            function renderPagination(currentPage, totalPages) {
+            function renderPagination(currentPage, totalPages, pageHandler) {
     paginationContainer.innerHTML = '';
+
     if (currentPage > 1) {
-        paginationContainer.innerHTML += `<a href="?page=${currentPage - 1}">&laquo; Previous</a>`;
+        const prevLink = document.createElement('a');
+        prevLink.href = '#';
+        prevLink.innerHTML = '&laquo; Previous';
+        prevLink.onclick = (event) => {
+            event.preventDefault();
+            pageHandler(currentPage - 1);
+        };
+        paginationContainer.appendChild(prevLink);
     }
+
     for (let i = 1; i <= totalPages; i++) {
-        paginationContainer.innerHTML += `<a href="?page=${i}" class="${i === currentPage ? 'active' : ''}">${i}</a>`;
+        const pageLink = document.createElement('a');
+        pageLink.href = '#';
+        pageLink.innerHTML = i;
+        pageLink.className = i === currentPage ? 'active' : '';
+        pageLink.onclick = (event) => {
+            event.preventDefault();
+            pageHandler(i);
+        };
+        paginationContainer.appendChild(pageLink);
     }
+
     if (currentPage < totalPages) {
-        paginationContainer.innerHTML += `<a href="?page=${currentPage + 1}">Next &raquo;</a>`;
+        const nextLink = document.createElement('a');
+        nextLink.href = '#';
+        nextLink.innerHTML = 'Next &raquo;';
+        nextLink.onclick = (event) => {
+            event.preventDefault();
+            pageHandler(currentPage + 1);
+        };
+        paginationContainer.appendChild(nextLink);
     }
 }
+
+function renderProducts(data) {
+    productsContainer.innerHTML = data.products.length > 0 ? '' : '<div class="no-products">No products found</div>';
+    data.products.forEach(product => {
+        const stockInfo = product.stockStatus === 'In Stock' 
+            ? `<p style="color: green;">${product.stock} left</p>` 
+            : `<p class="out-of-stock" style="color: #dc3545;">Out of stock</p>`;
+        const priceDisplay = product.discountedPrice
+            ? `<span style="text-decoration: line-through; color: #999;">₹${product.price}</span>
+               <h5 style="color: #3b940f; font-weight: 700;">₹${product.discountedPrice}</h5>`
+            : `<h5 style="color: #3b940f; font-weight: 700;">₹${product.price}</h5>`;
         
-            function renderProducts(data) {
-                productsContainer.innerHTML = data.products.length > 0 ? '' : '<div class="no-products">No products found</div>';
-                data.products.forEach(product => {
-                    const stockInfo = product.stockStatus === 'In Stock' 
-                        ? `<p style="color: green;">${product.stock} left</p>` 
-                        : `<p class="out-of-stock" style="color: #dc3545;">Out of stock</p>`;
-                    const priceDisplay = product.discountedPrice
-                        ? `<span style="text-decoration: line-through; color: #999;">₹${product.price}</span>
-                           <h5 style="color: #3b940f; font-weight: 700;">₹${product.discountedPrice}</h5>`
-                        : `<h5 style="color: #3b940f; font-weight: 700;">₹${product.price}</h5>`;
-                    
-                    productsContainer.innerHTML += `
-                        <div class="product-card">
-                            <a href="/user/product/${product._id}?source=productList">
-                                <div class="product-image">
-                                    <img src="/${product.images[0] || 'placeholder.jpg'}" alt="${product.name}">
-                                </div>
-                                <div class="product-info">
-                                    <h5 class="product-title">${product.name}</h5>
-                                    <p class="product-description">${product.description}</p>
-                                    ${stockInfo}
-                                    <div class="product-footer">
-                                        <div class="product-price">${priceDisplay}</div>
-                                        <a href="#" class="wishlist-button" data-product-id="${product._id}" onclick="handleWishlist('${product._id}', this, ${isAuthenticated})">
-                                            ${wishlist.includes(product._id.toString()) ? '❤️' : '🤍'}
-                                        </a>
-                                    </div>
-                                </div>
+        // Check if the product is in the wishlist
+        const isInWishlist = wishlist.includes(product._id.toString());
+
+        productsContainer.innerHTML += `
+            <div class="product-card">
+                <a href="/user/product/${product._id}?source=productList">
+                    <div class="product-image">
+                        <img src="/${product.images[0] || 'placeholder.jpg'}" alt="${product.name}">
+                    </div>
+                    <div class="product-info">
+                        <h5 class="product-title">${product.name}</h5>
+                        <p class="product-description">${product.description}</p>
+                        ${stockInfo}
+                        <div class="product-footer">
+                            <div class="product-price">${priceDisplay}</div>
+                            <a href="#" class="wishlist-button" data-product-id="${product._id}" onclick="handleWishlist('${product._id}', this, ${isAuthenticated})">
+                                ${isInWishlist ? '❤️' : '🤍'}
                             </a>
-                        </div>`;
-                });
-            }
-        
-            function loadCompleteProducts(page = 1) {
+                        </div>
+                    </div>
+                </a>
+            </div>`;
+    });
+}
+
+function loadCompleteProducts(page = 1) {
                 fetch(`/user/product/list?page=${page}`)
                     .then(response => response.json())
                     .then(data => {
@@ -391,29 +416,31 @@ a {
             }
         
             function filterProducts(page = 1) {
-                const selectedCategories = Array.from(document.querySelectorAll('.category-filter input[type="checkbox"]:checked')).map(cb => cb.value);
-                const sort = document.querySelector('.sort-filter input[type="radio"]:checked')?.value || '';
-        
-                fetch('/user/product/filter', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ selectedCategories, sort, page })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        renderProducts(data);
-                        renderPagination(data.currentPage, data.totalPages, filterProducts);
-                    })
-                    .catch(error => console.error('Fetch error:', error));
-            }
-        
-            // Event listeners for filters
+    const selectedCategories = Array.from(document.querySelectorAll('.category-filter input[type="checkbox"]:checked')).map(cb => cb.value);
+    const sort = document.querySelector('.sort-filter input[type="radio"]:checked')?.value || '';
+
+    fetch('/user/product/filter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ selectedCategories, sort, page })
+    })
+    .then(response => response.json())
+    .then(data => {
+        renderProducts(data);
+        renderPagination(data.currentPage, data.totalPages, filterProducts);
+        window.scrollTo({ top: 0});
+    })
+    .catch(error => console.error('Error fetching filtered products:', error));
+}
+
+
+// Event listeners for filters
             document.querySelectorAll('.category-filter input[type="checkbox"]').forEach(checkbox => {
-                checkbox.addEventListener('change', () => filterProducts(1));
-            });
-            document.querySelectorAll('.sort-filter input[type="radio"]').forEach(radio => {
-                radio.addEventListener('change', () => filterProducts(1));
-            });
+    checkbox.addEventListener('change', () => filterProducts(1));
+});
+document.querySelectorAll('.sort-filter input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', () => filterProducts(1));
+});
         
             // Load full product list on initial page load
             loadCompleteProducts();

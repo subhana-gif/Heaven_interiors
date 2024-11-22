@@ -93,9 +93,6 @@ exports.filterProducts = async (req, res) => {
     try {
         let sortOptions = {};
         switch (sort) {
-            case 'popularity':
-                sortOptions = { popularity: -1 };
-                break;
             case 'priceLowToHigh':
                 sortOptions = { price: 1 };
                 break;
@@ -146,7 +143,9 @@ exports.filterProducts = async (req, res) => {
         res.json({
             products: productsWithOffers,
             totalPages,
-            currentPage: page
+            currentPage: page,
+            selectedCategories,
+            sort
         });
     } catch (error) {
         console.error('Error filtering products:', error);
@@ -211,7 +210,6 @@ exports.viewProduct = async (req, res) => {
         res.status(404).send('Product not found');
     }
 };
-
 
 exports.getProducts = async () => {
     try {
