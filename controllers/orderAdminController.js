@@ -5,7 +5,6 @@ const { calculateDeliveryCharge } = require('../config/delivery');
 const Product = require('../models/productModal')
 
 const getOrders = async (req, res) => {
-
     try {
         const search = req.query.search ? req.query.search.trim() : '';
         const currentpage = parseInt(req.query.page) || 1;
@@ -168,8 +167,13 @@ const viewDetails = async (req, res) => {
         
         // Fetch the order with cart items and category data
         const order = await Order.findById(orderId)
-            .populate('cartItems.category')
-            .populate('cartItems.productId');
+        .populate({
+            path: 'cartItems.productId',
+            model: 'Product',  // Reference to the Product model
+            select: 'name price images'  // Ensure you include images in the select clause
+        })
+        .populate('cartItems.category')
+        .populate('cartItems.productId');
 
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found' });
@@ -216,16 +220,14 @@ const viewDetails = async (req, res) => {
                 }
             }
         }
-        console.log('offer:',itemDiscountShare);
         
         // Coupon deduction logic
         const discountAmount = order.couponDeduction || 0;
         const totalOrderPrice = order.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const itemCouponShare = Math.round(((baseRefundAmount / totalOrderPrice) * discountAmount) * 100) / 100;
-        console.log('baserefund',baseRefundAmount);
-        console.log('coupon:',itemCouponShare);
             
         const finalTotal = baseRefundAmount - itemDiscountShare - itemCouponShare + deliveryCharge;
+        console.log('images:',item.productId.images);
         
         // Respond with the order details and calculated final total
         res.status(200).json({

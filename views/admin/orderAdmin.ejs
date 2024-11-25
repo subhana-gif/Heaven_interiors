@@ -163,7 +163,7 @@
                         <div class="mb-3">
                             <h5 class="text-center mb-2">Product Information</h5>
                             <div class="d-flex align-items-center">
-                                <img id="productImage" src="" alt="Product Image new" class="img-fluid" style="max-width: 80px; height: auto; margin-right: 10px;">
+                                <img id="productImage" src="" alt="Product Image" class="img-fluid" style="max-width: 80px; height: auto; margin-right: 10px;">
                                 <div>
                                     <h6 id="productName" class="mb-1"></h6>
                                     <p>Quantity: <span id="productQuantity"></span></p>
@@ -225,10 +225,10 @@ async function viewOrderDetails(orderId, productId) {
             
             document.getElementById('productName').textContent = product.name;
             if (product.images && product.images.length > 0) {
-                const imagePath = product.images[0].split('\\').pop().split('/').pop();
-                document.getElementById('productImage').src = `/${imagePath}`;
+                const imagePath = product.images[0]; // Assuming the first image is the one to display
+                document.getElementById('productImage').src = `/uploads/${imagePath}`;
             } else {
-                document.getElementById('productImage').src = 'default-image-path.jpg'; // Replace with your fallback image path
+                document.getElementById('productImage').src = '';
             }
             document.getElementById('productQuantity').textContent = product.quantity;
             document.getElementById('orderNumber').textContent = orderNumber;
