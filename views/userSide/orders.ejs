@@ -136,13 +136,12 @@
             .forEach(item => { %>
             <% deliveredItemsExist = true; %>
             <div class="mb-2">
+                <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
                 <div class="product-container">
                     <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
                     <div>
                         <h6>
-                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
                                 Order ID: <%= order.orderNumber %>
-                            </a>
                         </h6>
                         <p><strong>Product:</strong> <%= item.name %></p>
                         <p><strong>Quantity:</strong> <%= item.quantity %></p>
@@ -155,6 +154,7 @@
                         </form>
                     </div>
                 </div>
+                </a>
             </div>
         <% }) %>
     <% }) %>
@@ -184,13 +184,12 @@
             .forEach(item => { %>
             <% orderedItemsExist = true; %>
             <div class="mb-2">
+                <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
                 <div class="product-container">
                     <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
                     <div>
                         <h6>
-                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
                                 Order ID: <%= order.orderNumber %>
-                            </a>
                         </h6>
                         <p><strong>Product:</strong> <%= item.name %></p>
                         <p><strong>Quantity:</strong> <%= item.quantity %></p>
@@ -205,6 +204,7 @@
                         </form>
                     </div>
                 </div>
+                </a>
             </div>
         <% }) %>
     <% }) %>
@@ -234,19 +234,19 @@
             .forEach(item => { %>
             <% cancelledItemsExist = true; %>
             <div class="mb-2">
+                <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
                 <div class="product-container">
                     <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
                     <div>
                         <h6>
-                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
                                 Order ID: <%= order.orderNumber %>
-                            </a>
                         </h6>
                         <p><strong>Product:</strong> <%= item.name %></p>
                         <p><strong>Quantity:</strong> <%= item.quantity %></p>
                         <p style="color: red;">Cancelled</p>
                     </div>
                 </div>
+                </a>
             </div>
         <% }) %>
     <% }) %>
@@ -274,18 +274,18 @@
         <% order.cartItems.filter(item => item.status === 'Returned').forEach(item => { %>
             <% returnedItemsExist = true; %>
             <div class="mb-2">
+                <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
                 <div class="product-container">
                     <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
                     <div>
                         <h6>
-                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
                                 Order ID: <%= order.orderNumber %>
-                            </a>
                         </h6>
                         <p><strong>Product:</strong> <%= item.name %></p>
                         <p style="color: orange;">Returned</p>
                     </div>
                 </div>
+                </a>
             </div>
         <% }) %>
     <% }) %>
@@ -312,12 +312,11 @@
     <% pendingOrders.forEach(order => { %>
         <% if (order.status === 'Payment Pending') { %> <!-- Check order status directly -->
             <% pendingOrdersExist = true; %>
+            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
             <div class="order-container mb-3 p-3 border rounded">
                 <!-- Order Details and Product List -->
                 <h6>
-                    <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
                         Order ID: <%= order.orderNumber %>
-                    </a>
                 </h6>
                 <div>
                     <p style="font-size: large;"><strong>₹<%= order.totalPrice %></strong></p>
@@ -335,6 +334,7 @@
                     <button type="submit" class="btn btn-warning w-100">Retry Payment</button>
                 </form>
             </div>
+            </a>
         <% } %>
     <% }) %>
     <% if (!pendingOrdersExist) { %>
@@ -362,14 +362,13 @@
             .filter(item => item.status === 'Shipped')
             .forEach(item => { %>
             <% shippedItemsExist = true; %>
+            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
             <div class="mb-2">
                 <div class="product-container">
                     <img src="/<%= item.image %>" alt="<%= item.name %>" class="product-image">
                     <div>
                         <h6>
-                            <a href="/user/orders/<%= order._id %>" style="text-decoration: none; color: inherit;">
                                 Order ID: <%= order.orderNumber %>
-                            </a>
                         </h6>
                         <p><strong>Product:</strong> <%= item.name %></p>
                         <p><strong>Quantity:</strong> <%= item.quantity %></p>
@@ -377,6 +376,7 @@
                     </div>
                 </div>
             </div>
+            </a>
         <% }) %>
     <% }) %>
     <% if (!shippedItemsExist) { %>
