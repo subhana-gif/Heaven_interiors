@@ -68,74 +68,88 @@ exports.generatePDFReport = async (req, res) => {
             return res.status(400).json({ error: 'Invalid sales data format. Expected an array.' });
         }
 
+        // Initialize PDF Document
         const doc = new PDFDocument({ margin: 40 });
         const filePath = path.join(__dirname, 'salesReport.pdf');
 
         const writeStream = fs.createWriteStream(filePath);
         doc.pipe(writeStream);
 
-        doc.fontSize(20).text("Sales Report", { align: 'center' }).moveDown();
+        // Title
+        doc.fontSize(20).font('Helvetica-Bold').text("Sales Report", { align: 'center' }).moveDown(2);
 
+        // Define Table Styling
         const tableTop = 150;
-        const rowHeight = 35;
+        const rowHeight = 30;
+        const columnWidths = [90, 120, 100, 100, 120];
+        const headers = ["Date", "Total Sales", "Sales Count", "Total Discount", "Coupon Deduction"];
         const cellPadding = 5;
-        const columnWidths = [80, 120, 100, 100, 100];
-        let leftMargin = 10;
 
-        const headers = ["Date", "Total Sales", "Sales Count", "Total Discount", "Coupon Deductions"];
+        // Render Table Header
+        let leftMargin = 50;
         doc.fontSize(12).font('Helvetica-Bold');
-
         headers.forEach((header, i) => {
-            doc.rect(leftMargin, tableTop, columnWidths[i], rowHeight).stroke();
-            doc.text(header, leftMargin + cellPadding, tableTop + cellPadding);
+            doc
+                .rect(leftMargin, tableTop, columnWidths[i], rowHeight)
+                .stroke()
+                .text(header, leftMargin + cellPadding, tableTop + cellPadding, {
+                    width: columnWidths[i],
+                    align: 'center',
+                });
             leftMargin += columnWidths[i];
         });
 
+        // Render Table Rows
         let rowPosition = tableTop + rowHeight;
         doc.fontSize(10).font('Helvetica');
-
         salesData.forEach(item => {
             const rowData = [
                 item._id || 'N/A',
-                parseFloat((item.totalSales || 0).toFixed(2)),
+                (item.totalSales || 0).toFixed(2),
                 item.totalOrders || 0,
-                parseFloat((item.totalDiscount || 0).toFixed(2)),
-                parseFloat((item.couponsDeducted || 0).toFixed(2))
+                (item.totalDiscount || 0).toFixed(2),
+                (item.couponsDeducted || 0).toFixed(2),
             ];
 
-            leftMargin = 10;
-
+            leftMargin = 50;
             rowData.forEach((data, i) => {
-                doc.rect(leftMargin, rowPosition, columnWidths[i], rowHeight).stroke();
-                doc.text(data, leftMargin + cellPadding, rowPosition + cellPadding);
+                doc
+                    .rect(leftMargin, rowPosition, columnWidths[i], rowHeight)
+                    .stroke()
+                    .text(data, leftMargin + cellPadding, rowPosition + cellPadding, {
+                        width: columnWidths[i],
+                        align: 'center',
+                    });
                 leftMargin += columnWidths[i];
             });
 
             rowPosition += rowHeight;
         });
 
+        // Finalize PDF
         doc.end();
 
+        // Handle Download
         writeStream.on('finish', () => {
-            res.download(filePath, 'salesReport.pdf', (err) => {
+            res.download(filePath, 'salesReport.pdf', err => {
                 if (err) {
                     console.error("Error downloading sales report:", err);
-                    res.status(500).json({ message: "Error downloading sales report" });
+                    res.status(500).send('Failed to send PDF');
                 }
-                fs.unlinkSync(filePath); 
+                fs.unlinkSync(filePath); // Clean up temporary file
             });
         });
 
-        writeStream.on('error', (err) => {
+        writeStream.on('error', err => {
             console.error("Error writing sales report PDF document:", err);
-            res.status(500).json({ message: "Error generating sales report PDF document" });
+            res.status(500).send('Error generating sales report PDF');
         });
-
     } catch (error) {
         console.error("Error generating sales report:", error);
         res.status(500).json({ message: "Error generating sales report", error });
     }
 };
+
 
 exports.generateExcelReport = async (req, res) => {
     const salesData = req.body.salesData;

@@ -344,10 +344,10 @@ function updateChart(chart, labels, data) {
         
 document.getElementById('download-sales-report').addEventListener('click', async () => {
     try {
-        const salesData = [
-            { _id: "2024-01-01", totalSales: 1000, totalOrders: 10, totalDiscount: 50, couponsDeducted: 30 },
-            { _id: "2024-01-02", totalSales: 1500, totalOrders: 15, totalDiscount: 70, couponsDeducted: 40 }
-        ]; // Replace this with your actual data source.
+        if (!salesData.length) {
+            alert("No report data available. Please generate the report first.");
+            return;
+        } // Replace this with your actual data source.
 
         const response = await fetch('/adminPanel/report/pdf', {
             method: 'POST',
