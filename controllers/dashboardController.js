@@ -1,7 +1,7 @@
 const Order = require('../models/order');
-const pdf = require('html-pdf');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
+const puppeteer = require('puppeteer');
 const excel = require('exceljs');
 const {calculateDeliveryCharge} = require('../config/delivery');
 
@@ -59,6 +59,8 @@ exports.getSalesReport = async (req, res) => {
     }
 };
 
+
+
 exports.generatePDFReport = async (req, res) => {
     try {
         const salesData = req.body.salesData;
@@ -66,49 +68,36 @@ exports.generatePDFReport = async (req, res) => {
         if (!Array.isArray(salesData)) {
             return res.status(400).json({ error: 'Invalid sales data format. Expected an array.' });
         }
+
         const html = `
-            <h1 style="text-align: center; font-family: Arial, sans-serif;">Sales Report</h1>
-            <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
-                <thead>
-                    <tr>
-                        <th style="border: 1px solid #000; padding: 8px; background-color: #f2f2f2;">Date</th>
-                        <th style="border: 1px solid #000; padding: 8px; background-color: #f2f2f2;">Total Sales</th>
-                        <th style="border: 1px solid #000; padding: 8px; background-color: #f2f2f2;">Sales Count</th>
-                        <th style="border: 1px solid #000; padding: 8px; background-color: #f2f2f2;">Total Discount</th>
-                        <th style="border: 1px solid #000; padding: 8px; background-color: #f2f2f2;">Coupon Deductions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${salesData.map(item => `
-                        <tr>
-                            <td style="border: 1px solid #000; padding: 8px;">${item._id || 'N/A'}</td>
-                            <td style="border: 1px solid #000; padding: 8px; text-align: right;">${(item.totalSales || 0).toFixed(2)}</td>
-                            <td style="border: 1px solid #000; padding: 8px; text-align: right;">${item.totalOrders || 0}</td>
-                            <td style="border: 1px solid #000; padding: 8px; text-align: right;">${(item.totalDiscount || 0).toFixed(2)}</td>
-                            <td style="border: 1px solid #000; padding: 8px; text-align: right;">${(item.couponsDeducted || 0).toFixed(2)}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+            <h1>Sales Report</h1>
+            <table>...</table>
         `;
 
-        pdf.create(html).toFile('salesReport.pdf', (err, result) => {
-            if (err) {
-                console.error('Error creating PDF:', err);
-                return res.status(500).json({ error: 'Failed to create PDF' });
-            }
-            res.sendFile(result.filename, (err) => {
-                if (err) {
-                    console.error('Error sending PDF:', err);
-                    res.status(500).send('Failed to send PDF');
-                }
-            });
+        // Launch Puppeteer
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'], // Required for AWS environments
         });
+        const page = await browser.newPage();
+        await page.setContent(html, { waitUntil: 'load' });
+
+        // Generate PDF as a buffer
+        const pdfBuffer = await page.pdf({ format: 'A4' });
+
+        // Close the browser
+        await browser.close();
+
+        // Send the PDF to the client
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename="salesReport.pdf"');
+        res.send(pdfBuffer);
     } catch (error) {
         console.error('Error generating PDF:', error);
         res.status(500).json({ error: 'An error occurred while generating the PDF' });
     }
 };
+
 
 exports.generateExcelReport = async (req, res) => {
     const salesData = req.body.salesData;

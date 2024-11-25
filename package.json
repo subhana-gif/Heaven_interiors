@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-  "start": "node app.js"
+    "start": "node app.js"
   },
   "keywords": [],
   "author": "",
@@ -35,6 +35,7 @@
     "passport-google-oauth20": "^2.0.0",
     "paypal-rest-sdk": "^1.8.1",
     "pdfkit": "^0.15.1",
+    "puppeteer": "^23.9.0",
     "razorpay": "^2.9.4",
     "sharp": "^0.33.5",
     "socket.io": "^4.8.0",
