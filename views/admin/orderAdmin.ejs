@@ -92,20 +92,21 @@
                                             
                                             <% if (item.status !== 'Cancelled' && item.status !== 'Returned') { %>
                                                 <select 
-                                                    id="statusSelect" 
-                                                    name="newStatus" 
-                                                    class="form-select mb-2" 
-                                                    style="background-color: rgb(213, 235, 213); color: green;" 
-                                                    onchange="confirmStatusChange(this)"
-                                                >
-                                                    <option value="Ordered" <%= item.status === 'Ordered' ? 'selected' : '' %>>Ordered</option>
-                                                    <option value="Shipped" <%= item.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                                                    <option value="Delivered" <%= item.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                                    <option value="Cancelled" <%= item.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-                                                    <option value="Returned" <%= item.status === 'Returned' ? 'selected' : '' %>>Returned</option>
-                                                    <option value="Payment Pending" <%= item.status === 'Payment Pending' ? 'selected' : '' %>>Pending</option>
-                                                </select>
-                                            <% } else { %>
+                                                id="statusSelect" 
+                                                name="newStatus" 
+                                                class="form-select mb-2" 
+                                                style="background-color: rgb(213, 235, 213); color: green;" 
+                                                data-original-value="<%= item.status %>" 
+                                                onchange="confirmStatusChange(this)"
+                                            >
+                                                <option value="Ordered" <%= item.status === 'Ordered' ? 'selected' : '' %>>Ordered</option>
+                                                <option value="Shipped" <%= item.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                                <option value="Delivered" <%= item.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                                <option value="Cancelled" <%= item.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                                <option value="Returned" <%= item.status === 'Returned' ? 'selected' : '' %>>Returned</option>
+                                                <option value="Payment Pending" <%= item.status === 'Payment Pending' ? 'selected' : '' %>>Pending</option>
+                                            </select>
+                                                                                        <% } else { %>
                                                 <p>Status: <strong><%= item.status %></strong></p>
                                             <% } %>
                                         </form>
@@ -275,37 +276,40 @@ document.getElementById('searchBar').addEventListener('keyup', function () {
                 });
             });
 
-            let selectedForm = null; // Global variable to hold the selected form reference
+let selectedForm = null; // Global variable to hold the selected form reference
+let pendingValue = null; // To store the new value to be confirmed
 
 function confirmStatusChange(selectElement) {
-    // Get the form associated with the selected dropdown
+    // Store the form and the pending value from the dropdown
     selectedForm = selectElement.closest("form");
+    pendingValue = selectElement.value;
 
     // Show the confirmation modal
     const modal = new bootstrap.Modal(document.getElementById('confirmationModal'));
     modal.show();
+
+    // Revert the dropdown to its previous value temporarily
+    selectElement.value = selectElement.getAttribute("data-original-value") || selectElement.value;
 }
 
-// Handle the Confirm button in the modal
-document.getElementById('confirmStatusChange').addEventListener('click', function () {
-    if (selectedForm) {
-        // Submit the form only if confirmation is clicked
-        selectedForm.submit();
-    }
-});
-
-// Optionally clear the selectedForm reference when the modal is hidden (for safety)
+// Reset the selected form and dropdown if the modal is canceled
 document.getElementById('confirmationModal').addEventListener('hidden.bs.modal', function () {
     selectedForm = null;
+    pendingValue = null;
 });
 
+// Handle form submission on confirmation
 document.getElementById("confirmStatusChange").addEventListener("click", function () {
-    // If the user confirms, submit the form
-    if (selectedForm) {
+    if (selectedForm && pendingValue) {
+        // Update the dropdown's value to the confirmed value
+        const selectElement = selectedForm.querySelector('select[name="newStatus"]');
+        selectElement.value = pendingValue;
+        selectElement.setAttribute("data-original-value", pendingValue);
+
+        // Submit the form
         selectedForm.submit();
     }
-});    
-    
+});
 </script>
     </body>
     </html>
