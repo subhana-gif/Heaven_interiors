@@ -235,7 +235,7 @@ const viewDetails = async (req, res) => {
                 name: item.name,
                 price: item.price,
                 category: item.category.name, // Extract category name
-                image: item.image,
+                images: item.productId.images || [],
                 quantity: item.quantity,
                 status: item.status,
             },
