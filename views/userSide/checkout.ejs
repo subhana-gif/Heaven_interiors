@@ -139,19 +139,7 @@
                                     <p class="d-inline-block ms-2"><%= item.name %></p>
                                 </td>
                                 <td>
-                                    <div class="qty-container d-flex align-items-center">
-                                        <form action="/user/update-cart/<%= item.productId %>" method="POST" class="qty-form d-flex">
-                                            <input type="hidden" name="action" value="decrease">
-                                            <!-- Decrease button (disabled if quantity is 1) -->
-                                            <button type="submit" class="btn btn-outline-secondary btn-sm" <%= item.quantity === 1 ? 'disabled' : '' %>>-</button>
-                                        </form>
-                                        <span class="ms-3"><%= item.quantity %></span>
-                                        <form action="/user/update-cart/<%= item.productId %>" method="POST" class="qty-form d-flex ms-3">
-                                            <input type="hidden" name="action" value="increase">
-                                            <!-- Increase button (disabled if stock limit is reached) -->
-                                            <button type="submit" class="btn btn-outline-secondary btn-sm" <%= item.quantity >= item.stock ? 'disabled' : '' %>>+</button>
-                                        </form>
-                                    </div>
+                                        <p><%= item.quantity %></span>
                                 </td>
                                 <td>
                                     <% if (item.discountedPrice) { %>
