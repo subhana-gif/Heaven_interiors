@@ -6,7 +6,20 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>order Management</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">        </head>
-    <body>
+        <style>
+            .list-group {
+    list-style-type: none; /* Removes the default bullets */
+    padding: 0; /* Removes the default padding */
+}
+
+.list-group .list {
+    padding: 8px 0; /* Optional: Add padding for spacing */
+}
+
+
+
+        </style>
+        <body>
         <div class="container mt-5">
             <h2 class="mb-4">Order Management</h2>
         
@@ -161,7 +174,6 @@
                     <div class="modal-body">
                         <!-- Product Information -->
                         <div class="mb-3">
-                            <h5 class="text-center mb-2">Product Information</h5>
                             <div class="d-flex align-items-center">
                                 <img id="productImage" src="" alt="Product Image" class="img-fluid" style="max-width: 80px; height: auto; margin-right: 10px;">
                                 <div>
@@ -173,18 +185,16 @@
         
                         <!-- Order Information -->
                         <div class="mb-3">
-                            <h5 class="text-center mb-2">Order Information</h5>
                             <ul class="list-group">
-                                <li class="list-group-item"><strong>Order Number:</strong> <span id="orderNumber"></span></li>
-                                <li class="list-group-item"><strong>Payment Method:</strong> <span id="paymentMethod"></span></li>
-                                <li class="list-group-item"><strong>Address:</strong> <span id="address"></span></li>
-                                <li class="list-group-item"><strong>Status:</strong> <span id="status"></span></li>
+                                <li  class="list"><strong>Order Number:</strong> <span id="orderNumber"></span></li>
+                                <li  class="list"><strong>Payment Method:</strong> <span id="paymentMethod"></span></li>
+                                <li  class="list"><strong>Address:</strong> <span id="address"></span></li>
+                                <li  class="list"><strong>Status:</strong> <span id="status"></span></li>
                             </ul>
                         </div>
         
                         <!-- Price Breakdown -->
                         <div>
-                            <h5 class="text-center mb-2">Price Breakdown</h5>
                             <div class="card">
                                 <div class="card-body">
                                     <p><strong>Item Price:</strong> <span id="itemPriceBreakdown"></span></p>
