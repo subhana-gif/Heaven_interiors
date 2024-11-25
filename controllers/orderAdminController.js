@@ -18,11 +18,12 @@ const getOrders = async (req, res) => {
         .limit(limit);
         const totalOrders = await Order.countDocuments(searchQuery);
         const totalPages = Math.ceil(totalOrders / limit);
-
+        const product = await Product.find()
 
         res.render('adminPanel', {
             orders, 
             search,
+            product,
             body: 'admin/orderAdmin',
             totalPages,
             currentpage,
@@ -166,14 +167,12 @@ const viewDetails = async (req, res) => {
         const { productId } = req.query;
         
         // Fetch the order with cart items and category data
-        const order = await Order.findById(orderId)
-        .populate({
+        const order = await Order.findById(orderId).populate({
             path: 'cartItems.productId',
-            model: 'Product',  // Reference to the Product model
-            select: 'name price images'  // Ensure you include images in the select clause
+            model: 'Product', // Reference to the Product model to populate productId
         })
-        .populate('cartItems.category')
-        .populate('cartItems.productId');
+            .populate('cartItems.category')
+            .populate('cartItems.productId');
 
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found' });
@@ -236,7 +235,7 @@ const viewDetails = async (req, res) => {
                 id: item.productId, 
                 name: item.name,
                 price: item.price,
-                category: item.category.name,
+                category: item.category.name, // Extract category name
                 images: item.productId.images || [],
                 quantity: item.quantity,
                 status: item.status,
