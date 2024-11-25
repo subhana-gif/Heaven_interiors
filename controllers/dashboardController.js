@@ -2,8 +2,7 @@ const Order = require('../models/order');
 const pdf = require('html-pdf');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const path = require('path')
 const excel = require('exceljs');
 const {calculateDeliveryCharge} = require('../config/delivery');
 
@@ -61,7 +60,6 @@ exports.getSalesReport = async (req, res) => {
     }
 };
 
-
 exports.generatePDFReport = async (req, res) => {
     try {
         const salesData = req.body.salesData;
@@ -70,39 +68,72 @@ exports.generatePDFReport = async (req, res) => {
             return res.status(400).json({ error: 'Invalid sales data format. Expected an array.' });
         }
 
-        const html = `
-            <h1>Sales Report</h1>
-            <table>...</table>
-        `;
+        const doc = new PDFDocument({ margin: 40 });
+        const filePath = path.join(__dirname, 'salesReport.pdf');
 
-        // Use a temporary directory
-        const tempFilePath = path.join(os.tmpdir(), 'salesReport.pdf');
+        const writeStream = fs.createWriteStream(filePath);
+        doc.pipe(writeStream);
 
-        pdf.create(html).toFile(tempFilePath, (err, result) => {
-            if (err) {
-                console.error('Error creating PDF:', err);
-                return res.status(500).json({ error: 'Failed to create PDF' });
-            }
+        doc.fontSize(20).text("Sales Report", { align: 'center' }).moveDown();
 
-            // Send the file to the client
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', 'attachment; filename="salesReport.pdf"');
-            res.sendFile(tempFilePath, (sendErr) => {
-                if (sendErr) {
-                    console.error('Error sending PDF:', sendErr);
-                    return res.status(500).send('Failed to send PDF');
+        const tableTop = 150;
+        const rowHeight = 35;
+        const cellPadding = 5;
+        const columnWidths = [80, 120, 100, 100, 100];
+        let leftMargin = 10;
+
+        const headers = ["Date", "Total Sales", "Sales Count", "Total Discount", "Coupon Deductions"];
+        doc.fontSize(12).font('Helvetica-Bold');
+
+        headers.forEach((header, i) => {
+            doc.rect(leftMargin, tableTop, columnWidths[i], rowHeight).stroke();
+            doc.text(header, leftMargin + cellPadding, tableTop + cellPadding);
+            leftMargin += columnWidths[i];
+        });
+
+        let rowPosition = tableTop + rowHeight;
+        doc.fontSize(10).font('Helvetica');
+
+        salesData.forEach(item => {
+            const rowData = [
+                item._id || 'N/A',
+                parseFloat((item.totalSales || 0).toFixed(2)),
+                item.totalOrders || 0,
+                parseFloat((item.totalDiscount || 0).toFixed(2)),
+                parseFloat((item.couponsDeducted || 0).toFixed(2))
+            ];
+
+            leftMargin = 10;
+
+            rowData.forEach((data, i) => {
+                doc.rect(leftMargin, rowPosition, columnWidths[i], rowHeight).stroke();
+                doc.text(data, leftMargin + cellPadding, rowPosition + cellPadding);
+                leftMargin += columnWidths[i];
+            });
+
+            rowPosition += rowHeight;
+        });
+
+        doc.end();
+
+        writeStream.on('finish', () => {
+            res.download(filePath, 'salesReport.pdf', (err) => {
+                if (err) {
+                    console.error("Error downloading sales report:", err);
+                    res.status(500).json({ message: "Error downloading sales report" });
                 }
-                // Delete the temp file after sending
-                fs.unlink(tempFilePath, (unlinkErr) => {
-                    if (unlinkErr) {
-                        console.error('Error deleting temp file:', unlinkErr);
-                    }
-                });
+                fs.unlinkSync(filePath); 
             });
         });
+
+        writeStream.on('error', (err) => {
+            console.error("Error writing sales report PDF document:", err);
+            res.status(500).json({ message: "Error generating sales report PDF document" });
+        });
+
     } catch (error) {
-        console.error('Error generating PDF:', error);
-        res.status(500).json({ error: 'An error occurred while generating the PDF' });
+        console.error("Error generating sales report:", error);
+        res.status(500).json({ message: "Error generating sales report", error });
     }
 };
 

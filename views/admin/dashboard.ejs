@@ -74,7 +74,7 @@
                 <p>Total Coupons Deducted: <span id="totalCouponsDeducted"></span></p>
             </div>
             <div class="d-flex justify-content-end">
-                <button id="download-pdf" class="btn btn-success me-2">Download PDF</button>
+                <button id="download-sales-report" class="btn btn-success me-2">Download PDF</button>
                 <button id="download-excel" class="btn btn-warning">Download Excel</button>
             </div>
         </div>
@@ -342,35 +342,32 @@ function updateChart(chart, labels, data) {
     return await response.json(); 
 }
         
-const downloadPDFButton = document.getElementById('download-pdf');
-downloadPDFButton.addEventListener('click', async () => {
+document.getElementById('download-sales-report').addEventListener('click', async () => {
     try {
-        if (!salesData.length) {
-            return;
-        }
+        const salesData = [
+            { _id: "2024-01-01", totalSales: 1000, totalOrders: 10, totalDiscount: 50, couponsDeducted: 30 },
+            { _id: "2024-01-02", totalSales: 1500, totalOrders: 15, totalDiscount: 70, couponsDeducted: 40 }
+        ]; // Replace this with your actual data source.
 
         const response = await fetch('/adminPanel/report/pdf', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ salesData })     
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ salesData }),
         });
-        if (response.ok) {
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'sales-report.pdf';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-        } else {
-            console.error('Error downloading PDF:', error);
 
-        }
+        if (!response.ok) throw new Error("Failed to fetch the report");
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'salesReport.pdf';
+        link.click();
+
+        window.URL.revokeObjectURL(url);
     } catch (error) {
-        console.error('Error downloading PDF:', error);
+        console.error("Error downloading sales report:", error);
     }
 });
 
