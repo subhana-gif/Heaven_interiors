@@ -166,8 +166,8 @@ const viewDetails = async (req, res) => {
         const { orderId } = req.params;
         const { productId } = req.query;
         const product = await Product.findById(productId).select('images');
-        const image = product.images[0];
-        // Fetch the order with cart items and category data
+        const image = '/' + product.images[0].substring(fullPath.lastIndexOf('/') + 1);
+
         const order = await Order.findById(orderId).populate({
             path: 'cartItems.productId',
             model: 'Product', // Reference to the Product model to populate productId
