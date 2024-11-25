@@ -1,6 +1,5 @@
 const Product = require('../models/productModal');
 const Category = require('../models/category');
-const multer = require('multer');
 const sharp = require('sharp');
 const path = require('path');
 
@@ -172,7 +171,7 @@ exports.uploadImage = async(req, res) => {
 
 exports.viewProduct = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id).populate('reviews');
+        const product = await Product.findById(req.params.id);
         res.render('viewProduct', { product });
     } catch (err) {
         console.error('Error fetching product:', err);
