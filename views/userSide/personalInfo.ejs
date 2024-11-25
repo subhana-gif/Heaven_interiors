@@ -1,25 +1,12 @@
 
 <div class="container">
-    <h3>Personal Information</h3>
-    <div class="row">
-        <div class="col-md-8">
-            <form id="personal-info-form">
-                <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" class="form-control" id="email" value="<%= user.email %>" readonly />
-                </div>
-                <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input type="text" class="form-control" id="username" value="<%= user.username %>" readonly />
-                </div>
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input type="password" class="form-control" id="password" value="********" readonly />
-                </div>
-                <button type="button" class="btn btn-primary" id="edit-btn">Edit</button>
-            </form>
+    <h4>Personal Information</h4>
+        <div class="row" style="margin-top: 4%;">
+                    <p><strong>Email:</strong><%= user.email %></p>
+                    <p><strong>Username:</strong><%= user.username %></p>
+                    <p><strong>Password:</strong><span style="font-size: large;">********</span></p>
+                    <button type="button" style="width: 10%;margin-left: 1%;" class="btn btn-success" id="edit-btn">Edit</button>
         </div>
-    </div>
 
     <!-- Modal for editing personal information -->
     <div class="modal fade" id="editPersonalInfoModal" tabindex="-1" aria-labelledby="editPersonalInfoModalLabel" aria-hidden="true">
@@ -27,7 +14,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editPersonalInfoModalLabel">Edit Personal Information</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -35,24 +22,28 @@
                     <form id="edit-info-form">
                         <div class="form-group">
                             <label for="newUsername">New Username:</label>
-                            <input type="text" class="form-control" id="newUsername" value="<%= user.username %>" required />
+                            <input type="text" class="form-control" id="newUsername" value="<%= user.username %>"/>
+                            <small id="usernameError" class="text-danger d-none"></small>
                         </div>
                         <div class="form-group">
                             <label for="oldPassword">Old Password:</label>
-                            <input type="password" class="form-control" id="oldPassword" required />
+                            <input type="password" class="form-control" autocomplete="off" id="oldPassword" value=""/>
+                            <small id="oldPasswordError" class="text-danger d-none"></small>
                         </div>
                         <div class="form-group">
                             <label for="newPassword">New Password:</label>
-                            <input type="password" class="form-control" id="newPassword" required />
+                            <input type="password" class="form-control" id="newPassword"/>
+                            <small id="newPasswordError" class="text-danger d-none"></small>
                         </div>
                         <div class="form-group">
                             <label for="confirmNewPassword">Confirm New Password:</label>
-                            <input type="password" class="form-control" id="confirmNewPassword" required />
+                            <input type="password" class="form-control" id="confirmNewPassword"/>
+                            <small id="confirmPasswordError" class="text-danger d-none"></small>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-primary" id="saveChangesBtn">Save Changes</button>
                 </div>
             </div>
@@ -60,42 +51,75 @@
     </div>
 
 </div>
-
-
-<!-- JavaScript to handle the editing process -->
 <script>
-    document.getElementById('edit-btn').addEventListener('click', function() {
-        $('#editPersonalInfoModal').modal('show');
+    document.getElementById('edit-btn').addEventListener('click', function () {
+    document.getElementById('oldPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmNewPassword').value = '';
+    $('#editPersonalInfoModal').modal('show');
+});
+
+document.getElementById('saveChangesBtn').addEventListener('click', function () {
+    // Clear previous error messages
+    document.querySelectorAll('.text-danger').forEach((el) => {
+        el.classList.add('d-none');
+        el.textContent = '';
     });
 
-    document.getElementById('saveChangesBtn').addEventListener('click', function() {
-        const newUsername = document.getElementById('newUsername').value;
-        const oldPassword = document.getElementById('oldPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+    const newUsername = document.getElementById('newUsername').value;
+    const oldPassword = document.getElementById('oldPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
 
-        if (newPassword !== confirmNewPassword) {
-            alert('Passwords do not match');
-            return;
-        }
+    let hasError = false;
 
-        // Send AJAX request to update personal information
-        $.ajax({
-            url: '/user/profile/update-info',
-            method: 'POST',
-            data: {
-                username: newUsername,
-                oldPassword: oldPassword,
-                newPassword: newPassword
-            },
-            success: function(response) {
-                if (response.success) {
-                    alert('Personal information updated successfully!');
-                    location.reload(); // Reload the page to show the updated info
-                } else {
-                    alert(response.message);
+    // Validate old password only if changing the password
+    if ((newPassword || confirmNewPassword) && !oldPassword) {
+        const errorField = document.getElementById('oldPasswordError');
+        errorField.textContent = 'Old password is required to change your password.';
+        errorField.classList.remove('d-none');
+        hasError = true;
+    }
+
+    // Validate new password and confirm password match
+    if (newPassword !== confirmNewPassword) {
+        const errorField = document.getElementById('confirmPasswordError');
+        errorField.textContent = 'New password and confirm password do not match.';
+        errorField.classList.remove('d-none');
+        hasError = true;
+    }
+
+    if (hasError) return; // Stop further processing if there are validation errors
+
+    // Send AJAX request to update personal information
+    $.ajax({
+        url: '/user/profile/update-info',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            username: newUsername,
+            oldPassword: oldPassword,
+            newPassword: newPassword,
+        }),
+        success: function (response) {
+            if (response.success) {
+                location.reload(); // Reload the page to show the updated info
+            } else {
+                // Display server-side validation errors
+                if (response.field === 'oldPassword') {
+                    const errorField = document.getElementById('oldPasswordError');
+                    errorField.textContent = response.message;
+                    errorField.classList.remove('d-none');
+                } else if (response.field === 'newPassword') {
+                    const errorField = document.getElementById('newPasswordError');
+                    errorField.textContent = response.message;
+                    errorField.classList.remove('d-none');
                 }
             }
-        });
+        },
+        error: function (err) {
+            console.error(err);
+        },
     });
+});
 </script>

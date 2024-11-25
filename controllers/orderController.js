@@ -297,7 +297,7 @@ exports.showCancelForm = async (req, res) => {
         });
 
         if (offer) {
-            if (offer.offerType === 'product' && offer.relatedId.toString() === item.product._Id.toString()) {
+            if (offer.offerType === 'product' && offer.relatedId.toString() === item.productId.toString()) {
                 if (offer.discountType === 'percentage') {
                     itemDiscountShare = (offer.discountValue / 100) * baseRefundAmount;
                 } else if (offer.discountType === 'fixed') {
@@ -315,7 +315,6 @@ exports.showCancelForm = async (req, res) => {
         discountAmount = order.couponDeduction || 0;
         const totalOrderPrice = order.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const itemCouponShare = Math.round(((baseRefundAmount / totalOrderPrice) * discountAmount) * 100) / 100;
-
         const refundAmount = baseRefundAmount - itemDiscountShare - itemCouponShare;
 
         res.render('userSide/orderCancel', {

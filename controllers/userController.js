@@ -32,7 +32,6 @@ const renderUserSignup = (req, res) => {
 
 const handleUserLogin = async (req, res) => {
     const { email, password } = req.body;
-
     try {
         const user = await User.findOne({ email });
         if (!user) {
@@ -46,7 +45,6 @@ const handleUserLogin = async (req, res) => {
                 successMessage:null
              });
           }
-
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.render('userSide/login', {

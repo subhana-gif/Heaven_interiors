@@ -1,6 +1,7 @@
 const Order = require('../models/order');
 const Wallet = require('../models/wallet');
 const Offer = require('../models/offer')
+const { calculateDeliveryCharge } = require('../config/delivery');
 const Product = require('../models/productModal')
 
 const getOrders = async (req, res) => {
@@ -123,14 +124,14 @@ const approveStatus = async (req, res) => {
 
             const refundAmount = baseRefundAmount - itemDiscountShare - itemCouponShare;
 
-            const wallet = await Wallet.findOne({ userId: order.user });
+            let wallet = await Wallet.findOne({ userId: order.user });
             if (!wallet) {
-                const newWallet = new Wallet({
+                wallet = new Wallet({
                     userId: order.user,
                     balance: 0,
                     transactions: []
                 });
-                await newWallet.save();
+                await wallet.save();
             }
 
             if (wallet && order.paymentMethod !== 'COD') {
@@ -161,103 +162,95 @@ const approveStatus = async (req, res) => {
 };
 
 const viewDetails = async (req, res) => {
-    const { orderId } = req.params;
-
     try {
-        // Fetch the order using the order ID and populate product details
-        const order = await Order.findById(orderId).populate('cartItems.productId');
+        const { orderId } = req.params;
+        const { productId } = req.query;
+        
+        // Fetch the order with cart items and category data
+        const order = await Order.findById(orderId)
+            .populate('cartItems.category')
+            .populate('cartItems.productId');
 
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found' });
         }
 
-        let totalRefundAmount = 0; // Initialize total refund amount
-        let totalDiscountAmount = 0; // Total discount for the order
-        let totalCouponDeduction = 0; // Total coupon deduction
-
-        // Calculate the total price of the order
-        const totalOrderPrice = order.cartItems.reduce(
-            (sum, item) => sum + item.price * item.quantity,
-            0
-        );
-
-        // Process each item in the cart
-        for (let item of order.cartItems) {
-            const baseRefundAmount = item.price * item.quantity;
-            let itemDiscountShare = 0;
-            let itemCouponShare = 0;
-
-            // Fetch applicable offers for the product or category
-            const offer = await Offer.findOne({
-                isDeleted: false,
-                $or: [
-                    { offerType: 'product', relatedId: item.productId },
-                    { offerType: 'category', relatedId: item.category }
-                ],
-                startDate: { $lte: new Date() },
-                endDate: { $gte: new Date() }
-            });
-
-            // Calculate the discount share for this item
-            if (offer) {
-                if (
-                    offer.offerType === 'product' &&
-                    offer.relatedId.toString() === item.productId._id.toString()
-                ) {
-                    itemDiscountShare =
-                        offer.discountType === 'percentage'
-                            ? (offer.discountValue / 100) * baseRefundAmount
-                            : offer.discountValue * item.quantity;
-                } else if (
-                    offer.offerType === 'category' &&
-                    offer.relatedId.toString() === item.productId.category?.toString()
-                ) {
-                    itemDiscountShare =
-                        offer.discountType === 'percentage'
-                            ? (offer.discountValue / 100) * baseRefundAmount
-                            : offer.discountValue * item.quantity;
-                }
-            }
-
-            // Apply coupon deduction proportionately
-            const discountAmount = order.couponDeduction || 0;
-            itemCouponShare = Math.round(
-                (baseRefundAmount / totalOrderPrice) * discountAmount * 100
-            ) / 100;
-
-            // Calculate the total refund amount for this item
-            const itemRefundAmount =
-                baseRefundAmount - itemDiscountShare - itemCouponShare;
-
-            // Add to the totals
-            totalRefundAmount += itemRefundAmount;
-            totalDiscountAmount += itemDiscountShare;
-            totalCouponDeduction += itemCouponShare;
+        // Find the item in the order
+        const item = order.cartItems.find(item => item.productId.toString() === productId);
+        
+        if (!item) {
+            console.error('Product not found. Cart Items:', order.cartItems);
+            return res.status(404).json({ success: false, message: 'Item not found in order' });
         }
 
-        // Respond with order and refund details
-        res.json({
+        // Calculate the base refund amount (total price of items in the order)
+        const baseRefundAmount = item.price * item.quantity;
+        const deliveryCharge = calculateDeliveryCharge(order.address.pinCode);             
+
+        // Use let to allow re-assignment of itemDiscountShare
+        let itemDiscountShare = 0;
+
+        // Fetch any applicable product or category offer
+        const offer = await Offer.findOne({
+            isDeleted: false,
+            $or: [
+                { offerType: 'product', relatedId: item.productId },
+                { offerType: 'category', relatedId: item.category._id }  // Using item.category._id for category comparison
+            ],
+            startDate: { $lte: new Date() },
+            endDate: { $gte: new Date() }
+        });
+
+        if (offer) {
+            if (offer.offerType === 'product' && offer.relatedId.toString() === item.productId.toString()) {
+                if (offer.discountType === 'percentage') {
+                    itemDiscountShare = (offer.discountValue / 100) * baseRefundAmount;
+                } else if (offer.discountType === 'fixed') {
+                    itemDiscountShare = offer.discountValue * item.quantity;
+                }
+            } else if (offer.offerType === 'category' && offer.relatedId.toString() === item.category._id.toString()) {
+                if (offer.discountType === 'percentage') {
+                    itemDiscountShare = (offer.discountValue / 100) * baseRefundAmount;
+                } else if (offer.discountType === 'fixed') {
+                    itemDiscountShare = offer.discountValue * item.quantity;
+                }
+            }
+        }
+        console.log('offer:',itemDiscountShare);
+        
+        // Coupon deduction logic
+        const discountAmount = order.couponDeduction || 0;
+        const totalOrderPrice = order.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const itemCouponShare = Math.round(((baseRefundAmount / totalOrderPrice) * discountAmount) * 100) / 100;
+        console.log('baserefund',baseRefundAmount);
+        console.log('coupon:',itemCouponShare);
+            
+        const finalTotal = baseRefundAmount - itemDiscountShare - itemCouponShare + deliveryCharge;
+        
+        // Respond with the order details and calculated final total
+        res.status(200).json({
             success: true,
-            orderNumber: order.orderNumber,
-            address: order.address,
-            paymentMethod: order.paymentMethod,
-            totalPrice: totalOrderPrice,
-            totalDiscount: totalDiscountAmount,
-            totalCouponDeduction: totalCouponDeduction,
-            totalRefundAmount: totalRefundAmount,
-            cartItems: order.cartItems.map((item) => ({
-                productId: item.productId._id,
-                name: item.productId.name,
+            product: {
+                id: item.productId, 
+                name: item.name,
                 price: item.price,
+                category: item.category.name, // Extract category name
+                image: item.image,
                 quantity: item.quantity,
-                refundAmount:
-                    item.price * item.quantity -
-                    (totalDiscountAmount + totalCouponDeduction),
-            })),
+                status: item.status,
+            },
+            totalPrice:baseRefundAmount,
+            orderNumber: order.orderNumber,
+            paymentMethod: order.paymentMethod,
+            address: order.address,
+            discount: itemDiscountShare, 
+            coupon: itemCouponShare,
+            deliveryCharge,
+            finalTotal,
         });
     } catch (error) {
-        console.error('Error viewing order details:', error);
-        return res.status(500).json({ success: false, message: 'Server error' });
+        console.error('Error fetching order details:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 

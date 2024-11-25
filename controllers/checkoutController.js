@@ -132,6 +132,10 @@ exports.getCheckoutPage = async (req, res) => {
             req.session.cart = [];
         }
 
+        // Clear previously applied coupon for a fresh checkout
+        req.session.couponCode = null;
+        req.session.appliedCoupon = null;
+
         const coupons = await Coupon.find({ isDeleted: false, isActive: true, expirationDate: { $gte: Date.now() } });
         const wallet = await Wallet.findOne({ userId: req.user._id });
         const walletBalance = wallet ? wallet.balance : 0;
@@ -139,14 +143,14 @@ exports.getCheckoutPage = async (req, res) => {
         const addresses = await Address.find({ userId: req.user._id });
 
         const selectedAddressId = req.body.selectedAddress;
-        let deliveryCharge = 0; 
-        let customerPincode = ''; 
+        let deliveryCharge = 0;
+        let customerPincode = '';
 
         if (selectedAddressId) {
             const selectedAddress = await Address.findById(selectedAddressId);
             if (selectedAddress) {
                 customerPincode = selectedAddress.pinCode;
-                deliveryCharge = calculateDeliveryCharge(customerPincode);
+                deliveryCharge = calculateDeliveryCharge(customerPincode); 
             } else {
                 console.error("Selected address not found.");
             }
@@ -168,26 +172,14 @@ exports.getCheckoutPage = async (req, res) => {
             return { ...item, name: product.name, price: product.price, discountedPrice, image: productImagePath };
         })).then(items => items.filter(item => item));
 
-        const couponCode = req.session.couponCode || null;
+        const couponCode = null; // Reset couponCode for this session
 
         let totalPrice = detailedCart.reduce((total, item) => total + (item.discountedPrice * item.quantity), 0);
 
-        if (couponCode) {
-            const coupon = await Coupon.findOne({ code: couponCode, isDeleted: false, isActive: true, expirationDate: { $gte: Date.now() } });
-            if (coupon) {
-                if (coupon.discountType === 'percentage') {
-                    totalPrice *= (1 - coupon.discountValue / 100);
-                } else if (coupon.discountType === 'fixed') {
-                    totalPrice -= coupon.discountValue;
-                }
-                totalPrice = Math.max(totalPrice, 0); 
-                req.session.appliedCoupon = couponCode; 
-            }
-        }
-
+        let couponDiscount = 0; // Reset coupon discount
         req.session.totalPrice = totalPrice;
 
-        const finalPrice = totalPrice + deliveryCharge; 
+        const finalPrice = totalPrice + deliveryCharge;
 
         let errorMessage = '';
         if (req.body.paymentMethod === 'COD' && totalPrice > 1000) {
@@ -201,6 +193,7 @@ exports.getCheckoutPage = async (req, res) => {
             walletBalance,
             coupons,
             couponCode,
+            couponDiscount,
             deliveryCharge,
             errorMessage
         });
@@ -215,6 +208,7 @@ exports.getCheckoutPage = async (req, res) => {
         });
     }
 };
+
 
 exports.addAddress = async (req, res) => {
     const { name, mobileNumber, city, state, pinCode } = req.body;
@@ -270,7 +264,6 @@ exports.deleteAddress = async (req, res) => {
         res.status(500).json({ success: false, message: "Error deleting address" });
     }
 };
-
 
 exports.placeOrder = async (req, res) => {
     try {

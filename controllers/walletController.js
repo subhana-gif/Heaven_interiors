@@ -63,8 +63,6 @@ exports.getWalletTransactions = async (req, res) => {
     }
 };
 
-
-
 exports.applyWallet = async (req, res) => {
     const userId = req.user._id;
     const useWallet = req.body.useWallet;

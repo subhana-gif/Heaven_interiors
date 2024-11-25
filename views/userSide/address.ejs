@@ -1,17 +1,92 @@
-<div class="container">
-    <h3>Address Management</h3>
-    <button class="btn btn-success" id="addAddressBtn">Add New Address</button>
+<style>
+    .confirmation-modal-delete {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+}
 
-    <div id="address-list">
+.modal-content-delete {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 15px 20px;
+    border-radius: 6px;
+    text-align: center;
+    width: 250px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content-delete p {
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.modal-content-delete .btn-confirm,
+.modal-content-delete .btn-cancel {
+    padding: 6px 12px;
+    font-size: 13px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0 5px;
+}
+
+.modal-content-delete .btn-confirm {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.modal-content-delete .btn-cancel {
+    background-color: #dc3545;
+    color: #fff;
+}
+#address-list .list-group-item {
+    margin-bottom: 2em;
+    border: 1px solid #ccc;
+    border-radius: 1%;
+}
+
+
+</style>
+<div class="container">
+    <h4>Address Management</h4>
+
+    <div class="list-group">
+        <button class="btn btn-outline-success w-100 mt-3" id="addAddressBtn">
+            Add New Address
+        </button>
+    </div>
+        
+    <div id="address-list" class="mt-3" style="width: 100%;">
         <% if (addresses.length > 0) { %>
-            <ul class="list-group mt-3">
+            <ul class="list-group" style="width: 60rem;">
                 <% addresses.forEach(function(address) { %>
-                    <li class="list-group-item">
-                        <strong><%= address.name %></strong>
-                        <p><%= address.address %>, <%= address.city %>, <%= address.state %> - <%= address.pinCode %></p>
-                        <div class="btn-group">
-                            <button class="btn btn-warning edit-address-btn" data-id="<%= address._id %>" data-toggle="modal" data-target="#editAddressModal">Edit</button>
-                            <button class="btn btn-danger delete-address-btn" data-id="<%= address._id %>">Delete</button>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong><%= address.name %></strong>
+                            <p>
+                                <br><%= address.mobileNumber %>, <%= address.city %>, <%= address.state %> - <%= address.pinCode %>
+                            </p>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm" type="button" id="dropdownMenu<%= address._id %>" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-ellipsis-v"></i> <!-- Font Awesome icon for three dots -->
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenu<%= address._id %>">
+                                <li>
+                                    <a class="dropdown-item edit-address-btn" href="#" data-id="<%= address._id %>" data-bs-toggle="modal" data-bs-target="#editAddressModal">Edit</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item delete-address-btn" href="#" data-id="<%= address._id %>">Delete</a>
+                                </li>
+                            </ul>
                         </div>
                     </li>
                 <% }); %>
@@ -20,183 +95,325 @@
             <p>No addresses found.</p>
         <% } %>
     </div>
-    
+        
     <!-- Modal to add new address -->
     <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addAddressModalLabel">Add New Address</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="add-address-form">
+                    <form id="add-address-form" novalidate>
+                        <div id="error-message" class="alert alert-danger" style="display: none;"></div>
+                        
                         <div class="form-group">
-                            <label for="name">Name:</label>
+                            <label for="addressName">Name:</label>
                             <input type="text" class="form-control" id="addressName" required />
                         </div>
                         <div class="form-group">
-                            <label for="address">Address:</label>
-                            <input type="text" class="form-control" id="address" required />
+                            <label for="addressMobileNumber">Mobile Number:</label>
+                            <input type="text" class="form-control" id="addressMobileNumber" pattern="^[6-9]\d{9}$" required />
+                            <div class="invalid-feedback">Please enter a valid mobile number</div>
                         </div>
                         <div class="form-group">
-                            <label for="city">City:</label>
-                            <input type="text" class="form-control" id="city" required />
+                            <label for="addressCity">City:</label>
+                            <input type="text" class="form-control" id="addressCity" required />
                         </div>
                         <div class="form-group">
-                            <label for="state">State:</label>
-                            <input type="text" class="form-control" id="state" required />
+                            <label for="addressState">State:</label>
+                            <input type="text" class="form-control" id="addressState" required />
                         </div>
                         <div class="form-group">
-                            <label for="pinCode">Pin Code:</label>
-                            <input type="text" class="form-control" id="pinCode" required />
+                            <label for="addressPinCode">Pin Code:</label>
+                            <input type="text" class="form-control" id="addressPinCode" pattern="^\d{6}$" required />
+                            <div class="invalid-feedback">Please enter a valid pin code</div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="saveNewAddressBtn">Save Address</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" id="saveNewAddressBtn">Save Address</button>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Modal to edit an address -->
-    <div class="modal fade" id="editAddressModal" tabindex="-1" aria-labelledby="editAddressModalLabel" aria-hidden="true">
+    
+    <div id="editAddressModal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editAddressModalLabel">Edit Address</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <h5 class="modal-title">Edit Address</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="edit-address-form">
+                    <form id="editAddressForm" novalidate>
                         <div class="form-group">
-                            <label for="editAddressName">Name:</label>
-                            <input type="text" class="form-control" id="editAddressName" required />
+                            <label for="editAddressName">Name</label>
+                            <input type="text" id="editAddressName" class="form-control" required />
                         </div>
                         <div class="form-group">
-                            <label for="editAddress">Address:</label>
-                            <input type="text" class="form-control" id="editAddress" required />
+                            <label for="editMobileNumber">Mobile Number</label>
+                            <input type="text" id="editMobileNumber" class="form-control" pattern="^[6-9]\d{9}$" required />
+                            <div class="invalid-feedback">Please enter a valid mobile number (10 digits, starting with 6, 7, 8, or 9).</div>
+                        </div>                        
+                        <div class="form-group">
+                            <label for="editCity">City</label>
+                            <input type="text" id="editCity" class="form-control" required />
                         </div>
                         <div class="form-group">
-                            <label for="editCity">City:</label>
-                            <input type="text" class="form-control" id="editCity" required />
+                            <label for="editState">State</label>
+                            <input type="text" id="editState" class="form-control" required />
                         </div>
                         <div class="form-group">
-                            <label for="editState">State:</label>
-                            <input type="text" class="form-control" id="editState" required />
+                            <label for="editPinCode">Pin Code</label>
+                            <input type="text" id="editPinCode" class="form-control" pattern="^\d{6}$" required />
+                            <div class="invalid-feedback">Please enter a valid pin code (6 digits).</div>
                         </div>
-                        <div class="form-group">
-                            <label for="editPinCode">Pin Code:</label>
-                            <input type="text" class="form-control" id="editPinCode" required />
-                        </div>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" id="updateAddressBtn" class="btn btn-success" data-id="">Update Address</button>
                     </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="updateAddressBtn">Update Address</button>
                 </div>
             </div>
         </div>
     </div>
-
+    
+    <div id="confirmationModal" class="confirmation-modal-delete" style="display: none;">
+        <div class="modal-content-delete">
+            <p>Are you sure you want to delete this address?</p>
+            <button id="confirmButton" class="btn-confirm">OK</button>
+            <button id="cancelButton" class="btn-cancel">Cancel</button>
+        </div>
+    </div>
+    
 </div>
 
 <!-- JavaScript to handle address management -->
 <script>
-    document.getElementById('addAddressBtn').addEventListener('click', function() {
-        $('#addAddressModal').modal('show');
-    });
 
-    document.getElementById('saveNewAddressBtn').addEventListener('click', function() {
-        const name = document.getElementById('addressName').value;
-        const address = document.getElementById('address').value;
-        const city = document.getElementById('city').value;
-        const state = document.getElementById('state').value;
-        const pinCode = document.getElementById('pinCode').value;
+document.getElementById('addAddressBtn').addEventListener('click', function() {
+    // Clear previous error message
+    document.getElementById('error-message').style.display = 'none';
+    document.getElementById('error-message').textContent = '';
+    
+    $('#addAddressModal').modal('show');
+});
 
-        $.ajax({
-            url: '/user/address/add',
-            method: 'POST',
-            data: { name, address, city, state, pinCode },
-            success: function(response) {
-                if (response.success) {
-                    alert('Address added successfully!');
-                    location.reload(); // Reload the page to show the new address
-                } else {
-                    alert(response.message);
-                }
+document.getElementById('saveNewAddressBtn').addEventListener('click', function() {
+    const name = document.getElementById('addressName').value;
+    const mobileNumber = document.getElementById('addressMobileNumber').value;
+    const city = document.getElementById('addressCity').value;
+    const state = document.getElementById('addressState').value;
+    const pinCode = document.getElementById('addressPinCode').value;
+    
+    // Basic validation
+    let errorMessage = '';
+
+    if (!name || !mobileNumber || !city || !state || !pinCode) {
+        errorMessage = 'Please fill in all fields.';
+    } else if (!/^[6-9]\d{9}$/.test(mobileNumber)) {
+        errorMessage = 'Please enter a valid mobile number.';
+    } else if (!/^\d{6}$/.test(pinCode)) {
+        errorMessage = 'Please enter a valid pin code.';
+    }
+
+    if (errorMessage) {
+        // Display error message in modal
+        document.getElementById('error-message').style.display = 'block';
+        document.getElementById('error-message').textContent = errorMessage;
+        return;
+    }
+
+    // Send AJAX request if validation is successful
+    $.ajax({
+        url: '/user/profile/add-address',
+        method: 'POST',
+        data: { name, mobileNumber, city, state, pinCode },
+        success: function(response) {
+            if (response.success) {
+                location.reload(); // Reload the page to show the new address
+            } else {
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').textContent = 'Failed to add address.';
             }
-        });
+        },
+        error: function() {
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('error-message').textContent = 'An error occurred while adding the address.';
+        }
     });
+});
 
-    // Edit address functionality
-    document.querySelectorAll('.edit-address-btn').forEach(function(button) {
-        button.addEventListener('click', function() {
-            const addressId = button.getAttribute('data-id');
-            // Populate the modal with current address data
-            $.ajax({
-                url: '/user/address/get/' + addressId,
-                method: 'GET',
-                success: function(response) {
+    document.querySelectorAll('.edit-address-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        const addressId = this.getAttribute('data-id');
+
+        // Make an AJAX request to fetch the address details from the server
+        $.ajax({
+            url: `/user/profile/address/${addressId}`, // Adjust the endpoint accordingly
+            method: 'GET',
+            success: function (response) {
+                if (response.success) {
                     const address = response.address;
+
+                    // Populate the edit form fields with the existing address data
                     document.getElementById('editAddressName').value = address.name;
-                    document.getElementById('editAddress').value = address.address;
+                    document.getElementById('editMobileNumber').value = address.mobileNumber;
                     document.getElementById('editCity').value = address.city;
                     document.getElementById('editState').value = address.state;
                     document.getElementById('editPinCode').value = address.pinCode;
+
+                    // Store the address ID in the update button for later use
+                    document.getElementById('updateAddressBtn').setAttribute('data-id', address._id);
+
+                    // Reset validation classes
+                    const form = document.getElementById('editAddressForm');
+                    form.classList.remove('was-validated');
+
+                    // Show the edit modal
                     $('#editAddressModal').modal('show');
+                } else {
                 }
-            });
+            },
+            error: function (error) {
+                console.error('Error fetching address:', error);
+            }
         });
     });
+});
 
-    document.getElementById('updateAddressBtn').addEventListener('click', function() {
+document.getElementById('editAddressForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const form = this;
+
+    // Check if the form is valid
+    if (!form.checkValidity()) {
+        event.stopPropagation();
+        form.classList.add('was-validated'); // Add Bootstrap validation styles
+    } else {
+        // If valid, proceed with the AJAX PUT request
+        const addressId = document.getElementById('updateAddressBtn').getAttribute('data-id');
+        const data = {
+            name: document.getElementById('editAddressName').value,
+            mobileNumber: document.getElementById('editMobileNumber').value,
+            city: document.getElementById('editCity').value,
+            state: document.getElementById('editState').value,
+            pinCode: document.getElementById('editPinCode').value
+        };
+
+        // Make the AJAX PUT request
+        $.ajax({
+            url: `/user/profile/${addressId}/edit-address`,
+            method: 'PUT',
+            data: JSON.stringify(data),
+            contentType: 'application/json',
+            success: function (response) {
+                console.log('Response:', response); // Debugging
+                if (response.success) {
+                    $('#editAddressModal').modal('hide');
+                    // Optionally refresh the page or update the UI dynamically
+                } else {
+                }
+            },
+            error: function (error) {
+                console.error('Error updating address:', error);
+            }
+        });
+    }
+});
+
+// Handle the update action
+document.getElementById('updateAddressBtn').addEventListener('click', function () {
+    const addressId = this.getAttribute('data-id');
+
+    const updatedAddress = {
+        name: document.getElementById('editAddressName').value,
+        mobileNumber: document.getElementById('editMobileNumber').value,
+        city: document.getElementById('editCity').value,
+        state: document.getElementById('editState').value,
+        pinCode: document.getElementById('editPinCode').value,
+    };
+
+    // Send updated address data to the server via AJAX
+    $.ajax({
+        url: `/user/profile/${addressId}/edit-address`, // Update with the correct endpoint
+        method: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify(updatedAddress),
+        success: function (response) {
+            if (response.success) {
+                location.reload(); // Reload the page to reflect changes
+            } else {
+            }
+        },
+        error: function (error) {
+            console.error(error);
+        }
+    });
+});
+
+document.getElementById('updateAddressBtn').addEventListener('click', function() {
         const addressId = document.getElementById('editAddressId').value;
         const name = document.getElementById('editAddressName').value;
-        const address = document.getElementById('editAddress').value;
+        const mobileNumber = document.getElementById('editMobileNumber').value;
         const city = document.getElementById('editCity').value;
         const state = document.getElementById('editState').value;
         const pinCode = document.getElementById('editPinCode').value;
 
         $.ajax({
-            url: '/user/address/edit/' + addressId,
+            url: '/user/profile/add-address/' + addressId,
             method: 'POST',
-            data: { name, address, city, state, pinCode },
+            data: { name, mobileNumber, city, state, pinCode },
             success: function(response) {
                 if (response.success) {
-                    alert('Address updated successfully!');
                     location.reload();
                 } else {
-                    alert(response.message);
                 }
             }
         });
     });
 
-    // Delete address functionality
-    document.querySelectorAll('.delete-address-btn').forEach(function(button) {
-        button.addEventListener('click', function() {
-            const addressId = button.getAttribute('data-id');
-            if (confirm('Are you sure you want to delete this address?')) {
-                $.ajax({
-                    url: '/user/address/delete/' + addressId,
-                    method: 'POST',
-                    success: function(response) {
-                        if (response.success) {
-                            alert('Address deleted successfully!');
-                            location.reload();
-                        } else {
-                            alert(response.message);
-                        }
-                    }
-                });
-            }
-        });
+    let addressIdToDelete = null;  // Variable to store address ID for deletion
+
+// Open the custom confirmation modal
+document.querySelectorAll('.delete-address-btn').forEach(function (button) {
+    button.addEventListener('click', function () {
+        addressIdToDelete = button.getAttribute('data-id');  // Store the address ID
+        document.getElementById('confirmationModal').style.display = 'flex';  // Show the modal
     });
+});
+
+// Handle the confirmation button click
+document.getElementById('confirmButton').addEventListener('click', function () {
+    if (addressIdToDelete) {
+        // Make the AJAX request to delete the address
+        $.ajax({
+    url: '/user/profile/address/delete/' + addressIdToDelete,  // Send the addressId in the URL
+    method: 'DELETE',  // Use DELETE for deleting resources (RESTful approach)
+    success: function (response) {
+        if (response.success) {
+            location.reload();  // Reload the page after successful deletion
+        } else {
+        }
+    },
+    error: function () {
+    }
+});
+    }
+
+    // Close the modal after confirming
+    document.getElementById('confirmationModal').style.display = 'none';
+});
+
+// Handle the cancel button click (close the modal without deleting)
+document.getElementById('cancelButton').addEventListener('click', function () {
+    document.getElementById('confirmationModal').style.display = 'none';  // Close the modal
+});
+
 </script>
