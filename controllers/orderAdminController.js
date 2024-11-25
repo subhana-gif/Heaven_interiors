@@ -165,7 +165,8 @@ const viewDetails = async (req, res) => {
     try {
         const { orderId } = req.params;
         const { productId } = req.query;
-        
+        const product = await Product.findById(productId).select('images');
+        const image = product.images[0];
         // Fetch the order with cart items and category data
         const order = await Order.findById(orderId).populate({
             path: 'cartItems.productId',
@@ -226,7 +227,7 @@ const viewDetails = async (req, res) => {
         const itemCouponShare = Math.round(((baseRefundAmount / totalOrderPrice) * discountAmount) * 100) / 100;
             
         const finalTotal = baseRefundAmount - itemDiscountShare - itemCouponShare + deliveryCharge;
-        console.log('images:',item.productId.images);
+        console.log('image:',image);
         
         // Respond with the order details and calculated final total
         res.status(200).json({
@@ -236,7 +237,6 @@ const viewDetails = async (req, res) => {
                 name: item.name,
                 price: item.price,
                 category: item.category.name, // Extract category name
-                images: item.productId.images || [],
                 quantity: item.quantity,
                 status: item.status,
             },
@@ -244,6 +244,7 @@ const viewDetails = async (req, res) => {
             orderNumber: order.orderNumber,
             paymentMethod: order.paymentMethod,
             address: order.address,
+            image,
             discount: itemDiscountShare, 
             coupon: itemCouponShare,
             deliveryCharge,
