@@ -224,6 +224,13 @@ async function viewOrderDetails(orderId, productId) {
             const totalPrice = data.totalPrice
             
             document.getElementById('productName').textContent = product.name;
+            document.getElementById('productImage').src = product.imageUrl || 'default-image-path.jpg';
+            if (product.images && product.images.length > 0) {
+                const imagePath = product.images[0].split('\\').pop().split('/').pop();
+                document.getElementById('productImage').src = `/${imagePath}`;
+            } else {
+                document.getElementById('productImage').src = 'default-image-path.jpg'; // Replace with your fallback image path
+            }
             document.getElementById('productQuantity').textContent = product.quantity;
             document.getElementById('orderNumber').textContent = orderNumber;
             document.getElementById('paymentMethod').textContent = paymentMethod;
