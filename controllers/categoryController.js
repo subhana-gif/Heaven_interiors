@@ -5,7 +5,7 @@ exports.renderCategoryPage = async (req, res) => {
     try {
         const search = req.query.search || ''; 
         const currentpage = parseInt(req.query.page) || 1; 
-        const limit = 5;
+        const limit = 8;
         const skip = (currentpage - 1) * limit;
 
         const categories = await Category.find({
