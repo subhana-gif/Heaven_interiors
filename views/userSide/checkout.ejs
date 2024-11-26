@@ -192,13 +192,13 @@
             <button type="button" class="btn btn-success mb-3" onclick="openAddAddressModal()">Add New Address</button>
             <div id="addressList">
                 <% addresses.forEach(address => { %>
-                    <div data-address-id="<%= address._id %>">
-                        <span style="margin-left: 8px;">
-                            <%= address.name %><br>
-                            <%= address.mobileNumber %><br>
-                            <%= address.city %><br>
-                            <%= address.state %><br>
-                            <%= address.pinCode %><br>
+                    <div data-address-id="<%= address._id %>" style="margin-bottom: 2%;">
+                        <span style="margin: 8px;">
+                            <%= address.name %>,
+                            <%= address.mobileNumber %>,
+                            <%= address.city %>,
+                            <%= address.state %>,
+                            <%= address.pinCode %>,
                         </span>
                         <button type="button" class="btn-edit" onclick="editAddress('<%= address._id %>', '<%= address.name %>', '<%= address.mobileNumber %>', '<%= address.city %>', '<%= address.state %>', '<%= address.pinCode %>')">Edit</button>
                         <button type="button" class="btn-delete" onclick="deleteAddress('<%= address._id %>')">Delete</button>
