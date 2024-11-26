@@ -259,7 +259,6 @@ async function viewOrderDetails(orderId, productId) {
             const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
             modal.show();
         } else {
-            alert('Failed to fetch product details.');
         }
     } catch (error) {
         console.error('Error:', error);

@@ -331,7 +331,6 @@ function showNotification(message) {
 document.querySelector('.btn-checkout').addEventListener('click', function(event) {
         if (this.classList.contains('disabled')) {
             event.preventDefault();
-            alert('Please remove out-of-stock items before proceeding to checkout.');
         }
     });
     
@@ -424,11 +423,9 @@ $(document).ready(function () {
 
                     // Display an error message if stock is exceeded
                     if (response.errorMessage) {
-                        alert(response.errorMessage);
                     }
                 },
                 error: function () {
-                    alert('An error occurred. Please try again.');
                 }
             });
         });

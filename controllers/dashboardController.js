@@ -68,24 +68,20 @@ exports.generatePDFReport = async (req, res) => {
             return res.status(400).json({ error: 'Invalid sales data format. Expected an array.' });
         }
 
-        // Initialize PDF Document
         const doc = new PDFDocument({ margin: 40 });
         const filePath = path.join(__dirname, 'salesReport.pdf');
 
         const writeStream = fs.createWriteStream(filePath);
         doc.pipe(writeStream);
 
-        // Title
         doc.fontSize(20).font('Helvetica-Bold').text("Sales Report", { align: 'center' }).moveDown(2);
 
-        // Define Table Styling
         const tableTop = 150;
         const rowHeight = 30;
         const columnWidths = [90, 120, 100, 100, 120];
         const headers = ["Date", "Total Sales", "Sales Count", "Total Discount", "Coupon Deduction"];
         const cellPadding = 5;
 
-        // Render Table Header
         let leftMargin = 50;
         doc.fontSize(12).font('Helvetica-Bold');
         headers.forEach((header, i) => {
@@ -99,7 +95,6 @@ exports.generatePDFReport = async (req, res) => {
             leftMargin += columnWidths[i];
         });
 
-        // Render Table Rows
         let rowPosition = tableTop + rowHeight;
         doc.fontSize(10).font('Helvetica');
         salesData.forEach(item => {
@@ -126,17 +121,15 @@ exports.generatePDFReport = async (req, res) => {
             rowPosition += rowHeight;
         });
 
-        // Finalize PDF
         doc.end();
 
-        // Handle Download
         writeStream.on('finish', () => {
             res.download(filePath, 'salesReport.pdf', err => {
                 if (err) {
                     console.error("Error downloading sales report:", err);
                     res.status(500).send('Failed to send PDF');
                 }
-                fs.unlinkSync(filePath); // Clean up temporary file
+                fs.unlinkSync(filePath);
             });
         });
 

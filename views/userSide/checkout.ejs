@@ -462,12 +462,10 @@ fetch(`/user/checkout/addresses/delete/${addressId}`, {
         } else {
         }
     } else {
-        alert("Failed to delete address: " + data.message);
     }
 })
 .catch(error => {
     console.error("Error deleting address:", error);
-    alert("Error deleting address. Please try again later.");
 });
 }
 

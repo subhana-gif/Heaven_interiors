@@ -97,10 +97,9 @@ exports.editCategory = async (req, res) => {
     const categoryId = req.params.id;
 
     try {
-        // Check if a category with the same name already exists (excluding the current one)
         const existingCategory = await Category.findOne({
             name: { $regex: `^${name.trim()}$`, $options: "i" },
-            _id: { $ne: categoryId }, // Exclude the current category
+            _id: { $ne: categoryId }, 
         });
 
         if (existingCategory) {
@@ -114,7 +113,6 @@ exports.editCategory = async (req, res) => {
             });
         }
 
-        // Update the category
         await Category.findByIdAndUpdate(categoryId, {
             name: name.trim(),
             description,
@@ -125,7 +123,6 @@ exports.editCategory = async (req, res) => {
     } catch (err) {
         console.error('Error editing category:', err);
 
-        // Handle unexpected errors
         res.render('adminPanel', {
             body: 'admin/category',
             errorMessage: 'An unexpected error occurred. Please try again.',

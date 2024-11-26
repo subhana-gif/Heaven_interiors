@@ -65,13 +65,10 @@
     const result = await response.json();
 
     if (result.success) {
-      alert('OTP resent successfully');
     } else {
-      alert(result.message || 'Error resending OTP');
     }
   } catch (error) {
     console.error('Error:', error);
-    alert('Error resending OTP.');
   }
 });
 

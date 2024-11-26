@@ -170,7 +170,7 @@ const viewDetails = async (req, res) => {
 
         const order = await Order.findById(orderId).populate({
             path: 'cartItems.productId',
-            model: 'Product', // Reference to the Product model to populate productId
+            model: 'Product', 
         })
             .populate('cartItems.category')
             .populate('cartItems.productId');
@@ -179,7 +179,6 @@ const viewDetails = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Order not found' });
         }
 
-        // Find the item in the order
         const item = order.cartItems.find(item => item.productId.toString() === productId);
         
         if (!item) {
@@ -187,19 +186,16 @@ const viewDetails = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Item not found in order' });
         }
 
-        // Calculate the base refund amount (total price of items in the order)
         const baseRefundAmount = item.price * item.quantity;
         const deliveryCharge = calculateDeliveryCharge(order.address.pinCode);             
 
-        // Use let to allow re-assignment of itemDiscountShare
         let itemDiscountShare = 0;
 
-        // Fetch any applicable product or category offer
         const offer = await Offer.findOne({
             isDeleted: false,
             $or: [
                 { offerType: 'product', relatedId: item.productId },
-                { offerType: 'category', relatedId: item.category._id }  // Using item.category._id for category comparison
+                { offerType: 'category', relatedId: item.category._id }  
             ],
             startDate: { $lte: new Date() },
             endDate: { $gte: new Date() }
@@ -221,7 +217,6 @@ const viewDetails = async (req, res) => {
             }
         }
         
-        // Coupon deduction logic
         const discountAmount = order.couponDeduction || 0;
         const totalOrderPrice = order.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const itemCouponShare = Math.round(((baseRefundAmount / totalOrderPrice) * discountAmount) * 100) / 100;
@@ -229,14 +224,13 @@ const viewDetails = async (req, res) => {
         const finalTotal = baseRefundAmount - itemDiscountShare - itemCouponShare + deliveryCharge;
         console.log('image:',image);
         
-        // Respond with the order details and calculated final total
         res.status(200).json({
             success: true,
             product: {
                 id: item.productId, 
                 name: item.name,
                 price: item.price,
-                category: item.category.name, // Extract category name
+                category: item.category.name, 
                 quantity: item.quantity,
                 status: item.status,
             },

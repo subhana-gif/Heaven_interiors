@@ -157,12 +157,10 @@ exports.editCoupon = async (req, res) => {
     }
 };
 
-// Inside your controller
 exports.applyCoupon = async (req, res) => {
     const { couponCode } = req.body;
     const totalPrice = req.session.totalPrice; 
     
-    // Check if a coupon is already applied
     if (req.session.couponCode) {
         return res.status(400).json({ success: false, message: 'A coupon is already applied.' });
     }
@@ -202,7 +200,7 @@ exports.applyCoupon = async (req, res) => {
         req.session.totalPrice = newTotalPrice;
         req.session.discountAmount = discountAmount; 
         req.session.couponCode = couponCode; 
-        req.session.originalTotalPrice = totalPrice; // Store the original price
+        req.session.originalTotalPrice = totalPrice;
 
         if (coupon.usageLimit) {
             coupon.usedCount = (coupon.usedCount || 0) + 1; 
@@ -220,15 +218,14 @@ exports.removeCoupon = (req, res) => {
     try {
         const originalTotalPrice = req.session.originalTotalPrice || req.session.totalPrice; 
         
-        // Reset the session values related to the coupon
-        req.session.totalPrice = originalTotalPrice; // Reset to the original price
-        req.session.discountAmount = 0; // Clear the discount
-        req.session.couponCode = null; // Clear the coupon code
+        req.session.totalPrice = originalTotalPrice; 
+        req.session.discountAmount = 0;
+        req.session.couponCode = null; 
 
         return res.json({ 
             success: true, 
             message: 'Coupon removed successfully', 
-            newTotalPrice: originalTotalPrice // Send the original total price
+            newTotalPrice: originalTotalPrice 
         });
     } catch (error) {
         console.error('Error removing coupon:', error);

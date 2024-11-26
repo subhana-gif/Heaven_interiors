@@ -50,48 +50,44 @@ exports.getSearchResults = async (req, res) => {
             };
         }
 
-        // Get total count for pagination
         totalResults = await Product.countDocuments(filter);
 
-        // Define sorting criteria
         let sortCriteria = {};
         switch (sort) {
             case 'popularity':
-                sortCriteria.popularity = -1; // Descending
+                sortCriteria.popularity = -1; 
                 break;
             case 'priceLowToHigh':
-                sortCriteria.price = 1; // Ascending
+                sortCriteria.price = 1; 
                 break;
             case 'priceHighToLow':
-                sortCriteria.price = -1; // Descending
+                sortCriteria.price = -1; 
                 break;
             case 'averageRatings':
-                sortCriteria.averageRating = -1; // Descending
+                sortCriteria.averageRating = -1;
                 break;
             case 'newArrivals':
-                sortCriteria.createdAt = -1; // Newest first
+                sortCriteria.createdAt = -1;
                 break;
             case 'aToZ':
-                sortCriteria.name = 1; // Alphabetical (A-Z)
+                sortCriteria.name = 1;
                 break;
             case 'zToA':
-                sortCriteria.name = -1; // Reverse alphabetical (Z-A)
+                sortCriteria.name = -1; 
                 break;
             case 'stockManagement':
-                sortCriteria.stock = -1; // Higher stock first
+                sortCriteria.stock = -1; 
                 break;
             default:
                 break;
         }
 
-        // Fetch sorted and paginated results
         let results = await Product.find(filter)
             .populate('category')
-            .sort(sortCriteria) // Apply sorting first
-            .skip((page - 1) * limit) // Apply pagination
+            .sort(sortCriteria)
+            .skip((page - 1) * limit) 
             .limit(limit);
 
-        // Apply discounts for each product
         for (const product of results) {
             const offer = await Offer.findOne({
                 $or: [
@@ -112,7 +108,6 @@ exports.getSearchResults = async (req, res) => {
             }
         }
 
-        // Map product images and data
         results = results.map(product => {
             const productImagePath = product.images && product.images.length > 0
                 ? `/uploads/${product.images[0].split('\\').pop().split('/').pop()}`
@@ -127,13 +122,12 @@ exports.getSearchResults = async (req, res) => {
 
         const totalPages = Math.ceil(totalResults / limit);
 
-        // Send results to the view
         res.render('userSide/searchResult', {
             query,
             results,
             currentPage: page,
             totalPages,
-            sort, // Send the current sort option
+            sort, 
         });
     } catch (err) {
         console.error(err);

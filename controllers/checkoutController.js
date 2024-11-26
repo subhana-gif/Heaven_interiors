@@ -100,7 +100,7 @@ exports.createOrder = async (req, res) => {
         
         
         const options = {
-            amount: Math.round(finalAmount * 100), // Convert to paisa
+            amount: Math.round(finalAmount * 100),
             currency: "INR",
             receipt: `receipt_order_${new Date().getTime()}`
         };
@@ -132,7 +132,6 @@ exports.getCheckoutPage = async (req, res) => {
             req.session.cart = [];
         }
 
-        // Clear previously applied coupon for a fresh checkout
         req.session.couponCode = null;
         req.session.appliedCoupon = null;
 
@@ -172,11 +171,11 @@ exports.getCheckoutPage = async (req, res) => {
             return { ...item, name: product.name, price: product.price, discountedPrice, image: productImagePath };
         })).then(items => items.filter(item => item));
 
-        const couponCode = null; // Reset couponCode for this session
+        const couponCode = null; 
 
         let totalPrice = detailedCart.reduce((total, item) => total + (item.discountedPrice * item.quantity), 0);
 
-        let couponDiscount = 0; // Reset coupon discount
+        let couponDiscount = 0; 
         req.session.totalPrice = totalPrice;
 
         const finalPrice = totalPrice + deliveryCharge;

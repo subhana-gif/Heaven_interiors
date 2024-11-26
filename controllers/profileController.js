@@ -3,7 +3,7 @@ const Address = require('../models/Address');
 const bcrypt = require('bcrypt');
 
 exports.renderProfile = (req, res) => {
-    res.render('userSide/profile', { body: 'userSide/personalInfo', selectedView:'personalInfo' }); // Default profile page with no content
+    res.render('userSide/profile', { body: 'userSide/personalInfo', selectedView:'personalInfo' });
   };
   
 
@@ -53,12 +53,10 @@ exports.renderProfile = (req, res) => {
               });
           }
   
-          // Update username if provided and different
           if (username && username !== user.username) {
               user.username = username;
           }
   
-          // If updating the password, validate the old password
           if (newPassword) {
               if (!oldPassword) {
                   return res.status(400).json({
@@ -80,7 +78,6 @@ exports.renderProfile = (req, res) => {
               user.password = newPassword
           }
   
-          // Save updated user
           await user.save();
   
           res.json({
@@ -88,7 +85,7 @@ exports.renderProfile = (req, res) => {
               message: 'Personal information updated successfully',
           });
       } catch (error) {
-          console.error('Error during personal info update:', error); // Log unexpected errors
+          console.error('Error during personal info update:', error); 
           res.status(500).json({
               success: false,
               field: 'general',
@@ -98,14 +95,12 @@ exports.renderProfile = (req, res) => {
   };
 
 
-// Add Address
 exports.addAddress = async (req, res) => {
     try {
         const { name, mobileNumber, city, state, pinCode } = req.body;
   
-        // Create new address
         const newAddress = new Address({
-            userId: req.user._id, // Assuming the user is authenticated
+            userId: req.user._id,
             name,
             mobileNumber,
             city,
@@ -136,18 +131,15 @@ exports.getAddress = async (req, res) => {
       }
 };
 
-// Edit Address
 exports.editAddress = async (req, res) => {
   try {
       const { addressId } = req.params;
       const { name, mobileNumber, city, state, pinCode } = req.body;
 
-      // Validation logic
       if (!name || !mobileNumber || !city || !state || !pinCode) {
           return res.status(400).json({ success: false, message: 'All fields are required.' });
       }
 
-      // Example validation for mobile number and pin code
       const mobileRegex = /^[6-9]\d{9}$/;
       const pinCodeRegex = /^\d{6}$/;
 
@@ -159,7 +151,6 @@ exports.editAddress = async (req, res) => {
           return res.status(400).json({ success: false, message: 'Invalid pin code.' });
       }
 
-      // Update the address in the database
       const updatedAddress = await Address.findByIdAndUpdate(
           addressId,
           { name, mobileNumber, city, state, pinCode },
@@ -179,9 +170,7 @@ exports.editAddress = async (req, res) => {
 
 exports.deleteAddress = async (req, res) => {
     try {
-        const { addressId } = req.params;  // Read addressId from URL params
-  
-        // Find and delete the address
+        const { addressId } = req.params;
         const deletedAddress = await Address.findByIdAndDelete(addressId);
   
         if (!deletedAddress) {
