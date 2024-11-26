@@ -58,75 +58,77 @@ exports.addOffer = async (req, res) => {
             startDate,
             endDate,
         } = req.body;
-        const offers = await Offer.find().sort({createdAt:-1});
+
+        const normalizedTitle = title.trim().toLowerCase(); 
+
+        const existingOffer = await Offer.findOne({
+            title: { $regex: new RegExp('^' + normalizedTitle + '$', 'i') },
+        });
+
+        const offers = await Offer.find().sort({ createdAt: -1 });
         const products = await Product.find();
         const categories = await Category.find();
 
-        const existingOffer = await Offer.findOne({
-            title: { $regex: new RegExp('^' + title + '$', 'i') }, 
-        });
-
         if (existingOffer) {
-            res.render('adminPanel', {
+            return res.render('adminPanel', {
                 body: 'admin/offers',
                 offers,
-                offer: req.body, 
+                offer: req.body,
                 search: req.body.title,
-                currentPage: 1, 
-                totalPages: 1,  
+                currentPage: 1,
+                totalPages: 1,
                 products,
                 categories,
-                errorMessage: 'offer title already exists'  
+                errorMessage: 'Offer title already exists',
             });
-            }
+        }
+
+        if (new Date(startDate) >= new Date(endDate)) {
+            return res.render('adminPanel', {
+                body: 'admin/offers',
+                offers,
+                offer: req.body,
+                search: req.body.title,
+                currentPage: 1,
+                totalPages: 1,
+                products,
+                categories,
+                errorMessage: 'Start date must be earlier than end date.',
+            });
+        }
 
         const newOffer = new Offer({
-            title,
+            title: normalizedTitle,
             offerType,
             relatedId,
             discountType,
             discountValue,
             startDate,
             endDate,
-        });    
-
-        if (new Date(startDate) >= new Date(endDate)) {
-            const offers = await Offer.find().sort({createdAt:-1});
-            const products = await Product.find();
-            const categories = await Category.find();
-            return res.render('adminPanel', {
-                body: 'admin/offers',
-                offers,
-                offer: req.body,
-                search: req.body.title,
-                currentPage: 1, 
-                totalPages: 1,  
-                products,
-                categories,
-                errorMessage: 'Start date must be earlier than end date.'
-            });
-        }
+        });
 
         await newOffer.save();
         res.redirect('/adminPanel/offers');
     } catch (error) {
-        const offers = await Offer.find().sort({createdAt:-1});
+        console.error('Error adding offer:', error);
+        const offers = await Offer.find().sort({ createdAt: -1 });
         const products = await Product.find();
         const categories = await Category.find();
-        console.error('Error adding offer:', error);
+
         res.render('adminPanel', {
             body: 'admin/offers',
             offers,
-            offer: req.body, 
+            offer: req.body,
             search: req.body.title,
-            currentPage: 1, 
-            totalPages: 1,  
+            currentPage: 1,
+            totalPages: 1,
             products,
             categories,
-            errorMessage: 'Offer name already exists' 
+            errorMessage: 'An unexpected error occurred.',
         });
     }
 };
+
 
 exports.editOffer = async (req, res) => {
     try {
