@@ -338,12 +338,10 @@
               
             
                 <% if (product.stockStatus === 'In Stock') { %>
-                    <!-- <form  method="POST"> -->
-                        <button class="btn btn-warning d-flex align-items-center">
+                        <button class="btn btn-warning d-flex align-items-center buy-now-btn" data-product-id="<%= product._id %>">
                             <i class="fas fa-bolt me-2"></i> Buy Now
                         </button>
-                        <!-- </form>                 -->
-                <% } else { %> 
+                    <% } else { %> 
                   
                 <% } %>
             </div> 
@@ -427,6 +425,28 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
+
+
+    document.querySelectorAll('.buy-now-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+            const productId = button.getAttribute('data-product-id');
+            
+            // Add to Cart
+            const addToCartResponse = await fetch(`/user//add-to-cart/${productId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quantity: 1 })
+            });
+            
+            if (addToCartResponse.ok) {
+                // Proceed to Checkout
+                window.location.href = '/user/checkout';
+            } else {
+                alert('Failed to add product to cart');
+            }
+        });
+    });
+
         function toggleProfileMenu() {
             const dropdown = document.querySelector('.profile-dropdown');
             dropdown.classList.toggle('visible');

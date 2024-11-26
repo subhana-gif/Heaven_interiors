@@ -106,31 +106,33 @@
                                     </div>
                                     <div class="form-group">
                                         <label>Offer Type</label>
-                                        <select class="form-control" name="offerType" required id="offereditselect">
+                                        <select class="form-control offer-edit-select" data-modal-id="<%= offer._id %>" name="offerType" required>
                                             <option value="product" <%= offer.offerType === 'product' ? 'selected' : '' %>>Product</option>
                                             <option value="category" <%= offer.offerType === 'category' ? 'selected' : '' %>>Category</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
                                         <label>Related Item</label>
-                                        <select class="form-control" name="relatedId" id="relatededitselect" required onchange="editRelatedItems()">
-                                            <% if (offer && offer.offerType === 'category') { %>
-                                                <% categories.forEach(category => { %>
-                                                    <option value="<%= category._id %>" 
-                                                        <%= offer.relatedId && offer.relatedId.toString() === category._id.toString() ? 'selected' : '' %>>
-                                                        <%= category.name %>
-                                                    </option>
-                                                <% }) %>
-                                            <% } else { %>
-                                                <% products.forEach(product => { %>
-                                                    <option value="<%= product._id %>" 
-                                                        <%= offer.relatedId && offer.relatedId.toString() === product._id.toString() ? 'selected' : '' %>>
-                                                        <%= product.name %>
-                                                    </option>
-                                                <% }) %>
-                                            <% } %>
-                                        </select>
-                                    </div>
+                                        <select class="form-control related-edit-select" data-modal-id="<%= offer._id %>" 
+                                            data-selected-id="<%= offer.relatedId ? offer.relatedId.toString() : '' %>" 
+                                            name="relatedId" required>
+                                        <% if (offer.offerType === 'category') { %>
+                                            <% categories.forEach(category => { %>
+                                                <option value="<%= category._id %>" 
+                                                    <%= offer.relatedId && offer.relatedId.toString() === category._id.toString() ? 'selected' : '' %>>
+                                                    <%= category.name %>
+                                                </option>
+                                            <% }); %>
+                                        <% } else { %>
+                                            <% products.forEach(product => { %>
+                                                <option value="<%= product._id %>" 
+                                                    <%= offer.relatedId && offer.relatedId.toString() === product._id.toString() ? 'selected' : '' %>>
+                                                    <%= product.name %>
+                                                </option>
+                                            <% }); %>
+                                        <% } %>
+                                    </select>
+                                </div>
                                     <div class="form-group">
                                     <label for="editDiscountType" class="form-label">Discount Type</label>
                                     <select class="form-select" id="editDiscountType" name="discountType" required>
@@ -242,31 +244,36 @@
 </div>
 <script>
 
-document.addEventListener('DOMContentLoaded', function() {
-    const discountTypeSelect = document.getElementById('editDiscountType');
-    const discountAmountInput = document.getElementById('editDiscountAmount');
+document.addEventListener('DOMContentLoaded', function () {
+    // Select all discount type dropdowns and corresponding inputs
+    const discountTypeSelects = document.querySelectorAll('[id^="editDiscountType"]');
+    const discountAmountInputs = document.querySelectorAll('[id^="editDiscountAmount"]');
 
-    function updateDiscountValidation() {
+    function updateDiscountValidation(discountTypeSelect, discountAmountInput) {
         const discountType = discountTypeSelect.value;
 
         if (discountType === 'percentage') {
             discountAmountInput.max = 100;
             discountAmountInput.min = 0;
-            discountAmountInput.placeholder = 'Enter a value between 0 and 100';
         } else if (discountType === 'flat') {
-            discountAmountInput.removeAttribute('max'); 
+            discountAmountInput.removeAttribute('max');
             discountAmountInput.min = 1;
-            discountAmountInput.placeholder = 'Enter a positive amount';
         }
     }
 
-    // Run the validation update when the page loads to set correct limits
-    updateDiscountValidation();
+    // Attach event listeners to each pair of select and input
+    discountTypeSelects.forEach((select, index) => {
+        const discountAmountInput = discountAmountInputs[index];
 
-    // Add event listener to update validation when discount type changes
-    discountTypeSelect.addEventListener('change', updateDiscountValidation);
+        // Update validation on page load
+        updateDiscountValidation(select, discountAmountInput);
+
+        // Update validation when the discount type changes
+        select.addEventListener('change', function () {
+            updateDiscountValidation(select, discountAmountInput);
+        });
+    });
 });
-
 
 // add
 document.addEventListener('DOMContentLoaded', function() {
@@ -326,26 +333,41 @@ const offerTypeSelect = document.getElementById('offerTypeSelect');
         }
     });
 
+    document.addEventListener('DOMContentLoaded', function () {
+    const offerEditSelects = document.querySelectorAll('.offer-edit-select');
 
-    const offereditselect = document.getElementById('offereditselect');
-    const relatededitselect = document.getElementById('relatededitselect');
+    offerEditSelects.forEach(select => {
+        select.addEventListener('change', function () {
+            const modalId = this.dataset.modalId; // Get the unique modal ID
+            const relatedSelect = document.querySelector(`.related-edit-select[data-modal-id="${modalId}"]`);
+            const selectedType = this.value;
 
-    offereditselect.addEventListener('change', function () {
-        const selectedType = this.value;
-        relatededitselect.innerHTML = ''; // Clear previous options
-        relatededitselect.innerHTML += '<option disabled selected>Select related item</option>'; // Reset selection
+            // Get the current related item (if any)
+            const currentRelatedId = relatedSelect.dataset.selectedId;
 
-        if (selectedType === 'category') {
-            <% categories.forEach(category => { %>
-                relatededitselect.innerHTML += `<option value="<%= category._id %>"><%= category.name %></option>`;
-            <% }); %>
-        } else if (selectedType === 'product') {
-            <% products.forEach(product => { %>
-                relatededitselect.innerHTML += `<option value="<%= product._id %>"><%= product.name %></option>`;
-            <% }); %>
-        }
+            // Clear and reset the related dropdown
+            relatedSelect.innerHTML = '<option disabled>Select related item</option>';
+
+            if (selectedType === 'category') {
+                <% categories.forEach(category => { %>
+                    relatedSelect.innerHTML += `
+                        <option value="<%= category._id %>" 
+                            ${currentRelatedId === '<%= category._id %>' ? 'selected' : ''}>
+                            <%= category.name %>
+                        </option>`;
+                <% }); %>
+            } else if (selectedType === 'product') {
+                <% products.forEach(product => { %>
+                    relatedSelect.innerHTML += `
+                        <option value="<%= product._id %>" 
+                            ${currentRelatedId === '<%= product._id %>' ? 'selected' : ''}>
+                            <%= product.name %>
+                        </option>`;
+                <% }); %>
+            }
+        });
     });
-
+});
 </script>
 <!-- Bootstrap JS, Popper.js, and jQuery -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>

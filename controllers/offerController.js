@@ -129,7 +129,6 @@ exports.addOffer = async (req, res) => {
     }
 };
 
-
 exports.editOffer = async (req, res) => {
     try {
         const offerId = req.params.id;

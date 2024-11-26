@@ -5,7 +5,7 @@ exports.renderCategoryPage = async (req, res) => {
     try {
         const search = req.query.search || ''; 
         const currentpage = parseInt(req.query.page) || 1; 
-        const limit = 8;
+        const limit = 5;
         const skip = (currentpage - 1) * limit;
 
         const categories = await Category.find({
@@ -42,17 +42,29 @@ exports.renderCategoryPage = async (req, res) => {
 
 exports.addCategory = async (req, res) => {
     const { name, description, status } = req.body;
+    const search = req.query.search || ''; 
+    const currentpage = parseInt(req.query.page) || 1; 
+    const limit = 5;
+    const skip = (currentpage - 1) * limit;
 
     try {
         const existingCategory = await Category.findOne({ name: { $regex: `^${name}$`, $options: "i" } });
         if (existingCategory) {
+            const categories = await Category.find({
+                name: { $regex: search, $options: 'i' }
+            }).skip(skip).limit(limit);
+            const totalCategories = await Category.countDocuments({
+                name: { $regex: search, $options: 'i' }
+            });
+            const totalPages = Math.ceil(totalCategories / limit);
+
             return res.render('adminPanel', {
                 body: 'admin/category',
                 errorMessage: 'Category name must be unique and case-sensitive.',
-                categories: await Category.find({}),
-                search: '',
-                currentpage: 1,
-                totalPages: 1
+                categories,
+                search,
+                currentpage,
+                totalPages,
             });
         }
 
@@ -67,34 +79,32 @@ exports.addCategory = async (req, res) => {
     } catch (err) {
         console.error('Error saving category:', err);
 
-        // duplicate key error
-        if (err.code === 11000) { 
-            return res.render('adminPanel', {
-                body: 'admin/category',
-                errorMessage: 'Category name must be unique',
-                categories: await Category.find({}),
-                search: '',
-                currentpage: 1,
-                totalPages: 1
-            });
-        }
+        const categories = await Category.find({
+            name: { $regex: search, $options: 'i' }
+        }).skip(skip).limit(limit);
+        const totalCategories = await Category.countDocuments({
+            name: { $regex: search, $options: 'i' }
+        });
+        const totalPages = Math.ceil(totalCategories / limit);
 
         res.render('adminPanel', {
             body: 'admin/category',
             errorMessage: 'An unexpected error occurred. Please try again.',
-            categories: await Category.find({}),
-            search: '',
-            currentpage: 1,
-            totalPages: 1
+            categories,
+            search,
+            currentpage,
+            totalPages,
         });
     }
 };
 
-
-// Edit Category
 exports.editCategory = async (req, res) => {
     const { name, description, status } = req.body;
     const categoryId = req.params.id;
+    const search = req.query.search || ''; 
+    const currentpage = parseInt(req.query.page) || 1; 
+    const limit = 5;
+    const skip = (currentpage - 1) * limit;
 
     try {
         const existingCategory = await Category.findOne({
@@ -103,13 +113,21 @@ exports.editCategory = async (req, res) => {
         });
 
         if (existingCategory) {
+            const categories = await Category.find({
+                name: { $regex: search, $options: 'i' }
+            }).skip(skip).limit(limit);
+            const totalCategories = await Category.countDocuments({
+                name: { $regex: search, $options: 'i' }
+            });
+            const totalPages = Math.ceil(totalCategories / limit);
+
             return res.render('adminPanel', {
                 body: 'admin/category',
                 errorMessage: 'Category name must be unique and case-sensitive.',
-                categories: await Category.find({}),
-                search: '',
-                currentpage: 1,
-                totalPages: 1,
+                categories,
+                search,
+                currentpage,
+                totalPages,
             });
         }
 
@@ -123,16 +141,25 @@ exports.editCategory = async (req, res) => {
     } catch (err) {
         console.error('Error editing category:', err);
 
+        const categories = await Category.find({
+            name: { $regex: search, $options: 'i' }
+        }).skip(skip).limit(limit);
+        const totalCategories = await Category.countDocuments({
+            name: { $regex: search, $options: 'i' }
+        });
+        const totalPages = Math.ceil(totalCategories / limit);
+
         res.render('adminPanel', {
             body: 'admin/category',
             errorMessage: 'An unexpected error occurred. Please try again.',
-            categories: await Category.find({}),
-            search: '',
-            currentpage: 1,
-            totalPages: 1,
+            categories,
+            search,
+            currentpage,
+            totalPages,
         });
     }
 };
+
 
 // Toggle Category Status
 exports.toggleCategoryStatus = async (req, res) => {
