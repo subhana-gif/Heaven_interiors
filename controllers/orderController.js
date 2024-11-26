@@ -506,7 +506,7 @@ exports.retryPayment = async (req, res) => {
             return res.status(404).json({ message: 'Order not found' });
         }
         const paymentOptions = {
-            amount: order.totalPrice * 100, 
+            amount: Math.round(order.totalPrice * 100), 
             currency: 'INR',
             receipt: `receipt_retry_${order._id}`,
             payment_capture: 1,

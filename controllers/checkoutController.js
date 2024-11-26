@@ -209,7 +209,6 @@ exports.getCheckoutPage = async (req, res) => {
     }
 };
 
-
 exports.addAddress = async (req, res) => {
     const { name, mobileNumber, city, state, pinCode } = req.body;
     const address = new Address({
@@ -443,7 +442,6 @@ exports.placeOrder = async (req, res) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-
 
 exports.placeOrderPending = async (req, res) => {
     try {
